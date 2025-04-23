@@ -13,12 +13,12 @@ const Navbar = () => {
     ]
 
     return (
-        <nav className="bg-white text-xl font-bold">
+        <nav className="fixed top-0 left-0 right-0 z-50 max-w-[750px] mx-auto opacity-95 bg-white text-xl font-bold px-7 border-x border-x-gray-200 border-b border-b-gray-200">
             <div className="my-4 flex justify-between items-center">
                 <Link href="/">Wearly</Link>
-                <Link href="/"><img src="/Notification.png" className="w-[px] h-[25px]" /></Link>
+                <Link href="/"><img src="/icons/Notification.png" className="w-[px] h-[25px]" /></Link>
             </div>
-            <div className="flex text-base border-b border-b-gray-200">
+            <div className="flex text-base">
                 {
                     navMenu.map((item) => {
                         const isActive = pathname.startsWith(item.href);
