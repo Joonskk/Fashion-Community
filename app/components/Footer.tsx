@@ -14,8 +14,8 @@ const Footer = () => {
     ]
 
     return (
-        <div className="fixed bottom-0 left-0 w-full bg-white">
-            <div className="max-w-[750px] mx-auto flex justify-around border-t border-t-gray-200">
+        <div className="fixed bottom-0 left-0 w-full bg-white ">
+            <div className="max-w-[750px] mx-auto flex justify-around border-t border-t-gray-200 border-x border-x-gray-200">
             {menuItems.map((item) => {
                 const isActive = item.home
                 ? pathname === "/" || pathname.startsWith("/home")
