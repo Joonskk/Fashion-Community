@@ -1,4 +1,5 @@
 import {auth, signIn, signOut} from '@/auth'
+import Link from 'next/link';
 
 const MyPage = async () => {
     const session = await auth();
@@ -11,10 +12,18 @@ const MyPage = async () => {
                         <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
                             <img src="/profile-default.png" className="w-[150px] h-[150px] rounded-full" />
                             <div className="ml-[50px]">
-                                <h1 className="mt-[40px] text-[20px]">user name</h1>
-                                <div className="flex">
-                                    <h2 className="text-[15px]">Follower</h2>
-                                    <h2 className="text-[15px] ml-[20px]">Following</h2>
+                                <h1 className="mt-[30px] text-[20px]">user name</h1>
+                                <div className="flex text-gray-500 text-[15px]">
+                                    <h2>175cm</h2>
+                                    <h2 className="ml-[3px]">/</h2>
+                                    <h2 className="ml-[3px]">68kg</h2>
+                                </div>
+                                <div className="flex text-[15px] mt-[10px]">
+                                    <h2>Follower</h2>
+                                    <h2 className="ml-[20px]">Following</h2>
+                                </div>
+                                <div>
+                                    <Link href="/mypage/edit">Edit Profile</Link>
                                 </div>
                             </div>
                         </div>
