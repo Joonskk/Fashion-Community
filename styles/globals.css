@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   --white: #ffffff;
   --black: #111111;
@@ -53,3 +49,10 @@ body {
   box-shadow: 0 15px 30px rgba(91, 144, 240, 0.8);
 }
 
+.follow-button button {
+  transition: .2s linear;
+  cursor: pointer;
+}
+.follow-button button:hover {
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3)
+}
