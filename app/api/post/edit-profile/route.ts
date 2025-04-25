@@ -21,9 +21,25 @@ export async function POST(req: Request) {
       height,
       weight
     })
-    return NextResponse.redirect(new URL('/mypage', req.url)) // redirect 처리
+    return NextResponse.redirect(new URL('/mypage', req.url))
   } catch (error) {
     console.error('DB 저장 중 에러:', error)
     return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
+  }
+}
+
+export async function GET() {
+  try {
+    const client = await clientPromise
+    const db = client.db('wearly')
+
+    const users = await db.collection('users').find({}, {
+      projection: { _id: 0, name: 1, height: 1, weight: 1 } // _id는 제외하고 필요한 필드만 가져옴
+    }).toArray()
+
+    return NextResponse.json({ users })
+  } catch (error) {
+    console.error('DB 불러오기 에러:', error)
+    return NextResponse.json({ error: 'DB 조회 오류' }, { status: 500 })
   }
 }
