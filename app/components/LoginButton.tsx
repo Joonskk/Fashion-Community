@@ -7,7 +7,9 @@ const LoginButton = () => {
     <button
       type="button"
       className="google__btn"
-      onClick={() => signIn('google')}
+      onClick={() => signIn('google',{
+        callbackUrl: '/mypage'
+      })}
     >
       <i className="fa fa-google"></i>
       Sign in with Google

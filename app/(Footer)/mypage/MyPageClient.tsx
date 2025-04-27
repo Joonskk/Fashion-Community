@@ -5,28 +5,58 @@ import { useState, useEffect } from 'react';
 import LogoutButton from '@/app/components/LogoutButton';
 import LoginButton from '@/app/components/LoginButton';
 
+type User = {
+    name: string;
+    height: string;
+    weight: string;
+    email: string;
+}
+
 const MyPageClient = ({session} : {session : any}) => {
 
-    const [userData, setUserData] = useState<{ name: string, height: string, weight: string } | null>(null)
-
+    const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
+    
     useEffect(() => {
+        if (!session?.user) return; // 로그인 안돼있으면 바로 return
+
         // fetch 호출하여 DB에서 데이터 가져오기
         const fetchUserData = async () => {
-        try {
-            const response = await fetch('/api/post/edit-profile')
-            if (response.ok) {
-            const data = await response.json()
-            setUserData(data.users[0]) // 첫 번째 유저 정보만 사용한다고 가정
-            } else {
-            console.error('DB 조회 실패')
+            try {
+                const userEmail: string = session.user.email;
+                {/*
+                const response = await fetch('/api/post/edit-profile', {
+                    method: 'GET',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                    name: '홍길동',
+                    height: '180',
+                    weight: '75',
+                    }),
+                });
+                */}
+                const response = await fetch('/api/post/edit-profile')
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log("data: ", data)
+                    const foundUser: User = data.users.find((user: { email: string }) => user.email === userEmail);
+                    if (foundUser) { // 로그인 시 동작
+                        setUserData(foundUser); // 이메일이 일치하는 사용자 데이터 설정
+                    } else { // 첫 회원가입 시 동작
+                        console.log("Redirecting to Sign Up page...")
+                        window.location.href = "/mypage/signup"; // redirect("") 는 server side 에서만 동작함
+                    }
+                } else {
+                console.error('DB 조회 실패')
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error)
             }
-        } catch (error) {
-            console.error('API 호출 오류:', error)
         }
-        }
-
+        
         fetchUserData()
-    }, []) // 컴포넌트 마운트될 때 한 번만 호출
+    }, [session])
 
     return (
         <div className="h-screen">

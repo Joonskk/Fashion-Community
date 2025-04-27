@@ -1,13 +1,22 @@
 import { NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
+import { auth } from '@/auth'
 
+// Post ( 회원가입 )
 export async function POST(req: Request) {
-  const body = await req.formData()
-  const name = body.get('name') as string
-  const height = body.get('height') as string
-  const weight = body.get('weight') as string
+  const session = await auth();
+  const email = session?.user?.email as string;
 
-  if (!name || !height || !weight) {
+  const body = await req.formData();
+  const name = body.get('name') as string;
+  const height = body.get('height') as string;
+  const weight = body.get('weight') as string;
+  
+  {/*
+  const {name, height, weight} = await req.json();
+  */}
+
+  if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '내용을 입력해주세요!' }, { status: 400 })
   }
 
@@ -19,7 +28,8 @@ export async function POST(req: Request) {
     await db.collection('users').insertOne({ 
       name,
       height,
-      weight
+      weight,
+      email
     })
     return NextResponse.redirect(new URL('/mypage', req.url))
   } catch (error) {
@@ -28,13 +38,14 @@ export async function POST(req: Request) {
   }
 }
 
+// Get ( My Page 로 정보 받아올 때 )
 export async function GET() {
   try {
     const client = await clientPromise
     const db = client.db('wearly')
 
     const users = await db.collection('users').find({}, {
-      projection: { _id: 0, name: 1, height: 1, weight: 1 } // _id는 제외하고 필요한 필드만 가져옴
+      projection: { _id: 0, name: 1, height: 1, weight: 1, email: 1 } // _id는 제외하고 필요한 필드만 가져옴
     }).toArray()
 
     return NextResponse.json({ users })
