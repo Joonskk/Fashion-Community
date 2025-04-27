@@ -41,6 +41,7 @@ const MyPageClient = ({session} : {session : any}) => {
                     const data = await response.json()
                     console.log("data: ", data)
                     const foundUser: User = data.users.find((user: { email: string }) => user.email === userEmail);
+                    console.log(foundUser);
                     if (foundUser) { // 로그인 시 동작
                         setUserData(foundUser); // 이메일이 일치하는 사용자 데이터 설정
                     } else { // 첫 회원가입 시 동작
