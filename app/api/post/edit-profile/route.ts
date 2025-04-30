@@ -7,14 +7,11 @@ export async function POST(req: Request) {
   const session = await auth();
   const email = session?.user?.email as string;
 
-  const body = await req.formData();
-  const name = body.get('name') as string;
-  const height = body.get('height') as string;
-  const weight = body.get('weight') as string;
-  
-  {/*
-  const {name, height, weight} = await req.json();
-  */}
+  const {name, height, weight} = await req.json(); // JSON 데이터를 받음
+
+  if (!name || !height || !weight || !email) {
+    return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
+  }
 
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '내용을 입력해주세요!' }, { status: 400 })
