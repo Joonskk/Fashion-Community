@@ -83,8 +83,9 @@ const MyPageClient = ({session} : {session : any}) => {
                                     <h2>Follower</h2>
                                     <h2 className="ml-[20px]">Following</h2>
                                 </div>
-                                <div>
-                                    <Link href="/mypage/edit">Edit Profile</Link>
+                                <div className="flex mt-[10px]">
+                                    <Link href="/mypage/edit" className="mr-[20px]">Edit Profile</Link>
+                                    <LogoutButton />
                                 </div>
                             </div>
                         </div>
@@ -95,7 +96,9 @@ const MyPageClient = ({session} : {session : any}) => {
                         </div>
                     </div>
 
-                    <LogoutButton />
+                    <div>
+                        <Link href="/mypage/newpost">New Post</Link>
+                    </div>
                 </div>
             ) : (
                 <div className="login-form flex flex-col justify-center items-center h-screen">

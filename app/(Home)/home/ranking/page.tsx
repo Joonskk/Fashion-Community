@@ -1,11 +1,3 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import clientPromise from '@/lib/mongodb'
-
-
-
-
-
-{/*
 const Ranking = () => {
     return (
         <div>
@@ -15,4 +7,3 @@ const Ranking = () => {
 }
 
 export default Ranking
-*/}
