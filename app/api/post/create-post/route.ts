@@ -1,18 +1,22 @@
 import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
+import { auth } from '@/auth';
 
 export async function POST(req: Request) {
-  const body = await req.json();
-  const { description, hashtags, imageUrls, userId } = body;
-{/*
-  // 예시: DB에 저장
-  await db.post.create({
-    data: {
-      description,
-      hashtags,
-      imageUrls, // 배열로 저장 가능
-      userId,
-    },
-  });
-*/}
-  return NextResponse.json({ success: true });
+    const session = await auth();
+    const userId = session?.user?.name as string;
+        
+    const body = await req.json();
+    
+    try {
+        const db = (await clientPromise).db('wearly');
+        await db.collection('posts').insertOne({
+            userId,
+            body
+        })
+        return NextResponse.json({ success: true });
+    } catch(err) {
+        console.error('DB 저장 중 에러:', err)
+        return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
+    }
 }

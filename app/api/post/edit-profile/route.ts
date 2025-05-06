@@ -18,21 +18,21 @@ export async function POST(req: Request) {
   }
 
   try {
-    console.log(clientPromise);
-    console.log("MONGODB 연결중...")
-    const db = (await clientPromise).db('wearly')
-    console.log("MongoDB 연결됨!")
-    await db.collection('users').insertOne({ 
-      name,
-      height,
-      weight,
-      email
-    })
-    return NextResponse.redirect(new URL('/mypage', req.url))
-  } catch (error) {
-    console.error('DB 저장 중 에러:', error)
-    return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
-  }
+      console.log(clientPromise);
+      console.log("MONGODB 연결중...")
+      const db = (await clientPromise).db('wearly')
+      console.log("MongoDB 연결됨!")
+      await db.collection('users').insertOne({ 
+        name,
+        height,
+        weight,
+        email
+      })
+      return NextResponse.redirect(new URL('/mypage', req.url))
+    } catch (error) {
+      console.error('DB 저장 중 에러:', error)
+      return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
+    }
 }
 
 // Get ( My Page 로 정보 받아올 때 )
