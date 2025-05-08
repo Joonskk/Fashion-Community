@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import Link from "next/link";
 
 const Edit = () => {
 
@@ -52,7 +53,12 @@ const Edit = () => {
           onChange={(e) => setWeight(e.target.value)}
           placeholder="몸무게(kg)"
         />
-        <button type="submit" className="cursor-pointer">Edit</button>
+        <div className="w-full flex justify-center">
+          <div className="flex text-center w-[70px] h-[30px] mr-[10px]">
+            <Link href="/mypage" className="cursor-pointer w-full h-full flex justify-center items-center border rounded-sm">Cancel</Link>
+          </div>
+          <button type="submit" className="cursor-pointer w-[50px] h-[30px] bg-black text-white border rounded-sm">Edit</button>
+        </div>
       </form>
     </div>
   );

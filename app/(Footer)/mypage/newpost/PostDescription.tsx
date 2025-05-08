@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const PostDescription = ({ images } : {images : File[]}) => {
     
@@ -60,7 +61,12 @@ const PostDescription = ({ images } : {images : File[]}) => {
     }
 
     return (
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full relative">
+            <div>
+                <Link href="/mypage">
+                    <img src="/icons/BackArrow.png" className="absolute top-6 left-6 w-[20px] h-[20px]" />
+                </Link>
+            </div>
             <div className="relative w-[300px] h-[400px] mx-auto flex items-center justify-center mt-[20px]">
                 <img
                     src={URL.createObjectURL(images[currentIndex])}
@@ -82,7 +88,10 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 />
             </div>
             <form onSubmit={handleSubmit} className="flex justify-center mx-auto" >
-                <button type="submit" className="bg-black text-white w-[50px] h-[30px] border rounded-md">
+                <div className="flex text-center w-[70px] h-[30px] mr-[10px]">
+                    <Link href="/mypage" className="cursor-pointer w-full h-full flex justify-center items-center border rounded-sm">Cancel</Link>
+                </div>
+                <button type="submit" className="cursor-pointer bg-black text-white w-[50px] h-[30px] border rounded-md">
                     Post
                 </button>
             </form>

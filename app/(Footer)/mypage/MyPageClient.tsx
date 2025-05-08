@@ -95,9 +95,13 @@ const MyPageClient = ({session} : {session : any}) => {
                             </button>
                         </div>
                     </div>
-
-                    <div>
-                        <Link href="/mypage/newpost">New Post</Link>
+                    <div className="relative w-full">
+                        <Link 
+                        href="/mypage/newpost"
+                        className="absolute top-4 right-4 flex items-center justify-center text-[35px] text-black text-center border border-2 border-black rounded-[8px] w-[30px] h-[30px] hover:bg-black hover:text-white transition"
+                        >
+                            +
+                        </Link>
                     </div>
                 </div>
             ) : (
