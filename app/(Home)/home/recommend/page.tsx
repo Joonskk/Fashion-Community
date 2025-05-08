@@ -6,14 +6,14 @@ const Recommend = () => {
 
     return (
         <div className="mt-[88px] mb-[100px]">
-        <Filter />
-        <div className="flex flex-wrap mt-4">
-            {Styles.map((_, index) => (
-            <div key={index} className="w-1/2 md:w-1/3">
-                <StyleCard num={index} />
+            <Filter />
+            <div className="flex flex-wrap mt-4">
+                {Styles.map((_, index) => (
+                <div key={index} className="w-1/2 md:w-1/3">
+                    <StyleCard num={index} />
+                </div>
+                ))}
             </div>
-            ))}
-        </div>
         </div>
     );
 };

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import LogoutButton from '@/app/components/LogoutButton';
 import LoginButton from '@/app/components/LoginButton';
+import StyleCard from "@/app/components/StyleCard";
 
 type User = {
     name: string;
@@ -59,6 +60,8 @@ const MyPageClient = ({session} : {session : any}) => {
         fetchUserData()
     }, [session])
 
+    const Styles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
     return (
         <div className="h-screen">
             {session && session?.user ? (
@@ -95,13 +98,25 @@ const MyPageClient = ({session} : {session : any}) => {
                             </button>
                         </div>
                     </div>
-                    <div className="relative w-full">
+                    <div className="flex absolute top-4 right-4">
                         <Link 
                         href="/mypage/newpost"
-                        className="absolute top-4 right-4 flex items-center justify-center text-[35px] text-black text-center border border-2 border-black rounded-[8px] w-[30px] h-[30px] hover:bg-black hover:text-white transition"
+                        className="flex items-center justify-center text-[35px] text-black text-center border border-2 border-black rounded-[8px] w-[30px] h-[30px] mr-[20px] opacity-60 hover:opacity-100 hover:bg-black hover:text-white transition"
                         >
                             +
                         </Link>
+                        <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
+                            <img src="/icons/Menu.png" className="w-[25px] h-[25px]" />
+                        </div>
+                    </div>
+                    <div className="mb-[60px]">
+                        <div className="flex flex-wrap">
+                            {Styles.map((_, index) => (
+                            <div key={index} className="w-1/2 md:w-1/3">
+                                <StyleCard num={index} />
+                            </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             ) : (
