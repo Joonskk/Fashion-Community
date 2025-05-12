@@ -21,7 +21,6 @@ const PostDescription = ({ images } : {images : File[]}) => {
         e.preventDefault();
 
         try {
-            // 1. Cloudinary 업로드
             const imageURLs: string[] = [];
             const formData = new FormData();
             for (const file of images){
@@ -36,7 +35,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 const data = await res.json();
                 imageURLs.push(data.secure_url);
             }
-            // ERROR !!!!!!!!!!!
+            
             console.log("Working ...")
             const response = await fetch('/api/post/create-post',{
                 method: "POST",

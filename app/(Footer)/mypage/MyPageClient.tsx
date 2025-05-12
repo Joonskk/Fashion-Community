@@ -13,10 +13,19 @@ type User = {
     email: string;
 }
 
+type Post = {
+    userEmail: string;
+    body: {
+        imageURLs: string[];
+        description: string;
+    };
+}
+
 const MyPageClient = ({session} : {session : any}) => {
 
     const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
-    
+    const [myPost, setMyPost] = useState<Post[]>([]);
+
     useEffect(() => {
         if (!session?.user) return; // 로그인 안돼있으면 바로 return
 
@@ -37,12 +46,12 @@ const MyPageClient = ({session} : {session : any}) => {
                     }),
                 });
                 */}
-                const response = await fetch('/api/post/edit-profile')
+                const response = await fetch('/api/post/edit-profile');
                 if (response.ok) {
                     const data = await response.json()
-                    console.log("data: ", data)
+                    // console.log("session data: ", data);
                     const foundUser: User = data.users.find((user: { email: string }) => user.email === userEmail);
-                    console.log(foundUser);
+                    // console.log(foundUser);
                     if (foundUser) { // 로그인 시 동작
                         setUserData(foundUser); // 이메일이 일치하는 사용자 데이터 설정
                     } else { // 첫 회원가입 시 동작
@@ -60,7 +69,27 @@ const MyPageClient = ({session} : {session : any}) => {
         fetchUserData()
     }, [session])
 
-    const Styles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    useEffect(() => {
+        const posts = async () => {
+            try {
+                const userEmail: string = session.user.email;
+                const response = await fetch('/api/posts');
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log("post data: ", data)
+                    const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === userEmail);
+                    console.log("foundPosts:", foundPosts);
+                    setMyPost(foundPosts); // 이메일이 일치하는 게시물 설정
+                } else {
+                console.error('DB 조회 실패')
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error)
+            }
+        }
+
+        posts();
+    },[])
 
     return (
         <div className="h-screen">
@@ -111,9 +140,9 @@ const MyPageClient = ({session} : {session : any}) => {
                     </div>
                     <div className="mb-[60px]">
                         <div className="flex flex-wrap">
-                            {Styles.map((_, index) => (
+                            {myPost.map((post, index) => (
                             <div key={index} className="w-1/2 md:w-1/3">
-                                <StyleCard num={index} />
+                                <StyleCard postImageURL={post.body.imageURLs[0]} />
                             </div>
                             ))}
                         </div>
