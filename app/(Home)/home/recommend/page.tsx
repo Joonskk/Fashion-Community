@@ -5,6 +5,7 @@ import StyleCard from "@/app/components/StyleCard";
 import { useState, useEffect } from "react";
 
 type Post = {
+    _id: string;
     userEmail: string;
     body: {
         imageURLs: string[];
@@ -40,7 +41,7 @@ const Recommend = () => {
             <div className="flex flex-wrap mt-4">
                 {posts.map((post, index) => (
                 <div key={index} className="w-1/2 md:w-1/3">
-                    <StyleCard postImageURL={post.body.imageURLs[0]} />
+                    <StyleCard postImageURL={post.body.imageURLs[0]} postID={post._id} />
                 </div>
                 ))}
             </div>

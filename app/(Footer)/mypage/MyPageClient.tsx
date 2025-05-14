@@ -14,6 +14,7 @@ type User = {
 }
 
 type Post = {
+    _id: string;
     userEmail: string;
     body: {
         imageURLs: string[];
@@ -142,7 +143,7 @@ const MyPageClient = ({session} : {session : any}) => {
                         <div className="flex flex-wrap">
                             {myPost.map((post, index) => (
                             <div key={index} className="w-1/2 md:w-1/3">
-                                <StyleCard postImageURL={post.body.imageURLs[0]} />
+                                <StyleCard postImageURL={post.body.imageURLs[0]} postID={post._id} />
                             </div>
                             ))}
                         </div>
