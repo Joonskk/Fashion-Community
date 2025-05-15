@@ -92,33 +92,31 @@ const PostView = ({postId} : {postId : string}) => {
             </Link>
             <div className=""> {/* 게시물 div */}
                 <div className="w-full h-[60px] flex items-center"> {/* 유저 정보 */}
-                    <img src="/profile-default.png" className="rounded-full w-[40px] h-[40px] m-[10px]" /> {/* 유저 프로필 사진 */}
+                    <img src="/profile-default.png" className="rounded-full w-[36px] h-[36px] m-[10px]" /> {/* 유저 프로필 사진 */}
                     <div> {/* 유저 아이디, 키, 몸무게 */}
-                        <div className="font-bold text-[17px] h-[25px]">
+                        <div className="font-bold text-[16px] h-[22px]">
                             {user?.name}
                         </div>
-                        <div className="text-[14px] h-[25px]">
-                            180cm 74kg
+                        <div className="text-[13px] h-[20px]">
+                            180cm · 74kg
                         </div>
                     </div>
                     <div className="ml-auto mr-[10px] cursor-pointer bg-sky-500 font-bold text-white text-[13px] px-[10px] py-[7px] rounded-lg" > {/* 팔로우 버튼 */}
                         팔로우
                     </div>
                 </div>
-                <div> {/* 사진 */}
-                    <div className="relative w-[300px] h-[400px] mx-auto flex items-center justify-center mt-[20px]">
-                        <img
-                            src={images ? images[currentIndex] : ""}
-                            alt={`Preview ${currentIndex}`}
-                            className="w-full h-full object-cover rounded-lg shadow-lg"
-                        />
-                        <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
-                            ◀
-                        </button>
-                        <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
-                            ▶
-                        </button>
-                    </div>
+                <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center"> {/* 사진 */}
+                    <img
+                        src={images[currentIndex]}
+                        alt={`Preview ${currentIndex}`}
+                        className="w-full h-full object-cover"
+                    />
+                    <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
+                        ◀
+                    </button>
+                    <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
+                        ▶
+                    </button>
                 </div>
                 <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
                     <div className="w-[25px] h-[25px] ml-[20px]">
