@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext'
 import Link from 'next/link';
 
 const PostDescription = ({ images } : {images : File[]}) => {
     
     const router = useRouter();
+    const { email, name, session } = useUser();
     
     const [currentIndex, setCurrentIndex] = useState(0);
     const [description, setDescription] = useState("");
@@ -41,8 +43,11 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    email,
                     imageURLs,
                     description,
+                    likes: [],
+                    likesCount: 0,
                 }),
             })
             console.log("Working 2 ...")

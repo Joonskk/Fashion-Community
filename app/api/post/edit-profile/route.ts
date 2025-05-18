@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
-import { auth } from '@/auth'
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 // Post ( 회원가입 )
 export async function POST(req: Request) {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   const email = session?.user?.email as string;
 
-  const {name, height, weight} = await req.json(); // JSON 데이터를 받음
+  // const {name, height, weight} = await req.json(); // JSON 데이터를 받음
+
+  const formData = await req.formData();
+  const name = formData.get("name") as string;
+  const height = formData.get("height") as string;
+  const weight = formData.get("weight") as string;
 
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
@@ -54,10 +60,15 @@ export async function GET() {
 
 // Patch ( Edit Proifile 할 때)
 export async function PATCH(req: Request) {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   const email = session?.user?.email as string;
 
-  const { name, height, weight } = await req.json(); // JSON 데이터를 받음
+  // const { name, height, weight } = await req.json(); // JSON 데이터를 받음
+
+  const formData = await req.formData();
+  const name = formData.get("name") as string;
+  const height = formData.get("height") as string;
+  const weight = formData.get("weight") as string;
 
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });

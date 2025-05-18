@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 
 type Post = {
     _id: string;
     userEmail: string;
-    body: {
-        imageURLs: string[],
-        description: string;
-    };
+    imageURLs: string[],
+    description: string,
+    likes: string[],
+    likesCount: number,
 }
 
 type User = {
@@ -19,11 +20,16 @@ type User = {
     email: string;
 }
 
-const PostView = ({postId} : {postId : string}) => {
+const PostView = () => {
+
+    const params = useParams();
+    const postId = params?.postId as string;
 
     const [post, setPost] = useState<Post | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [images, setImages] = useState<string[]>([]);
+    const [likes, setLikes] = useState<string[]>([]);
+    const [likesCount, setLikesCount] = useState<number>(0);
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -34,6 +40,10 @@ const PostView = ({postId} : {postId : string}) => {
     const nextImage = () => {
         setCurrentIndex((prev) => (prev === images?.length - 1 ? images?.length - 1 : prev + 1));
     };
+
+    const toggleLike = () => {
+        
+    }
 
     useEffect(() => {
         // console.log(postId)
@@ -77,7 +87,9 @@ const PostView = ({postId} : {postId : string}) => {
 
         if (post) {
             fetchUser();
-            setImages(post.body.imageURLs);
+            setImages(post.imageURLs);
+            setLikes(post.likes || []);
+            setLikesCount(post.likesCount || 0);
         }
     }, [post])  // post가 변경될 때마다 실행
 
@@ -119,7 +131,7 @@ const PostView = ({postId} : {postId : string}) => {
                     </button>
                 </div>
                 <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
-                    <div className="w-[25px] h-[25px] ml-[20px]">
+                    <div className="w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
                         <img src="/icons/heart-unclicked.png" />
                     </div>
                     <div className="w-[25px] h-[25px] ml-[25px]">
@@ -128,6 +140,9 @@ const PostView = ({postId} : {postId : string}) => {
                     <div className="w-[25px] h-[25px] ml-[25px]">
                         <img src="/icons/bookmark-unclicked.png" />
                     </div>
+                </div>
+                <div className="ml-[20px] font-bold text-[15px]">
+                    {likesCount} likes
                 </div>
                 <div className="ml-[20px] mb-[40px]"> {/* 설명 */}
                     <div className="font-bold inline-block mr-[10px]">{user?.name}</div>

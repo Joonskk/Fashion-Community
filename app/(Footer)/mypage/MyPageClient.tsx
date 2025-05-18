@@ -1,7 +1,9 @@
 "use client"
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useUser } from "@/app/context/UserContext";
 import LogoutButton from '@/app/components/LogoutButton';
 import LoginButton from '@/app/components/LoginButton';
 import StyleCard from "@/app/components/StyleCard";
@@ -16,48 +18,38 @@ type User = {
 type Post = {
     _id: string;
     userEmail: string;
-    body: {
-        imageURLs: string[];
-        description: string;
-    };
+    imageURLs: string[];
+    description: string;
+    likes: string[];
+    likesCount: number;
 }
 
-const MyPageClient = ({session} : {session : any}) => {
+const MyPageClient = () => {
+    const router = useRouter();
+
+    const { email, session } = useUser();
 
     const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
     const [myPost, setMyPost] = useState<Post[]>([]);
 
     useEffect(() => {
-        if (!session?.user) return; // 로그인 안돼있으면 바로 return
+        if (!session || !email) return; // 로그인 안돼있으면 바로 return
 
         // fetch 호출하여 DB에서 데이터 가져오기
         const fetchUserData = async () => {
             try {
-                const userEmail: string = session.user.email;
-                {/*
-                const response = await fetch('/api/post/edit-profile', {
-                    method: 'GET',
-                    headers: {
-                    'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                    name: '홍길동',
-                    height: '180',
-                    weight: '75',
-                    }),
-                });
-                */}
+                const userEmail: string = email;
                 const response = await fetch('/api/post/edit-profile');
                 if (response.ok) {
                     const data = await response.json()
                     // console.log("session data: ", data);
                     const foundUser: User = data.users.find((user: { email: string }) => user.email === userEmail);
-                    // console.log(foundUser);
+                    console.log(foundUser);
                     if (foundUser) { // 로그인 시 동작
                         setUserData(foundUser); // 이메일이 일치하는 사용자 데이터 설정
                     } else { // 첫 회원가입 시 동작
                         console.log("Redirecting to Sign Up page...")
-                        window.location.href = "/mypage/signup"; // redirect("") 는 server side 에서만 동작함
+                        router.push("/mypage/signup");
                     }
                 } else {
                 console.error('DB 조회 실패')
@@ -68,17 +60,17 @@ const MyPageClient = ({session} : {session : any}) => {
         }
         
         fetchUserData()
-    }, [session])
+    }, [session, email, router])
 
     useEffect(() => {
         const posts = async () => {
             try {
-                const userEmail: string = session.user.email;
                 const response = await fetch('/api/posts');
                 if (response.ok) {
                     const data = await response.json()
-                    console.log("post data: ", data)
-                    const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === userEmail);
+                    console.log("post data: ", data);
+                    console.log(email);
+                    const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === email);
                     console.log("foundPosts:", foundPosts);
                     setMyPost(foundPosts); // 이메일이 일치하는 게시물 설정
                 } else {
@@ -90,11 +82,11 @@ const MyPageClient = ({session} : {session : any}) => {
         }
 
         posts();
-    },[])
+    },[session])
 
     return (
         <div className="h-screen">
-            {session && session?.user ? (
+            {session ? (
                 <div className="flex flex-col">
                     <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
                         <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
@@ -143,7 +135,7 @@ const MyPageClient = ({session} : {session : any}) => {
                         <div className="flex flex-wrap">
                             {myPost.map((post, index) => (
                             <div key={index} className="w-1/2 md:w-1/3">
-                                <StyleCard postImageURL={post.body.imageURLs[0]} postID={post._id} />
+                                <StyleCard postImageURL={post.imageURLs[0]} postID={post._id} />
                             </div>
                             ))}
                         </div>

@@ -7,10 +7,10 @@ import { useState, useEffect } from "react";
 type Post = {
     _id: string;
     userEmail: string;
-    body: {
-        imageURLs: string[];
-        description: string;
-    };
+    imageURLs: string[];
+    description: string;
+    likes: string[],
+    likesCount: number,
 }
 
 const Recommend = () => {
@@ -41,7 +41,7 @@ const Recommend = () => {
             <div className="flex flex-wrap mt-4">
                 {posts.map((post, index) => (
                 <div key={index} className="w-1/2 md:w-1/3">
-                    <StyleCard postImageURL={post.body.imageURLs[0]} postID={post._id} />
+                    <StyleCard postImageURL={post.imageURLs[0]} postID={post._id} />
                 </div>
                 ))}
             </div>

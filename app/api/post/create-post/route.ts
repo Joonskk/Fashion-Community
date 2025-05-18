@@ -1,19 +1,23 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { auth } from '@/auth';
 
 export async function POST(req: Request) {
-    const session = await auth();
-    const userEmail = session?.user?.email as string;
-        
+
     const body = await req.json();
+    const { email, imageURLs, description, likes, likesCount } = body;
     
     try {
+        console.log("First")
         const db = (await clientPromise).db('wearly');
+        console.log("Second")
         await db.collection('posts').insertOne({
-            userEmail,
-            body
+            userEmail: email,
+            imageURLs,
+            description,
+            likes,
+            likesCount,
         })
+        console.log("Third")
         return NextResponse.json({ success: true });
     } catch(err) {
         console.error('DB 저장 중 에러:', err)

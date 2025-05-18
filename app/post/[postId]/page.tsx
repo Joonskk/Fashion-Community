@@ -6,8 +6,8 @@ type PostPageProps = {
     }
 }
 
-const Post = ({ params }: PostPageProps) => {
-    return <PostView postId={params.postId} />;
+const Post = async () => {
+    return <PostView />;
 };
 
 export default Post;

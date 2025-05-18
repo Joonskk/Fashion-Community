@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import Footer from '@/app/components/Footer'
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { UserContext } from "@/app/context/UserContext";
+import { SessionProviderWrapper } from "./components/SessionProviderWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,7 +23,7 @@ export const metadata: Metadata = {
   description: "Wearly Website Layout",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -27,10 +31,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
-        <div className="flex flex-col min-h-full max-w-[750px] mx-auto border-x border-x-gray-200 relative">
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </div>
+        <SessionProviderWrapper>
+          <div className="flex flex-col min-h-full max-w-[750px] mx-auto border-x border-x-gray-200 relative">
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </div>
+        </SessionProviderWrapper>
       </body>
     </html>
   );
