@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type Post = {
     _id: string;
@@ -14,6 +15,7 @@ type Post = {
 }
 
 type User = {
+    _id: string;
     name: string;
     height: string;
     weight: string;
@@ -21,6 +23,8 @@ type User = {
 }
 
 const PostView = () => {
+
+    const router = useRouter();
 
     const params = useParams();
     const postId = params?.postId as string;
@@ -33,8 +37,13 @@ const PostView = () => {
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
+    const moveToUserPage = () => {
+        router.push(`/user/${user?._id}`);
+    }
+
     const prevImage = () => {
         setCurrentIndex((prev) => (prev === 0 ? 0 : prev - 1));
+        console.log(user);
     };
 
     const nextImage = () => {
@@ -73,7 +82,6 @@ const PostView = () => {
                 const response = await fetch('/api/post/edit-profile');
                 if(response.ok){
                     const userData = await response.json();
-                    // console.log("userData:", userData);
                     const foundUser: User = userData.users.find((user: User) => user.email === post?.userEmail);
                     // console.log("foundUser:", foundUser);
                     setUser(foundUser); // post 정보의 이메일과 일치하는 user 색출 후 저장
@@ -104,13 +112,13 @@ const PostView = () => {
             </Link>
             <div className=""> {/* 게시물 div */}
                 <div className="w-full h-[60px] flex items-center"> {/* 유저 정보 */}
-                    <img src="/profile-default.png" className="rounded-full w-[36px] h-[36px] m-[10px]" /> {/* 유저 프로필 사진 */}
+                    <img src="/profile-default.png" className="rounded-full w-[36px] h-[36px] m-[10px] cursor-pointer" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
                     <div> {/* 유저 아이디, 키, 몸무게 */}
-                        <div className="font-bold text-[16px] h-[22px]">
+                        <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
                             {user?.name}
                         </div>
                         <div className="text-[13px] h-[20px]">
-                            180cm · 74kg
+                            {user?.height}cm · {user?.weight}kg
                         </div>
                     </div>
                     <div className="ml-auto mr-[10px] cursor-pointer bg-sky-500 font-bold text-white text-[13px] px-[10px] py-[7px] rounded-lg" > {/* 팔로우 버튼 */}
