@@ -1,14 +1,14 @@
 "use client"
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 import { useUser } from "@/app/context/UserContext";
-import LogoutButton from '@/app/components/LogoutButton';
 import LoginButton from '@/app/components/LoginButton';
 import StyleCard from "@/app/components/StyleCard";
 
 type User = {
+    _id: string;
     name: string;
     height: string;
     weight: string;
@@ -24,33 +24,36 @@ type Post = {
     likesCount: number;
 }
 
-const MyPageClient = () => {
+const UserPage = () => {
+
     const router = useRouter();
+
+    const params = useParams();
+    const userId = params?.userId as string;
 
     const { email, session } = useUser();
 
     const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
-    const [myPost, setMyPost] = useState<Post[]>([]);
+    const [userPost, setUserPost] = useState<Post[]>([]);
 
     useEffect(() => {
-        if (!session || !email) return; // 로그인 안돼있으면 바로 return
+        if (!session) return; // 로그인 안돼있으면 바로 return
 
         // fetch 호출하여 DB에서 데이터 가져오기
         const fetchUserData = async () => {
             try {
-                const userEmail: string = email;
                 const response = await fetch('/api/post/edit-profile');
                 if (response.ok) {
                     const data = await response.json()
                     // console.log("session data: ", data);
-                    const foundUser: User = data.users.find((user: { email: string }) => user.email === userEmail);
+                    const foundUser: User = data.users.find((user: { _id: string }) => user._id === userId);
                     console.log(foundUser);
-                    if (foundUser) { // 로그인 시 동작
-                        setUserData(foundUser); // 이메일이 일치하는 사용자 데이터 설정
-                    } else { // 첫 회원가입 시 동작
-                        console.log("Redirecting to Sign Up page...")
-                        router.push("/mypage/signup");
+                    if (foundUser) {
+                        setUserData(foundUser); // 아이디가 일치하는 사용자 데이터 설정
                     }
+                    if (foundUser.email === email) {
+                        router.push('/mypage')
+                    } 
                 } else {
                 console.error('DB 조회 실패')
                 }
@@ -63,16 +66,17 @@ const MyPageClient = () => {
     }, [session, email, router])
 
     useEffect(() => {
+        if (!session || !userData) return;
+
         const posts = async () => {
             try {
                 const response = await fetch('/api/posts');
                 if (response.ok) {
                     const data = await response.json()
                     console.log("post data: ", data);
-                    console.log(email);
-                    const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === email);
+                    const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === userData?.email);
                     console.log("foundPosts:", foundPosts);
-                    setMyPost(foundPosts); // 이메일이 일치하는 게시물 설정
+                    setUserPost(foundPosts); // 이메일이 일치하는 게시물 설정
                 } else {
                 console.error('DB 조회 실패')
                 }
@@ -82,7 +86,7 @@ const MyPageClient = () => {
         }
 
         posts();
-    },[session])
+    },[session, userData])
 
     return (
         <div className="h-screen">
@@ -108,27 +112,22 @@ const MyPageClient = () => {
                                     <h2>Follower</h2>
                                     <h2 className="ml-[20px]">Following</h2>
                                 </div>
-                                <div className="flex mt-[10px]">
-                                    <Link href="/mypage/edit" className="mr-[20px]">Edit Profile</Link>
-                                    <LogoutButton />
-                                </div>
                             </div>
+                        </div>
+                        <div className="follow-button">
+                            <button className="bg-black text-white text-[15px] px-[5px] py-[1px] rounded-[10px] mt-[100px] mr-[50px]">
+                                Follow
+                            </button>
                         </div>
                     </div>
                     <div className="flex absolute top-4 right-4">
-                        <Link 
-                        href="/mypage/newpost"
-                        className="flex items-center justify-center text-[35px] text-black text-center border border-2 border-black rounded-[8px] w-[30px] h-[30px] mr-[20px] opacity-60 hover:opacity-100 hover:bg-black hover:text-white transition"
-                        >
-                            +
-                        </Link>
                         <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
-                            <img src="/icons/Menu.png" className="w-[25px] h-[25px]" />
+                            <img src="/icons/Option.png" className="w-[25px] h-[25px]" />
                         </div>
                     </div>
                     <div className="mb-[60px]">
                         <div className="flex flex-wrap">
-                            {myPost.map((post, index) => (
+                            {userPost.map((post, index) => (
                             <div key={index} className="w-1/2 md:w-1/3">
                                 <StyleCard postImageURL={post.imageURLs[0]} postID={post._id} />
                             </div>
@@ -148,4 +147,4 @@ const MyPageClient = () => {
     )
 }
 
-export default MyPageClient;
+export default UserPage;

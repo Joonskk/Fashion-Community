@@ -1,16 +1,7 @@
-type UserPageProps = {
-    params: {
-        userId: string;
-    }
+import UserPage from './UserPage'
+
+const UserPageClient = async () => {
+    return <UserPage />;
 }
 
-const UserPage = ({params} : UserPageProps) => {
-    return (
-        <div>
-            User Page
-            {params.userId}
-        </div>
-    )
-}
-
-export default UserPage;
+export default UserPageClient;

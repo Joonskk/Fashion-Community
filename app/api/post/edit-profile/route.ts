@@ -48,7 +48,7 @@ export async function GET() {
     const db = client.db('wearly')
 
     const users = await db.collection('users').find({}, {
-      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1 } // _id는 제외하고 필요한 필드만 가져옴
+      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1 } // _id 포함해서 필요한 필드 가져옴
     }).toArray()
 
     return NextResponse.json({ users })
