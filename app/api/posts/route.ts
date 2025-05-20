@@ -8,7 +8,7 @@ export async function GET() {
     const db = client.db('wearly');
 
     const posts = await db.collection('posts').find({}, {
-        projection: { _id: 1, userEmail: 1, imageURLs: 1, description: 1, likes: 1, likesCount: 1 }
+        projection: { _id: 1, userEmail: 1, imageURLs: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
     }).toArray()
   
     return NextResponse.json({ posts })

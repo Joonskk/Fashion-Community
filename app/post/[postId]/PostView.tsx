@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
+import { create } from "domain";
 
 type Post = {
     _id: string;
@@ -38,6 +39,7 @@ const PostView = () => {
     const [images, setImages] = useState<string[]>([]);
     const [likes, setLikes] = useState<string[]>([]);
     const [likesCount, setLikesCount] = useState<number>(0);
+    const [createdAt, setCreatedAt] = useState<string>("");
 
     const [liked, setLiked] = useState<boolean>(false);
 
@@ -80,6 +82,24 @@ const PostView = () => {
         }
     }
 
+    const getTimeAgo = (dateStr: string) => {
+        const now = new Date();
+        const past = new Date(dateStr);
+        const diffMs = now.getTime() - past.getTime();
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHrs = Math.floor(diffMin / 60);
+        const diffDays = Math.floor(diffHrs / 24);
+    
+        if (diffSec < 60) return `${diffSec}초 전`;
+        if (diffMin < 60) return `${diffMin}분 전`;
+        if (diffHrs < 24) return `${diffHrs}시간 전`;
+        if (diffDays < 7) return `${diffDays}일 전`;
+    
+        return past.toLocaleDateString(); // 너무 오래전이면 날짜로
+    };
+    
+
     useEffect(() => {
         // console.log(postId)
         const fetchPost = async () => {
@@ -120,11 +140,13 @@ const PostView = () => {
         }
 
         if (post) {
+            console.log(post);
             fetchUser();
             setImages(post.imageURLs);
             setLikes(post.likes || []);
             setLikesCount(post.likesCount || 0);
             setLiked(post.likes?.includes(email) ?? false); // ?? 는 좌측 값이 null / undefined 일 때 우측 값을 사용한다는 의미
+            setCreatedAt(post.createdAt);
         }
     }, [post])  // post가 변경될 때마다 실행
 
@@ -194,7 +216,7 @@ const PostView = () => {
                 <div className="ml-[20px] mb-[40px]"> {/* 설명 */}
                     <div className="font-bold inline-block mr-[10px]">{user?.name}</div>
                     <div className="inline">{post?.description}</div>
-                    <div className="text-gray-400">19시간 전</div>
+                    <div className="text-gray-400">{createdAt && getTimeAgo(createdAt)}</div>
                 </div>
             </div>
         </div>
