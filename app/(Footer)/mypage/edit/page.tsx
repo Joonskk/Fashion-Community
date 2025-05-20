@@ -1,9 +1,12 @@
 "use client"
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const Edit = () => {
+
+  const router = useRouter();
 
   const [name, setName] = useState('');
   const [height, setHeight] = useState('');
@@ -13,6 +16,7 @@ const Edit = () => {
     e.preventDefault();
     
     const updatedProfile = { name, height, weight };
+    console.log("updatedProfile: ", updatedProfile);
 
     const response = await fetch('/api/post/edit-profile', {
       method: 'PATCH',
@@ -25,7 +29,7 @@ const Edit = () => {
     console.log(response);
 
     if (response.ok) {
-      window.location.href = '/mypage';
+      router.push('/mypage');
     } else {
       alert('업데이트 실패!');
     }
