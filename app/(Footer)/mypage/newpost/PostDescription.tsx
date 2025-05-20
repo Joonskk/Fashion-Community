@@ -38,7 +38,6 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 imageURLs.push(data.secure_url);
             }
             
-            console.log("Working ...")
             const response = await fetch('/api/post/create-post',{
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
@@ -50,7 +49,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
                     likesCount: 0,
                 }),
             })
-            console.log("Working 2 ...")
+
             const result = await response.json();
             console.log("✅ DB 저장 성공:", result);
 

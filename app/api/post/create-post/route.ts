@@ -7,17 +7,15 @@ export async function POST(req: Request) {
     const { email, imageURLs, description, likes, likesCount } = body;
     
     try {
-        console.log("First")
         const db = (await clientPromise).db('wearly');
-        console.log("Second")
         await db.collection('posts').insertOne({
             userEmail: email,
             imageURLs,
             description,
             likes,
             likesCount,
+            createdAt: new Date(),
         })
-        console.log("Third")
         return NextResponse.json({ success: true });
     } catch(err) {
         console.error('DB 저장 중 에러:', err)

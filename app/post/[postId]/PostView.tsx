@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 
 type Post = {
     _id: string;
@@ -12,6 +13,7 @@ type Post = {
     description: string,
     likes: string[],
     likesCount: number,
+    createdAt: string,
 }
 
 type User = {
@@ -29,11 +31,15 @@ const PostView = () => {
     const params = useParams();
     const postId = params?.postId as string;
 
+    const { email } = useUser();
+
     const [post, setPost] = useState<Post | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [likes, setLikes] = useState<string[]>([]);
     const [likesCount, setLikesCount] = useState<number>(0);
+
+    const [liked, setLiked] = useState<boolean>(false);
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -50,8 +56,28 @@ const PostView = () => {
         setCurrentIndex((prev) => (prev === images?.length - 1 ? images?.length - 1 : prev + 1));
     };
 
-    const toggleLike = () => {
-        
+    const toggleLike = async () => {
+        const likedAfterAction = !liked;
+        setLiked(likedAfterAction);
+        setLikesCount(likedAfterAction ? likesCount + 1 : likesCount -1);
+
+        try{
+            const res = await fetch('/api/post/toggle-likes',{
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    postId,
+                    userEmail: email,
+                }),
+            })
+
+            const data = await res.json();
+            setLikesCount(data.likesCount);
+        } catch(err) {
+            console.error("Failed to toggle likes: ", err)
+            setLiked(!likedAfterAction);
+            setLikesCount(likedAfterAction ? likesCount - 1 : likesCount + 1);
+        }
     }
 
     useEffect(() => {
@@ -98,12 +124,20 @@ const PostView = () => {
             setImages(post.imageURLs);
             setLikes(post.likes || []);
             setLikesCount(post.likesCount || 0);
+            setLiked(post.likes?.includes(email) ?? false); // ?? 는 좌측 값이 null / undefined 일 때 우측 값을 사용한다는 의미
         }
     }, [post])  // post가 변경될 때마다 실행
 
+{/*
     useEffect(()=>{
         console.log(images);
     }, [images])
+
+    useEffect(()=>{
+        console.log("liked: ",liked);
+        console.log("likesCount: ", likesCount);
+    }, [liked])
+*/}
 
     return (
         <div className="flex flex-col w-full relative mb-[60px]">
@@ -121,9 +155,14 @@ const PostView = () => {
                             {user?.height}cm · {user?.weight}kg
                         </div>
                     </div>
-                    <div className="ml-auto mr-[10px] cursor-pointer bg-sky-500 font-bold text-white text-[13px] px-[10px] py-[7px] rounded-lg" > {/* 팔로우 버튼 */}
-                        팔로우
-                    </div>
+                    {
+                        user?.email === email ?
+                        <></>
+                        :
+                        <div className="ml-auto mr-[10px] cursor-pointer bg-sky-500 font-bold text-white text-[13px] px-[10px] py-[7px] rounded-lg" > {/* 팔로우 버튼 */}
+                            팔로우
+                        </div>
+                    }
                 </div>
                 <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center"> {/* 사진 */}
                     <img
@@ -140,7 +179,7 @@ const PostView = () => {
                 </div>
                 <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
                     <div className="w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
-                        <img src="/icons/heart-unclicked.png" />
+                        <img src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} />
                     </div>
                     <div className="w-[25px] h-[25px] ml-[25px]">
                         <img src="/icons/comment.png" />
@@ -154,7 +193,7 @@ const PostView = () => {
                 </div>
                 <div className="ml-[20px] mb-[40px]"> {/* 설명 */}
                     <div className="font-bold inline-block mr-[10px]">{user?.name}</div>
-                    <div className="inline">This is a long description that should wrap to the next line and start from the left edge of the container.</div>
+                    <div className="inline">{post?.description}</div>
                     <div className="text-gray-400">19시간 전</div>
                 </div>
             </div>

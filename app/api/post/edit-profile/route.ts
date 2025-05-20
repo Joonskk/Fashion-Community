@@ -8,8 +8,6 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email as string;
 
-  // const {name, height, weight} = await req.json(); // JSON 데이터를 받음
-
   const formData = await req.formData();
   const name = formData.get("name") as string;
   const height = formData.get("height") as string;
