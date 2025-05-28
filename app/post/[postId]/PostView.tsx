@@ -21,9 +21,18 @@ type Post = {
 type User = {
     _id: string;
     name: string;
-    height: string;
-    weight: string;
-    email: string;
+    height?: string;
+    weight?: string;
+    email?: string;
+}
+
+type Comment = {
+    _id?: string;
+    postId?: string;
+    userEmail?: string;
+    userName: string;
+    text: string;
+    createdAt: string;
 }
 
 const PostView = () => {
@@ -33,7 +42,7 @@ const PostView = () => {
     const params = useParams();
     const postId = params?.postId as string;
 
-    const { email } = useUser();
+    const { name, email } = useUser();
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,8 +54,9 @@ const PostView = () => {
     const [createdAt, setCreatedAt] = useState<string>("");
 
     const [liked, setLiked] = useState<boolean>(false);
-    const [showComments, setShowComments] = useState<boolean>(true);
+    const [showComments, setShowComments] = useState<boolean>(false);
     const [comment, setComment] = useState<string>("");
+    const [commentsList, setCommentsList] = useState<Comment[]>([]);
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -115,7 +125,53 @@ const PostView = () => {
         setComment("");
     }
 
+    const handleSubmit = async (e : React.FormEvent) => {
+        e.preventDefault();
+        const textarea = textareaRef.current;
+        
+        try {
+            const res = await fetch('/api/post/comments', {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    postId,
+                    userEmail: email,
+                    userName: name,
+                    text: comment,
+                })
+            })
+
+            const result = await res.json();
+            console.log("✅ DB 저장 성공:", result);
+
+            if (result.success) {
+                console.log(result);
+                if(textarea) textarea.value = "";
+
+                const newComment: Comment = {
+                    userName: name,
+                    text: comment,
+                    createdAt: "now",
+                };
+
+                console.log(newComment);
+            
+                setCommentsList(prev => [...prev, newComment]);
+                setShowComments(true);
+                router.refresh();
+            } else{
+                console.log("실패")
+            }
+            
+        } catch(err) {
+            console.error("❌ 오류 발생:", err);
+            alert("업로드 중 오류가 발생했습니다.");
+        }
+    }
+
     const getTimeAgo = (dateStr: string) => {
+        if(dateStr === "now") return "방금 전";
+
         const now = new Date();
         const past = new Date(dateStr);
         const diffMs = now.getTime() - past.getTime();
@@ -129,7 +185,11 @@ const PostView = () => {
         if (diffHrs < 24) return `${diffHrs}시간 전`;
         if (diffDays < 7) return `${diffDays}일 전`;
     
-        return past.toLocaleDateString(); // 너무 오래전이면 날짜로
+        const year = past.getFullYear();
+        const month = String(past.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+        const day = String(past.getDate()).padStart(2, '0');
+
+        return `${year}.${month}.${day}`;
     };
     
 
@@ -182,6 +242,28 @@ const PostView = () => {
             setCreatedAt(post.createdAt);
         }
     }, [post])  // post가 변경될 때마다 실행
+
+    useEffect(() => {
+        const fetchComment = async () => {
+            try {
+                const res = await fetch('/api/post/comments');
+                if(res.ok) {
+                    const data = await res.json();
+                    const foundComments: Comment[] = data.comments.filter((comment: Comment) => comment.postId === postId);
+                    console.log(foundComments);
+                    if(foundComments){
+                        setCommentsList(foundComments);
+                    } else{
+                        console.error('DB 조회 실패');
+                    }
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+
+        fetchComment();
+    }, [])
 
 {/*
     useEffect(()=>{
@@ -254,89 +336,88 @@ const PostView = () => {
             </div>
             {/* 댓글 */}
             <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
-            <div
-                className={`absolute inset-0 bg-black transition-opacity duration-300 ${
-                showComments ? "opacity-50 pointer-events-auto" : "opacity-0"
-                }`}
-                onClick={toggleComment}
-            />
-            {/* 댓글창 */}
-            <div
-                className={`relative bg-white rounded-t-xl w-full max-w-[750px] h-[70%] p-4 transform transition-transform duration-300 ${
-                showComments ? "translate-y-0" : "translate-y-full"
-                } pointer-events-auto`}
-            >
-                <div className="h-[30px] flex items-center font-bold text-[18px] px-2 mb-4">
-                    <span className="mr-1">댓글</span>
-                    <span className="text-[16px] align-middle leading-none">(2)</span>
-                </div>
-                {/* Comments list */}
-                <div className="space-y-3 mb-4 overflow-y-auto max-h-[calc(70%-100px)]">
-                <div className="text-sm text-gray-700">
-                    <span className="font-bold">alice</span> Love this fit!
-                </div>
-                <div className="text-sm text-gray-700">
-                    <span className="font-bold">bob</span> Where’d you get those jeans?
-                </div>
-                </div>
-
-                {/* New comment input */}
-                <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    // Add comment logic here
-                }}
+                <div
+                    className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+                    showComments ? "opacity-50 pointer-events-auto" : "opacity-0"
+                    }`}
+                    onClick={toggleComment}
+                />
+                {/* 댓글창 */}
+                <div
+                    className={`relative bg-white rounded-t-xl w-full max-w-[750px] h-[70%] p-[20px] transform transition-transform duration-300 ${
+                    showComments ? "translate-y-0" : "translate-y-full"
+                    } pointer-events-auto`}
                 >
-                    <div className="relative w-full">
-                        <textarea
-                            ref={textareaRef}
-                            onInput={handleInput}
-                            rows={1}
-                            required
-                            className="w-full border rounded-md p-2 pr-16 text-sm resize-none overflow-hidden h-[36px] min-h-[36px] focus:outline-none"
-                            placeholder="Add a comment…"
-                        />
-                        {comment ?
-                        (
+                    <div className="h-[30px] flex items-center font-bold text-[18px] w-[98%] mx-auto mb-4">
+                        <span className="mr-1">댓글</span>
+                        <span className="text-[16px] align-middle leading-none">({commentsList.length})</span>
+                    </div>
+                    {/* Comments list */}
+                    <div className="flex-1 overflow-y-scroll h-[calc(100%-100px)] space-y-3 mb-4 w-[98%] mx-auto">
+                    {
+                        commentsList.map((comment, index) => (
+                            <div key={index} className="text-sm text-gray-700 w-full mb-[20px]">
+                                <div className="flex">
+                                    <div className="bg-gray-300 w-[35px] h-[35px] rounded-full mr-[10px]">
+                                        {/* user profile picture */}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex">
+                                            <span className="font-bold">{comment.userName}</span>
+                                            <div className="ml-[10px]" >
+                                                {getTimeAgo(comment.createdAt)}
+                                            </div>
+                                        </div>
+                                        <div className="">
+                                            {comment.text}
+                                        </div>
+                                    </div>
+                                    <div className="w-[40px]">
+                                        <img src={"/icons/commentMenu.png"} className="w-[15px] h-[15px] cursor-pointer" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    }
+                    </div>
+
+                    {/* New comment input */}
+                    <form
+                    onSubmit={handleSubmit}
+                    className="w-[calc(100%-40px)] absolute bottom-[14px]"
+                    >
+                        <div className="relative w-full">
+                            <textarea
+                                ref={textareaRef}
+                                onInput={handleInput}
+                                rows={1}
+                                required
+                                className="w-full border rounded-md p-2 pr-17 text-sm resize-none h-[36px] min-h-[36px] focus:outline-none"
+                                placeholder="댓글을 남겨주세요."
+                            />
+                            {comment ?
+                            (
                             <div>
                                 <div className="absolute right-[40px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
-                                    <X size={12} className="text-white" onClick={deleteInput} />
+                                    <X size={12} className="text-white cursor-pointer" onClick={deleteInput} />
                                 </div>
 
-                                <div className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-black flex items-center justify-center">
-                                    <ArrowUp size={12} className="text-white" onClick={()=>{console.log(comment)}} />
-                                </div>
-                            </div>
-                        ) :
-                        (
-                            <div className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 flex items-center justify-center">
+                                <button type="submit" className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-black flex items-center justify-center cursor-pointer">
                                     <ArrowUp size={12} className="text-white" />
-                                </div>
-                        )
-                        }
-                        
-                        {/*}
-                        {comment && (
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                    setComment("");
-                                    if (textareaRef.current) {
-                                        textareaRef.current.style.height = "auto"; // 높이 초기화
-                                    }
-                                    }}
-                                    className="absolute right-[40px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 text-white hover:bg-gray-300 font-bold text-[16px] flex items-center justify-center"
-                                >
-                                    <img src="/icons/cancel.png" />
                                 </button>
                             </div>
-                        )
-                        }*/}
-                    </div>
-                </form>
+                            ) :
+                            (
+                            <div className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 flex items-center justify-center">
+                                <ArrowUp size={12} className="text-white" />
+                            </div>
+                            )
+                            }
+                            
+                        </div>
+                    </form>
 
-            </div>
+                </div>
             </div>
 
 
