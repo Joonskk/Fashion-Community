@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
-import { create } from "domain";
+import { useRef } from "react";
+import { X, ArrowUp } from "lucide-react";
 
 type Post = {
     _id: string;
@@ -34,6 +35,8 @@ const PostView = () => {
 
     const { email } = useUser();
 
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
     const [post, setPost] = useState<Post | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [images, setImages] = useState<string[]>([]);
@@ -42,6 +45,8 @@ const PostView = () => {
     const [createdAt, setCreatedAt] = useState<string>("");
 
     const [liked, setLiked] = useState<boolean>(false);
+    const [showComments, setShowComments] = useState<boolean>(true);
+    const [comment, setComment] = useState<string>("");
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -80,6 +85,34 @@ const PostView = () => {
             setLiked(!likedAfterAction);
             setLikesCount(likedAfterAction ? likesCount - 1 : likesCount + 1);
         }
+    }
+
+    const toggleComment = () => {
+        setShowComments((prev)=>!prev);
+    }
+
+    const handleInput = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = "auto";
+    
+            // 최소 높이 고정 (초기 높이와 동일하게)
+            const minHeight = "36px"; // 적당한 높이 (기본 1줄)
+            textarea.style.height = minHeight;
+    
+            // 내용이 많아지면 늘어나게
+            textarea.style.height = `${textarea.scrollHeight}px`;
+
+            setComment(textarea.value);
+        }
+    };
+
+    const deleteInput = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.value = ""
+        }
+        setComment("");
     }
 
     const getTimeAgo = (dateStr: string) => {
@@ -203,7 +236,7 @@ const PostView = () => {
                     <div className="w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
                         <img src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} />
                     </div>
-                    <div className="w-[25px] h-[25px] ml-[25px]">
+                    <div className="w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
                         <img src="/icons/comment.png" />
                     </div>
                     <div className="w-[25px] h-[25px] ml-[25px]">
@@ -219,6 +252,94 @@ const PostView = () => {
                     <div className="text-gray-400">{createdAt && getTimeAgo(createdAt)}</div>
                 </div>
             </div>
+            {/* 댓글 */}
+            <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
+            <div
+                className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+                showComments ? "opacity-50 pointer-events-auto" : "opacity-0"
+                }`}
+                onClick={toggleComment}
+            />
+            {/* 댓글창 */}
+            <div
+                className={`relative bg-white rounded-t-xl w-full max-w-[750px] h-[70%] p-4 transform transition-transform duration-300 ${
+                showComments ? "translate-y-0" : "translate-y-full"
+                } pointer-events-auto`}
+            >
+                <div className="h-[30px] flex items-center font-bold text-[18px] px-2 mb-4">
+                    <span className="mr-1">댓글</span>
+                    <span className="text-[16px] align-middle leading-none">(2)</span>
+                </div>
+                {/* Comments list */}
+                <div className="space-y-3 mb-4 overflow-y-auto max-h-[calc(70%-100px)]">
+                <div className="text-sm text-gray-700">
+                    <span className="font-bold">alice</span> Love this fit!
+                </div>
+                <div className="text-sm text-gray-700">
+                    <span className="font-bold">bob</span> Where’d you get those jeans?
+                </div>
+                </div>
+
+                {/* New comment input */}
+                <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    // Add comment logic here
+                }}
+                >
+                    <div className="relative w-full">
+                        <textarea
+                            ref={textareaRef}
+                            onInput={handleInput}
+                            rows={1}
+                            required
+                            className="w-full border rounded-md p-2 pr-16 text-sm resize-none overflow-hidden h-[36px] min-h-[36px] focus:outline-none"
+                            placeholder="Add a comment…"
+                        />
+                        {comment ?
+                        (
+                            <div>
+                                <div className="absolute right-[40px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
+                                    <X size={12} className="text-white" onClick={deleteInput} />
+                                </div>
+
+                                <div className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-black flex items-center justify-center">
+                                    <ArrowUp size={12} className="text-white" onClick={()=>{console.log(comment)}} />
+                                </div>
+                            </div>
+                        ) :
+                        (
+                            <div className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 flex items-center justify-center">
+                                    <ArrowUp size={12} className="text-white" />
+                                </div>
+                        )
+                        }
+                        
+                        {/*}
+                        {comment && (
+                            <div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                    setComment("");
+                                    if (textareaRef.current) {
+                                        textareaRef.current.style.height = "auto"; // 높이 초기화
+                                    }
+                                    }}
+                                    className="absolute right-[40px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 text-white hover:bg-gray-300 font-bold text-[16px] flex items-center justify-center"
+                                >
+                                    <img src="/icons/cancel.png" />
+                                </button>
+                            </div>
+                        )
+                        }*/}
+                    </div>
+                </form>
+
+            </div>
+            </div>
+
+
         </div>
     );
 }
