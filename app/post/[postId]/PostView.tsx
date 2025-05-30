@@ -35,6 +35,11 @@ type Comment = {
     createdAt: string;
 }
 
+type Bookmark = {
+    postId: string;
+    userEmail: string;
+}
+
 const PostView = () => {
 
     const router = useRouter();
@@ -57,6 +62,12 @@ const PostView = () => {
     const [showComments, setShowComments] = useState<boolean>(false);
     const [comment, setComment] = useState<string>("");
     const [commentsList, setCommentsList] = useState<Comment[]>([]);
+    const [bookmarked, setBookmarked] = useState<boolean>(false);
+
+    const [commentId, setCommentId] = useState<string | undefined>("");
+    const [showCommentMenu, setShowCommentMenu] = useState<{[key : string] : boolean}>({});
+
+    const [editComment, setEditComment] = useState<boolean>(false);
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -99,6 +110,25 @@ const PostView = () => {
 
     const toggleComment = () => {
         setShowComments((prev)=>!prev);
+    }
+
+    const toggleBookmark = async () => {
+        try{
+            const res = await fetch('/api/post/toggle-bookmarks',{
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    postId,
+                    userEmail: email,
+                }),
+            })
+
+            const data = await res.json();
+            setBookmarked(data.bookmarked);
+        } catch(err) {
+            console.error("Failed to toggle bookmarks: ", err)
+        }
+
     }
 
     const handleInput = () => {
@@ -147,16 +177,8 @@ const PostView = () => {
             if (result.success) {
                 console.log(result);
                 if(textarea) textarea.value = "";
-
-                const newComment: Comment = {
-                    userName: name,
-                    text: comment,
-                    createdAt: "now",
-                };
-
-                console.log(newComment);
             
-                setCommentsList(prev => [...prev, newComment]);
+                setCommentsList(prev => [...prev, result.comment]);
                 setShowComments(true);
                 router.refresh();
             } else{
@@ -166,6 +188,8 @@ const PostView = () => {
         } catch(err) {
             console.error("❌ 오류 발생:", err);
             alert("업로드 중 오류가 발생했습니다.");
+        } finally {
+            router.refresh();
         }
     }
 
@@ -191,7 +215,37 @@ const PostView = () => {
 
         return `${year}.${month}.${day}`;
     };
-    
+
+    const toggleCommentMenu = (key : string | undefined) => {  
+        if(!key) return;
+
+        setShowCommentMenu((prev) => ({
+            ...prev,
+            [key]: !prev[key],
+        }));
+    }
+
+    const deleteComment = async (commentId : string | undefined) => {
+        // console.log("commentId: ", commentId);
+        try {
+            const res = await fetch(`/api/post/comments/${commentId}`,{
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                throw new Error('댓글 삭제 실패');
+            }
+
+            if (res.ok) {
+                setCommentsList((prev) => prev.filter(c => c._id !== commentId));
+                console.log('댓글 삭제 성공');
+            }
+        } catch(err) {
+            console.error('댓글 삭제 중 오류 발생:', err);
+        } finally {
+            router.refresh();
+        }
+    }
 
     useEffect(() => {
         // console.log(postId)
@@ -225,10 +279,20 @@ const PostView = () => {
                     // console.log("foundUser:", foundUser);
                     setUser(foundUser); // post 정보의 이메일과 일치하는 user 색출 후 저장
                 } else {
-                    console.error('DB 조회 실패')
+                    console.error('DB 조회 실패');
                 }
-            } catch (error) {
-                console.error('API 호출 오류:', error)
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+
+        const fetchBookmark = async () => {
+            try {
+                const response = await fetch(`/api/post/toggle-bookmarks?postId=${postId}&userEmail=${email}`);
+                const data = await response.json();
+                setBookmarked(data.bookmarked);
+            } catch(err) {
+                console.error('API 호출 오류:', err);
             }
         }
 
@@ -240,6 +304,7 @@ const PostView = () => {
             setLikesCount(post.likesCount || 0);
             setLiked(post.likes?.includes(email) ?? false); // ?? 는 좌측 값이 null / undefined 일 때 우측 값을 사용한다는 의미
             setCreatedAt(post.createdAt);
+            fetchBookmark();
         }
     }, [post])  // post가 변경될 때마다 실행
 
@@ -250,7 +315,7 @@ const PostView = () => {
                 if(res.ok) {
                     const data = await res.json();
                     const foundComments: Comment[] = data.comments.filter((comment: Comment) => comment.postId === postId);
-                    console.log(foundComments);
+                    // console.log(foundComments);
                     if(foundComments){
                         setCommentsList(foundComments);
                     } else{
@@ -321,8 +386,8 @@ const PostView = () => {
                     <div className="w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
                         <img src="/icons/comment.png" />
                     </div>
-                    <div className="w-[25px] h-[25px] ml-[25px]">
-                        <img src="/icons/bookmark-unclicked.png" />
+                    <div className="w-[25px] h-[25px] ml-[25px]  cursor-pointer" onClick={toggleBookmark}>
+                        <img src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} />
                     </div>
                 </div>
                 <div className="ml-[20px] font-bold text-[15px]">
@@ -334,13 +399,19 @@ const PostView = () => {
                     <div className="text-gray-400">{createdAt && getTimeAgo(createdAt)}</div>
                 </div>
             </div>
+
+
+
             {/* 댓글 */}
             <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
                 <div
                     className={`absolute inset-0 bg-black transition-opacity duration-300 ${
                     showComments ? "opacity-50 pointer-events-auto" : "opacity-0"
                     }`}
-                    onClick={toggleComment}
+                    onClick={() => {
+                        toggleComment();
+                        toggleCommentMenu(commentId);
+                    }}
                 />
                 {/* 댓글창 */}
                 <div
@@ -372,8 +443,33 @@ const PostView = () => {
                                             {comment.text}
                                         </div>
                                     </div>
-                                    <div className="w-[40px]">
-                                        <img src={"/icons/commentMenu.png"} className="w-[15px] h-[15px] cursor-pointer" />
+                                    <div className="w-[40px] relative">
+                                        { comment.userEmail === email &&
+                                        <img 
+                                        src={"/icons/commentMenu.png"}
+                                        className={`w-[15px] h-[15px] cursor-pointer hover:opacity-100 ${showCommentMenu[comment._id ?? ""] ? "opacity-100" : "opacity-50"}`} 
+                                        onClick={() => {
+                                            toggleCommentMenu(comment._id)
+                                            setCommentId(comment._id)
+                                        }}
+                                        />
+                                        }
+                                        { showCommentMenu[comment._id ?? ""] &&
+                                        <div className="absolute right-[10px] z-5 w-[45px] h-[60px] flex flex-col justify-center items-center bg-white border border-gray-300 rounded text-[12px]">
+                                            <button 
+                                            className="cursor-pointer w-full h-full hover:bg-gray-200 duration-200"
+                                            onClick={()=>{setEditComment(true)}}
+                                            >
+                                                수정
+                                            </button>
+                                            <button
+                                            className="cursor-pointer w-full h-full hover:bg-gray-200 duration-200"
+                                            onClick={()=>{deleteComment(comment._id)}}
+                                            >
+                                                삭제
+                                            </button>
+                                        </div>
+                                        }
                                     </div>
                                 </div>
                             </div>

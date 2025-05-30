@@ -1,5 +1,15 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+
+type Comment = {
+    _id?: ObjectId;
+    postId: string;
+    userEmail: string;
+    userName: string;
+    text: string;
+    createdAt: Date;
+  }
 
 export async function POST(req: Request){
 
@@ -8,14 +18,19 @@ export async function POST(req: Request){
 
     try {
         const db = (await clientPromise).db('wearly');
-        await db.collection('comments').insertOne({
+        const newComment : Comment = {
             postId,
             userEmail,
             userName,
             text,
             createdAt: new Date(),
-        })
-        return NextResponse.json({ success: true });
+        };
+
+        const result = await db.collection('comments').insertOne(newComment);
+
+        newComment._id = result.insertedId;
+
+        return NextResponse.json({ success: true, comment: newComment });
     } catch(err) {
         console.error('DB 저장 중 에러:', err)
         return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
