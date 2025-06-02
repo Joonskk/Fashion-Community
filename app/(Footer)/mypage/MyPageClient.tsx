@@ -32,6 +32,12 @@ const MyPageClient = () => {
     const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
     const [myPost, setMyPost] = useState<Post[]>([]);
 
+    const handleClick = () => {
+        if (!userData) return;
+        const query = new URLSearchParams(userData).toString();
+        router.push(`/mypage/edit?${query}`);
+    }
+
     useEffect(() => {
         if (!session || !email) return; // 로그인 안돼있으면 바로 return
 
@@ -109,7 +115,7 @@ const MyPageClient = () => {
                                     <h2 className="ml-[20px]">Following</h2>
                                 </div>
                                 <div className="flex mt-[10px]">
-                                    <Link href="/mypage/edit" className="mr-[20px]">Edit Profile</Link>
+                                    <button onClick={handleClick} className="mr-[20px]">Edit Profile</button>
                                     <LogoutButton />
                                 </div>
                             </div>

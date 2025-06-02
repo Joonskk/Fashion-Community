@@ -1,16 +1,36 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
+
+type User = {
+  name: string;
+  height: string;
+  weight: string;
+  email: string;
+};
 
 const Edit = () => {
 
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+
   const [name, setName] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
+
+  useEffect(() => {
+    const nameParam = searchParams.get('name');
+    const heightParam = searchParams.get('height');
+    const weightParam = searchParams.get('weight');
+  
+    if (nameParam !== null) setName(nameParam);
+    if (heightParam !== null) setHeight(heightParam);
+    if (weightParam !== null) setWeight(weightParam);
+  }, [searchParams]);  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,25 +57,28 @@ const Edit = () => {
 
   return (
     <div className="p-20">
-      <h4>프로필 편집</h4>
+      <h4 className="mb-[10px]">프로필 편집</h4>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
         <input
           name="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="이름"
+          className="border-l-[2px] border-gray-300 pl-[10px] mb-[5px] focus:outline-none"
         />
         <input
           name="height"
           value={height}
           onChange={(e) => setHeight(e.target.value)}
           placeholder="키(cm)"
+          className="border-l-[2px] border-gray-300 pl-[10px] mb-[5px] focus:outline-none"
         />
         <input
           name="weight"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
           placeholder="몸무게(kg)"
+          className="border-l-[2px] border-gray-300 pl-[10px] mb-[5px] focus:outline-none"
         />
         <div className="w-full flex justify-center">
           <div className="flex text-center w-[70px] h-[30px] mr-[10px]">
