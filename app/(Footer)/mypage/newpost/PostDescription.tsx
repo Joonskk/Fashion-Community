@@ -6,10 +6,11 @@ import Link from 'next/link';
 const PostDescription = ({ images } : {images : File[]}) => {
     
     const router = useRouter();
-    const { email, name, session } = useUser();
+    const { email } = useUser();
     
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [description, setDescription] = useState("");
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
+    const [description, setDescription] = useState<string>("");
+    const [isPosting, setIsPosting] = useState<boolean>(false);
 
     const prevImage = () => {
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -21,6 +22,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
 
     const handleSubmit = async (e : React.FormEvent) => {
         e.preventDefault();
+        setIsPosting(true);
 
         try {
             const imageURLs: string[] = [];
@@ -92,10 +94,27 @@ const PostDescription = ({ images } : {images : File[]}) => {
             </div>
             <form onSubmit={handleSubmit} className="flex justify-center mx-auto" >
                 <div className="flex text-center w-[70px] h-[30px] mr-[10px]">
-                    <Link href="/mypage" className="cursor-pointer w-full h-full flex justify-center items-center border rounded-sm">Cancel</Link>
+                {isPosting ? (
+                <div className="w-full h-full flex justify-center items-center border rounded-sm bg-gray-200 text-gray-400 cursor-not-allowed">
+                    Cancel
                 </div>
-                <button type="submit" className="cursor-pointer bg-black text-white w-[50px] h-[30px] border rounded-md">
-                    Post
+                ) : (
+                <Link
+                    href="/mypage"
+                    className="cursor-pointer w-full h-full flex justify-center items-center border rounded-sm hover:bg-gray-100"
+                >
+                    Cancel
+                </Link>
+                )}
+                </div>
+                <button
+                type="submit"
+                disabled={isPosting}
+                className={`w-[70px] h-[30px] border rounded-md flex items-center justify-center
+                    ${isPosting ? 'bg-gray-200 text-white cursor-not-allowed' : 'bg-black text-white hover:bg-opacity-80 cursor-pointer'}
+                `}
+                >
+                    {isPosting ? 'Posting...' : 'Post'}
                 </button>
             </form>
         </div>
