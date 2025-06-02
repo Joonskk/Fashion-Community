@@ -62,12 +62,11 @@ const PostView = () => {
     const [showComments, setShowComments] = useState<boolean>(false);
     const [comment, setComment] = useState<string>("");
     const [commentsList, setCommentsList] = useState<Comment[]>([]);
+    const [isEditingComment, setIsEditingComment] = useState<boolean>(false);
     const [bookmarked, setBookmarked] = useState<boolean>(false);
 
     const [commentId, setCommentId] = useState<string | undefined>("");
     const [showCommentMenu, setShowCommentMenu] = useState<{[key : string] : boolean}>({});
-
-    const [editComment, setEditComment] = useState<boolean>(false);
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -193,6 +192,46 @@ const PostView = () => {
         }
     }
 
+    const handleEditSubmit = async (e : React.FormEvent) => {
+        e.preventDefault();
+        const textarea = textareaRef.current;
+
+        try {
+            const res = await fetch(`/api/post/comments/${commentId}`,{
+                method: "PATCH",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: comment }),
+            });
+
+            const result = await res.json();
+            console.log("✅ DB 저장 성공:", result);
+
+            if(res.ok) {
+                if(textarea) textarea.value = "";
+                const editedCommentWithInfo : Comment = {
+                    _id: commentId,
+                    postId,
+                    userEmail: email,
+                    userName: name,
+                    text: comment,
+                    createdAt: "now",
+                };
+            
+                setCommentsList(prev => prev.map(comment => comment._id === editedCommentWithInfo._id ? editedCommentWithInfo : comment));
+                setShowComments(true);
+                router.refresh();
+            } else{
+                console.log("실패")
+            }
+
+        } catch(err) {
+            console.error('댓글 수정 중 오류 발생:', err);
+        } finally {
+            setIsEditingComment(false);
+            router.refresh();
+        }
+    }
+
     const getTimeAgo = (dateStr: string) => {
         if(dateStr === "now") return "방금 전";
 
@@ -245,6 +284,20 @@ const PostView = () => {
         } finally {
             router.refresh();
         }
+    }
+
+    const clickEdit = (commentId : string | undefined, originalText : string) => {
+        toggleCommentMenu(commentId);
+        setIsEditingComment(true);
+
+        const textarea = textareaRef.current;
+        if(textarea){
+            textarea.focus();
+            textarea.value = originalText;
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+
     }
 
     useEffect(() => {
@@ -458,7 +511,7 @@ const PostView = () => {
                                         <div className="absolute right-[10px] z-5 w-[45px] h-[60px] flex flex-col justify-center items-center bg-white border border-gray-300 rounded text-[12px]">
                                             <button 
                                             className="cursor-pointer w-full h-full hover:bg-gray-200 duration-200"
-                                            onClick={()=>{setEditComment(true)}}
+                                            onClick={()=>{clickEdit(comment._id, comment.text)}}
                                             >
                                                 수정
                                             </button>
@@ -479,7 +532,7 @@ const PostView = () => {
 
                     {/* New comment input */}
                     <form
-                    onSubmit={handleSubmit}
+                    onSubmit={isEditingComment ? handleEditSubmit : handleSubmit}
                     className="w-[calc(100%-40px)] absolute bottom-[14px]"
                     >
                         <div className="relative w-full">
