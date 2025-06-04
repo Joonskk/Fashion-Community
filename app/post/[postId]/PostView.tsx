@@ -35,11 +35,6 @@ type Comment = {
     createdAt: string;
 }
 
-type Bookmark = {
-    postId: string;
-    userEmail: string;
-}
-
 const PostView = () => {
 
     const router = useRouter();
@@ -118,6 +113,7 @@ const PostView = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     postId,
+                    imageURLs: post?.imageURLs,
                     userEmail: email,
                 }),
             })
@@ -396,9 +392,11 @@ const PostView = () => {
 
     return (
         <div className="flex flex-col w-full relative mb-[60px]">
-            <Link href="/" className="mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
+            <button 
+            onClick={() => router.back()}
+            className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
                 <img src="/icons/BackArrow.png" className="w-[30px] h-[30px]" />
-            </Link>
+            </button>
             <div className=""> {/* 게시물 div */}
                 <div className="w-full h-[60px] flex items-center"> {/* 유저 정보 */}
                     <img src="/profile-default.png" className="rounded-full w-[36px] h-[36px] m-[10px] cursor-pointer" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
