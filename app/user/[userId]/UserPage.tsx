@@ -35,6 +35,27 @@ const UserPage = () => {
 
     const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
     const [userPost, setUserPost] = useState<Post[]>([]);
+    const [isFollowed, setIsFollowed] = useState<boolean>(false);
+
+    const handleFollow = async () => {
+        console.log("handleFollow executed")
+        try {
+            const res = await fetch('/api/follow', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionUserEmail: email,
+                    postAuthorEmail: userData?.email,
+                })
+            })
+
+            const data = await res.json();
+            console.log("✅ DB 저장 성공:", data);
+            setIsFollowed(data.isFollowing);
+        } catch(err) {
+            console.error("팔로우 중 오류 발생: ", err)
+        }
+    }
 
     useEffect(() => {
         if (!session) return; // 로그인 안돼있으면 바로 return
@@ -88,6 +109,25 @@ const UserPage = () => {
         posts();
     },[session, userData])
 
+    useEffect(() => { // 팔로우 여부
+        if (!email || !userData) return;
+
+        const fetchFollow = async () => {
+            try {
+                const res = await fetch(`/api/follow?sessionUserEmail=${email}&postAuthorEmail=${userData.email}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    setIsFollowed(data.isFollowing);
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+        
+        fetchFollow();
+    }, [userData, email])
+    
+
     return (
         <div className="h-screen">
             {session ? (
@@ -109,14 +149,17 @@ const UserPage = () => {
                                 <div className="text-gray-400 mt-[30px]">정보를 불러오는 중...</div>
                             )}
                                 <div className="flex text-[15px] mt-[10px]">
-                                    <h2>Follower</h2>
-                                    <h2 className="ml-[20px]">Following</h2>
+                                    <h2>팔로워</h2>
+                                    <h2 className="ml-[20px]">팔로잉</h2>
                                 </div>
                             </div>
                         </div>
                         <div className="follow-button">
-                            <button className="bg-black text-white text-[15px] px-[5px] py-[1px] rounded-[10px] mt-[100px] mr-[50px]">
-                                Follow
+                            <button 
+                            className={`mt-[100px] mr-[50px] cursor-pointer ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
+                            onClick={handleFollow}
+                            > {/* 팔로우 버튼 */}
+                                {isFollowed ? "팔로잉" :"팔로우"}
                             </button>
                         </div>
                     </div>
