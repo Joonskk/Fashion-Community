@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -24,6 +23,8 @@ type User = {
     height?: string;
     weight?: string;
     email?: string;
+    following?: string[];
+    follower?: string[];
 }
 
 type Comment = {
@@ -59,6 +60,7 @@ const PostView = () => {
     const [commentsList, setCommentsList] = useState<Comment[]>([]);
     const [isEditingComment, setIsEditingComment] = useState<boolean>(false);
     const [bookmarked, setBookmarked] = useState<boolean>(false);
+    const [isFollowed, setIsFollowed] = useState<boolean>(false);
 
     const [commentId, setCommentId] = useState<string | undefined>("");
     const [showCommentMenu, setShowCommentMenu] = useState<{[key : string] : boolean}>({});
@@ -296,6 +298,26 @@ const PostView = () => {
 
     }
 
+    const handleFollow = async () => {
+        console.log("handleFollow executed")
+        try {
+            const res = await fetch('/api/follow', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionUserEmail: email,
+                    postAuthorEmail: post?.userEmail,
+                })
+            })
+
+            const data = await res.json();
+            console.log("✅ DB 저장 성공:", data);
+            setIsFollowed(data.isFollowing);
+        } catch(err) {
+            console.error("팔로우 중 오류 발생: ", err)
+        }
+    }
+
     useEffect(() => {
         // console.log(postId)
         const fetchPost = async () => {
@@ -319,7 +341,7 @@ const PostView = () => {
     }, [postId])  // postId가 변경될 때마다 실행
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchUser = async () => { // 게시물 작성자 색출
             try {
                 const response = await fetch('/api/post/edit-profile');
                 if(response.ok){
@@ -335,7 +357,7 @@ const PostView = () => {
             }
         }
 
-        const fetchBookmark = async () => {
+        const fetchBookmark = async () => { // 북마크 여부
             try {
                 const response = await fetch(`/api/post/toggle-bookmarks?postId=${postId}&userEmail=${email}`);
                 const data = await response.json();
@@ -357,7 +379,7 @@ const PostView = () => {
         }
     }, [post])  // post가 변경될 때마다 실행
 
-    useEffect(() => {
+    useEffect(() => { // 댓글 불러오기
         const fetchComment = async () => {
             try {
                 const res = await fetch('/api/post/comments');
@@ -379,16 +401,23 @@ const PostView = () => {
         fetchComment();
     }, [])
 
-{/*
-    useEffect(()=>{
-        console.log(images);
-    }, [images])
+    useEffect(() => { // 팔로우 여부
+        if (!email || !post?.userEmail) return;
 
-    useEffect(()=>{
-        console.log("liked: ",liked);
-        console.log("likesCount: ", likesCount);
-    }, [liked])
-*/}
+        const fetchFollow = async () => {
+            try {
+                const res = await fetch(`/api/follow?sessionUserEmail=${email}&postAuthorEmail=${post?.userEmail}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    setIsFollowed(data.isFollowing);
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+        
+        fetchFollow();
+    }, [post, email])
 
     return (
         <div className="flex flex-col w-full relative mb-[60px]">
@@ -412,9 +441,12 @@ const PostView = () => {
                         user?.email === email ?
                         <></>
                         :
-                        <div className="ml-auto mr-[10px] cursor-pointer bg-sky-500 font-bold text-white text-[13px] px-[10px] py-[7px] rounded-lg" > {/* 팔로우 버튼 */}
-                            팔로우
-                        </div>
+                        <button 
+                        className={`ml-auto mr-[10px] cursor-pointer ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
+                        onClick={handleFollow}
+                        > {/* 팔로우 버튼 */}
+                            {isFollowed ? "팔로잉" :"팔로우"}
+                        </button>
                     }
                 </div>
                 <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center"> {/* 사진 */}

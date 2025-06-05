@@ -13,6 +13,9 @@ export async function POST(req: Request) {
   const height = formData.get("height") as string;
   const weight = formData.get("weight") as string;
 
+  const followers: string[] = [];
+  const following: string[] = [];
+
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
   }
@@ -30,7 +33,9 @@ export async function POST(req: Request) {
         name,
         height,
         weight,
-        email
+        email,
+        followers,
+        following
       })
       return NextResponse.redirect(new URL('/mypage', req.url))
     } catch (error) {
