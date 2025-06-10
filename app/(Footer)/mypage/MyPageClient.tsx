@@ -9,10 +9,13 @@ import LoginButton from '@/app/components/LoginButton';
 import StyleCard from "@/app/components/StyleCard";
 
 type User = {
+    _id: string;
     name: string;
     height: string;
     weight: string;
     email: string;
+    followersCount: number;
+    followingCount: number;
 }
 
 type Post = {
@@ -29,12 +32,21 @@ const MyPageClient = () => {
 
     const { email, session } = useUser();
 
-    const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
+    const [userData, setUserData] = useState<{ _id: string, name: string, height: string, weight: string, email: string, followersCount: number, followingCount: number } | null>(null)
     const [myPost, setMyPost] = useState<Post[]>([]);
+    const userId = userData?._id;
 
     const handleClick = () => {
         if (!userData) return;
-        const query = new URLSearchParams(userData).toString();
+        const query = new URLSearchParams({
+            _id: userData._id,
+            name: userData.name,
+            height: userData.height,
+            weight: userData.weight,
+            email: userData.email,
+            followersCount: userData.followersCount.toString(),
+            followingCount: userData.followingCount.toString(),
+        }).toString();
         router.push(`/mypage/edit?${query}`);
     }
 
@@ -111,8 +123,14 @@ const MyPageClient = () => {
                                 <div className="text-gray-400 mt-[30px]">정보를 불러오는 중...</div>
                             )}
                                 <div className="flex text-[15px] mt-[10px]">
-                                    <h2>Follower</h2>
-                                    <h2 className="ml-[20px]">Following</h2>
+                                <div className="flex items-center">
+                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=followers`)} className="cursor-pointer">팔로워</button>
+                                        <h2 className="ml-[6px]">{userData?.followersCount}</h2>
+                                    </div>
+                                    <div className="flex items-center ml-[20px]">
+                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=following`)} className="cursor-pointer">팔로잉</button>
+                                        <h2 className="ml-[6px]">{userData?.followingCount}</h2>
+                                    </div>
                                 </div>
                                 <div className="flex mt-[10px]">
                                     <button onClick={handleClick} className="mr-[20px]">Edit Profile</button>

@@ -25,22 +25,34 @@ export async function POST(req: NextRequest){
         if (isFollowing) { // 언팔로우 처리
             await db.collection("users").updateOne(
               { email: sessionUserEmail },
-              { $pull: { following: postAuthorEmail } }
+              {
+                $pull: { following: postAuthorEmail },
+                $inc: { followingCount: -1 },
+              }
             );
       
             await db.collection("users").updateOne(
               { email: postAuthorEmail },
-              { $pull: { followers: sessionUserEmail } }
+              { 
+                $pull: { followers: sessionUserEmail },
+                $inc: { followersCount: -1 },
+              }
             );
         } else { // 팔로우 처리
             await db.collection("users").updateOne(
               { email: sessionUserEmail },
-              { $addToSet: { following: postAuthorEmail } }
+              { 
+                $addToSet: { following: postAuthorEmail },
+                $inc: { followingCount: 1 },
+              }
             );
       
             await db.collection("users").updateOne(
               { email: postAuthorEmail },
-              { $addToSet: { followers: sessionUserEmail } }
+              { 
+                $addToSet: { followers: sessionUserEmail },
+                $inc: { followersCount: 1 },
+              }
             );
         }
 

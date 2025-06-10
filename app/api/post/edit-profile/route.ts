@@ -15,6 +15,8 @@ export async function POST(req: Request) {
 
   const followers: string[] = [];
   const following: string[] = [];
+  const followersCount: number = 0;
+  const followingCount: number = 0;
 
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
@@ -35,7 +37,9 @@ export async function POST(req: Request) {
         weight,
         email,
         followers,
-        following
+        following,
+        followersCount,
+        followingCount,
       })
       return NextResponse.redirect(new URL('/mypage', req.url))
     } catch (error) {
@@ -51,7 +55,7 @@ export async function GET() {
     const db = client.db('wearly')
 
     const users = await db.collection('users').find({}, {
-      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1 } // _id 포함해서 필요한 필드 가져옴
+      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1, followersCount: 1, followingCount: 1 } // _id 포함해서 필요한 필드 가져옴
     }).toArray()
 
     return NextResponse.json({ users })

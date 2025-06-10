@@ -13,6 +13,8 @@ type User = {
     height: string;
     weight: string;
     email: string;
+    followersCount: number;
+    followingCount: number;
 }
 
 type Post = {
@@ -33,7 +35,7 @@ const UserPage = () => {
 
     const { email, session } = useUser();
 
-    const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string } | null>(null)
+    const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string, followersCount: number, followingCount: number } | null>(null)
     const [userPost, setUserPost] = useState<Post[]>([]);
     const [isFollowed, setIsFollowed] = useState<boolean>(false);
 
@@ -51,7 +53,22 @@ const UserPage = () => {
 
             const data = await res.json();
             console.log("✅ DB 저장 성공:", data);
-            setIsFollowed(data.isFollowing);
+
+            const updatedFollowed = data.isFollowing;
+            setIsFollowed(updatedFollowed);
+
+            setUserData(prev => {
+                if(!prev) return prev;
+
+                const newFollowersCount = updatedFollowed
+                ? prev.followersCount + 1
+                : prev.followersCount - 1;
+
+                return {
+                    ...prev,
+                    followersCount: Math.max(0, newFollowersCount), // 음수 방지
+                };
+            })
         } catch(err) {
             console.error("팔로우 중 오류 발생: ", err)
         }
@@ -149,8 +166,14 @@ const UserPage = () => {
                                 <div className="text-gray-400 mt-[30px]">정보를 불러오는 중...</div>
                             )}
                                 <div className="flex text-[15px] mt-[10px]">
-                                    <h2>팔로워</h2>
-                                    <h2 className="ml-[20px]">팔로잉</h2>
+                                    <div className="flex items-center">
+                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=followers`)} className="cursor-pointer">팔로워</button>
+                                        <h2 className="ml-[6px]">{userData?.followersCount}</h2>
+                                    </div>
+                                    <div className="flex items-center ml-[20px]">
+                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=following`)} className="cursor-pointer">팔로잉</button>
+                                        <h2 className="ml-[6px]">{userData?.followingCount}</h2>
+                                    </div>
                                 </div>
                             </div>
                         </div>
