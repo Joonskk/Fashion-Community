@@ -9,7 +9,6 @@ import { useUser } from '@/app/context/UserContext';
 
 type Post = {
   _id: string;
-  postId: string;
   imageURLs: string[];
   userEmail: string;
 };
@@ -37,14 +36,13 @@ const Bookmark = () => {
 
     const fetchBookmarks = async () => {
       try {
-        const response = await fetch('/api/posts/bookmarks');
+        const response = await fetch('/api/posts/bookmarks', {
+          headers: { 'user-email' : email}
+        });
         if (response.ok) {
           const data = await response.json();
-          const bookmarkedPosts: Post[] = data.bookmarkedPosts.filter(
-            (post: Post) => post.userEmail === email
-          );
-          setBookmarks(bookmarkedPosts);
-          if (tab === 'bookmark') setPosts(bookmarkedPosts);
+          setBookmarks(data.bookmarkedPosts);
+          if (tab === 'bookmark') setPosts(data.bookmarkedPosts);
         } else {
           console.error('DB 조회 실패');
         }
@@ -97,7 +95,7 @@ const Bookmark = () => {
         <div className="flex flex-wrap mt-4">
           {posts.map((post, index) => (
             <div key={index} className="w-1/2 md:w-1/3">
-              <StyleCard postImageURL={post.imageURLs[0]} postID={post.postId} />
+              <StyleCard postImageURL={post.imageURLs[0]} postID={post._id} />
             </div>
           ))}
         </div>

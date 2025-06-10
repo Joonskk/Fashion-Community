@@ -16,11 +16,11 @@ export async function GET(req: NextRequest) {
         {
             projection: { _id: 1, imageURLs: 1 }
         }
-    ).toArray();
+    ).sort({ createdAt: -1 }).toArray();
 
     // _id를 postId로 변경
     const likedPosts = likedPostsRaw.map(post => ({
-        postId: post._id,
+        _id: post._id,
         imageURLs: post.imageURLs,
     }));
   

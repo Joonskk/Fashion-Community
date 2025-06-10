@@ -9,7 +9,7 @@ export async function GET() {
 
     const posts = await db.collection('posts').find({}, {
         projection: { _id: 1, userEmail: 1, imageURLs: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
-    }).toArray()
+    }).sort({ createdAt: -1 }).toArray()
   
     return NextResponse.json({ posts })
 }
