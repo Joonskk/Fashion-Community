@@ -19,7 +19,7 @@ const Recommend = () => {
     useEffect(() => {
         const posts = async () => {
             try {
-                const response = await fetch('/api/posts');
+                const response = await fetch('/api/posts?sort=newest');
                 if (response.ok) {
                     const data = await response.json()
                     console.log("post data: ", data)
