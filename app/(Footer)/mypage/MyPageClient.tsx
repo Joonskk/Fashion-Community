@@ -146,9 +146,12 @@ const MyPageClient = () => {
                         >
                             +
                         </Link>
-                        <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
+                        <Link
+                        href="/mypage/settings"
+                        className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150"
+                        >
                             <img src="/icons/Menu.png" className="w-[25px] h-[25px]" />
-                        </div>
+                        </Link>
                     </div>
                     <div className="mb-[60px]">
                         <div className="flex flex-wrap">

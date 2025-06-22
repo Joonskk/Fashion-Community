@@ -68,9 +68,11 @@ const PostDescription = ({ images } : {images : File[]}) => {
     return (
         <div className="flex flex-col w-full relative">
             <div>
-                <Link href="/mypage">
-                    <img src="/icons/BackArrow.png" className="absolute top-6 left-6 w-[20px] h-[20px]" />
-                </Link>
+                <button 
+                onClick={() => router.push("/mypage")}
+                className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
+                    <img src="/icons/BackArrow.png" className="w-[30px] h-[30px]" />
+                </button>
             </div>
             <div className="relative w-[300px] h-[400px] mx-auto flex items-center justify-center mt-[20px]">
                 <img
