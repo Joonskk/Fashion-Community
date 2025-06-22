@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter} from "next/navigation";
+import Image from "next/image";
 
 const Settings = () => {
     const router = useRouter();
@@ -10,7 +11,7 @@ const Settings = () => {
             <button 
             onClick={() => router.back()}
             className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
-                <img src="/icons/BackArrow.png" className="w-[30px] h-[30px]" />
+                <Image src="/icons/BackArrow.png" alt="Back Arrow" className="w-[30px] h-[30px]" />
             </button>
         </div>
     )

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from "@/app/context/UserContext";
 import LoginButton from '@/app/components/LoginButton';
 import StyleCard from "@/app/components/StyleCard";
+import Image from 'next/image';
 
 type User = {
     _id: string;
@@ -101,7 +102,7 @@ const UserPage = () => {
         }
         
         fetchUserData()
-    }, [session, email, router])
+    }, [session, email, router, userId])
 
     useEffect(() => {
         if (!session || !userData) return;
@@ -151,7 +152,7 @@ const UserPage = () => {
                 <div className="flex flex-col">
                     <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
                         <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
-                            <img src="/profile-default.png" className="w-[150px] h-[150px] rounded-full" />
+                            <Image src="/profile-default.png" width={150} height={150} alt="User Profile Image" className="rounded-full" />
                             <div className="ml-[50px]">
                             {userData ? (
                                 <>
@@ -188,7 +189,7 @@ const UserPage = () => {
                     </div>
                     <div className="flex absolute top-4 right-4">
                         <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
-                            <img src="/icons/Option.png" className="w-[25px] h-[25px]" />
+                            <Image src="/icons/Option.png" width={25} height={25} alt="Option Icon" />
                         </div>
                     </div>
                     <div className="mb-[60px]">

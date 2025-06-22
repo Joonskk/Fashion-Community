@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 type TabType = "bookmark" | "likes";
 
@@ -11,7 +12,6 @@ type BookmarkNavbarProps = {
 };
 
 const BookmarkNavbar = ({ tab, setTab }: BookmarkNavbarProps) => {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const currentTab = (searchParams.get("tab") as TabType) || tab;
@@ -26,7 +26,7 @@ const BookmarkNavbar = ({ tab, setTab }: BookmarkNavbarProps) => {
       <div className="my-4 flex justify-between items-center">
         <Link href="/">Wearly</Link>
         <Link href="/">
-          <img src="/icons/Notification.png" className="w-[25px] h-[25px]" />
+          <Image src="/icons/Notification.png" width={25} height={25} alt="Notification Icon" />
         </Link>
       </div>
       <div className="flex text-base">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const Footer = () => {
     const pathname = usePathname();
@@ -25,14 +26,14 @@ const Footer = () => {
                     isActive ?
                     <Link href={item.href} className="w-1/4 h-[60px] flex items-center justify-center" key={item.key}>
                         <div className="flex flex-col items-center">
-                            <img src={item.selectedIcon} className="w-[18px]" />
+                            <Image src={item.selectedIcon} width={18} height={18} alt="Selected Footer Icons" />
                             <p className="mt-1 text-[11px] font-bold">{item.label}</p>
                         </div>
                     </Link>
                         :
                     <Link href={item.href} className="w-1/4 h-[60px] flex items-center justify-center" key={item.key}>    
                         <div className="flex flex-col items-center">
-                            <img src={item.icon} className="w-[18px]" />
+                            <Image src={item.icon} width={18} height={18} alt="Unselected Footer Icons" />
                             <p className="mt-1 text-[11px]">{item.label}</p>
                         </div>
                     </Link>

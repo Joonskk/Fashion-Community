@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext'
 import Link from 'next/link';
+import Image from 'next/image';
 
 const PostDescription = ({ images } : {images : File[]}) => {
     
@@ -71,14 +72,15 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 <button 
                 onClick={() => router.push("/mypage")}
                 className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
-                    <img src="/icons/BackArrow.png" className="w-[30px] h-[30px]" />
+                    <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow" />
                 </button>
             </div>
             <div className="relative w-[300px] h-[400px] mx-auto flex items-center justify-center mt-[20px]">
-                <img
+                <Image
                     src={URL.createObjectURL(images[currentIndex])}
+                    fill
                     alt={`Preview ${currentIndex}`}
-                    className="w-full h-full object-cover rounded-lg shadow-lg"
+                    className="object-cover rounded-lg shadow-lg"
                 />
                 <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
                     ◀

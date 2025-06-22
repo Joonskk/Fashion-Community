@@ -17,7 +17,6 @@ export const SessionProviderWrapper = ({
 
 const UserContextProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();
-  const user = session?.user;
 
   return (
     <UserContext.Provider

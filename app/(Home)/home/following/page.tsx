@@ -39,7 +39,7 @@ const Following = () => {
         }
 
         posts();
-    },[])
+    },[email])
 
     return (
         <div className="mt-[88px] mb-[100px]">

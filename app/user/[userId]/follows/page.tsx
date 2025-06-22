@@ -2,6 +2,7 @@
 
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 type User = {
     _id: string;
@@ -22,8 +23,6 @@ const Follows = () => {
     const [userName, setUserName] = useState<string>("");
     const [followers, setFollowers] = useState<User[]>([]);
     const [following, setFollowing] = useState<User[]>([]);
-    const [followersCount, setFollowersCount] = useState<number>(0);
-    const [followingCount, setFollowingCount] = useState<number>(0);
 
     useEffect(() => {
         if(!userId) return;
@@ -36,8 +35,6 @@ const Follows = () => {
                     setUserName(data.userName);
                     setFollowers(data.followers);
                     setFollowing(data.following);
-                    setFollowersCount(data.followersCount);
-                    setFollowingCount(data.followingCount);
                 }
             } catch(err) {
                 console.error('API 호출 오류:', err);
@@ -53,7 +50,7 @@ const Follows = () => {
                 <button 
                 onClick={() => router.back()}
                 className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] z-[1] flex justify-center items-center">
-                    <img src="/icons/BackArrow.png" className="w-[30px] h-[30px]" />
+                    <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow Icon" />
                 </button>
                 <div className="absolute w-full flex justify-center items-center h-[30px] mt-[20px]">
                     <h1 className="font-bold">{userName}</h1>

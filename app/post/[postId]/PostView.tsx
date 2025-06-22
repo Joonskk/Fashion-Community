@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import { useRef } from "react";
 import { X, ArrowUp } from "lucide-react";
+import Image from "next/image";
 
 type Post = {
     _id: string;
@@ -50,7 +51,6 @@ const PostView = () => {
     const [post, setPost] = useState<Post | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [images, setImages] = useState<string[]>([]);
-    const [likes, setLikes] = useState<string[]>([]);
     const [likesCount, setLikesCount] = useState<number>(0);
     const [createdAt, setCreatedAt] = useState<string>("");
 
@@ -371,13 +371,12 @@ const PostView = () => {
             console.log(post);
             fetchUser();
             setImages(post.imageURLs);
-            setLikes(post.likes || []);
             setLikesCount(post.likesCount || 0);
             setLiked(post.likes?.includes(email) ?? false); // ?? 는 좌측 값이 null / undefined 일 때 우측 값을 사용한다는 의미
             setCreatedAt(post.createdAt);
             fetchBookmark();
         }
-    }, [post])  // post가 변경될 때마다 실행
+    }, [post, email, postId])  // post가 변경될 때마다 실행
 
     useEffect(() => { // 댓글 불러오기
         const fetchComment = async () => {
@@ -399,7 +398,7 @@ const PostView = () => {
         }
 
         fetchComment();
-    }, [])
+    }, [email, postId])
 
     useEffect(() => { // 팔로우 여부
         if (!email || !post?.userEmail) return;
@@ -417,18 +416,18 @@ const PostView = () => {
         }
         
         fetchFollow();
-    }, [post, email])
+    }, [post, email, postId])
 
     return (
         <div className="flex flex-col w-full relative mb-[60px]">
             <button 
             onClick={() => router.back()}
             className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
-                <img src="/icons/BackArrow.png" className="w-[30px] h-[30px]" />
+                <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow" />
             </button>
             <div className=""> {/* 게시물 div */}
                 <div className="w-full h-[60px] flex items-center"> {/* 유저 정보 */}
-                    <img src="/profile-default.png" className="rounded-full w-[36px] h-[36px] m-[10px] cursor-pointer" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
+                    <Image src="/profile-default.png" width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] cursor-pointer" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
                     <div> {/* 유저 아이디, 키, 몸무게 */}
                         <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
                             {user?.name}
@@ -450,11 +449,16 @@ const PostView = () => {
                     }
                 </div>
                 <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center"> {/* 사진 */}
-                    <img
+                    {images[currentIndex] ? (
+                    <Image
                         src={images[currentIndex]}
+                        fill
                         alt={`Preview ${currentIndex}`}
                         className="w-full h-full object-cover"
                     />
+                    ) : (
+                        <div>이미지가 없습니다</div> // 혹은 로딩 스피너, 플레이스홀더 이미지 등
+                    )}
                     <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
                         ◀
                     </button>
@@ -464,13 +468,13 @@ const PostView = () => {
                 </div>
                 <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
                     <div className="w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
-                        <img src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} />
+                        <Image src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} width={25} height={25} alt="Heart Icon" />
                     </div>
-                    <div className="w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
-                        <img src="/icons/comment.png" />
+                    <div className="relative w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
+                        <Image src="/icons/comment.png" fill alt="Comment Icon" />
                     </div>
                     <div className="w-[25px] h-[25px] ml-[25px]  cursor-pointer" onClick={toggleBookmark}>
-                        <img src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} />
+                        <Image src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} width={25} height={25} alt="Bookmark Icon" />
                     </div>
                 </div>
                 <div className="ml-[20px] font-bold text-[15px]">
@@ -528,9 +532,11 @@ const PostView = () => {
                                     </div>
                                     <div className="w-[40px] relative">
                                         { comment.userEmail === email &&
-                                        <img 
+                                        <Image
                                         src={"/icons/commentMenu.png"}
-                                        className={`w-[15px] h-[15px] cursor-pointer hover:opacity-100 ${showCommentMenu[comment._id ?? ""] ? "opacity-100" : "opacity-50"}`} 
+                                        width={15} height={15}
+                                        alt="Comment Menu Icon"
+                                        className={`cursor-pointer hover:opacity-100 ${showCommentMenu[comment._id ?? ""] ? "opacity-100" : "opacity-50"}`} 
                                         onClick={() => {
                                             toggleCommentMenu(comment._id)
                                             setCommentId(comment._id)
