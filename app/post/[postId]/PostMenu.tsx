@@ -36,7 +36,7 @@ const PostMenu = ({showPostMenu, setShowPostMenu, copyURL} : PostMenuProps) => {
             >
                 <div 
                     className="w-full h-[80px] flex justify-center items-center hover:bg-gray-100 cursor-pointer text-[18px] text-black"
-                    onClick={()=>{togglePostMenu(), copyURL()}}
+                    onClick={()=>{togglePostMenu(); copyURL()}}
                 >
                     링크 복사
                 </div>
