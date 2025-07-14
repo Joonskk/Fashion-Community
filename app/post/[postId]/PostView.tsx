@@ -7,6 +7,8 @@ import { useUser } from "@/app/context/UserContext";
 import { useRef } from "react";
 import { X, ArrowUp } from "lucide-react";
 import Image from "next/image";
+import PostMenu from "./PostMenu";
+import Post from "./page";
 
 type Post = {
     _id: string;
@@ -61,9 +63,13 @@ const PostView = () => {
     const [isEditingComment, setIsEditingComment] = useState<boolean>(false);
     const [bookmarked, setBookmarked] = useState<boolean>(false);
     const [isFollowed, setIsFollowed] = useState<boolean>(false);
+    const [copied, setCopied] = useState(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
 
     const [commentId, setCommentId] = useState<string | undefined>("");
     const [showCommentMenu, setShowCommentMenu] = useState<{[key : string] : boolean}>({});
+    const [showPostMenu, setShowPostMenu] = useState<boolean>(false);
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -126,6 +132,23 @@ const PostView = () => {
             console.error("Failed to toggle bookmarks: ", err)
         }
 
+    }
+
+    const copyURL = async () => {
+        try {
+        await navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+
+        timerRef.current = setTimeout(() => {
+            setCopied(false);
+        }, 2000);
+        } catch (err) {
+        console.error("URL 복사 실패", err);
+        }
     }
 
     const handleInput = () => {
@@ -426,7 +449,7 @@ const PostView = () => {
                 <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow" />
             </button>
             <div className=""> {/* 게시물 div */}
-                <div className="w-full h-[60px] flex items-center"> {/* 유저 정보 */}
+                <div className="relative w-full h-[60px] flex items-center"> {/* 유저 정보 */}
                     <Image src="/profile-default.png" width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] cursor-pointer" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
                     <div> {/* 유저 아이디, 키, 몸무게 */}
                         <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
@@ -438,7 +461,11 @@ const PostView = () => {
                     </div>
                     {
                         user?.email === email ?
-                        <></>
+                        <div className="flex absolute right-4">
+                            <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
+                                <Image src="/icons/Option.png" width={25} height={25} alt="Option Icon" onClick={()=>setShowPostMenu(!showPostMenu)} />
+                            </div>
+                        </div>
                         :
                         <button 
                         className={`ml-auto mr-[10px] cursor-pointer ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
@@ -473,7 +500,10 @@ const PostView = () => {
                     <div className="relative w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
                         <Image src="/icons/comment.png" fill alt="Comment Icon" />
                     </div>
-                    <div className="w-[25px] h-[25px] ml-[25px]  cursor-pointer" onClick={toggleBookmark}>
+                    <div className="w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={copyURL} >
+                        <Image src="/icons/Copy.png" width={25} height={25} alt="Copy Icon" />
+                    </div>
+                    <div className="w-[25px] h-[25px] ml-auto mr-[20px] cursor-pointer" onClick={toggleBookmark}>
                         <Image src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} width={25} height={25} alt="Bookmark Icon" />
                     </div>
                 </div>
@@ -487,7 +517,7 @@ const PostView = () => {
                 </div>
             </div>
 
-
+            <PostMenu showPostMenu={showPostMenu} setShowPostMenu={setShowPostMenu} />
 
             {/* 댓글 */}
             <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
@@ -564,7 +594,7 @@ const PostView = () => {
                             </div>
                         ))
                     }
-                    </div>
+                </div>
 
                     {/* New comment input */}
                     <form
@@ -604,7 +634,15 @@ const PostView = () => {
 
                 </div>
             </div>
-
+            
+            <div className={`absolute left-1/2 -translate-x-1/2 bottom-[50px] w-[90%] h-[50px] flex justify-center items-center bg-black/80 text-white text-sm px-2 py-1 rounded transition-all duration-300 ${
+                copied
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-4 pointer-events-none"
+                }`}
+            >
+                링크를 복사했습니다.
+            </div>
 
         </div>
     );
