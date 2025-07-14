@@ -1,16 +1,13 @@
 type PostMenuProps = {
     showPostMenu: boolean,
     setShowPostMenu: React.Dispatch<React.SetStateAction<boolean>>;
+    copyURL: () => void;
 }
 
-const PostMenu = ({showPostMenu, setShowPostMenu} : PostMenuProps) => {
+const PostMenu = ({showPostMenu, setShowPostMenu, copyURL} : PostMenuProps) => {
 
     const togglePostMenu = () => {
         setShowPostMenu((prev)=>!prev);
-    }
-
-    const copyURL = () => {
-
     }
 
     const sharePost = () => {
@@ -39,7 +36,7 @@ const PostMenu = ({showPostMenu, setShowPostMenu} : PostMenuProps) => {
             >
                 <div 
                     className="w-full h-[80px] flex justify-center items-center hover:bg-gray-100 cursor-pointer text-[18px] text-black"
-                    onClick={()=>copyURL()}
+                    onClick={()=>{togglePostMenu(), copyURL()}}
                 >
                     링크 복사
                 </div>

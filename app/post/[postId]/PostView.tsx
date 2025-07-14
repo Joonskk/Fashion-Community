@@ -517,7 +517,7 @@ const PostView = () => {
                 </div>
             </div>
 
-            <PostMenu showPostMenu={showPostMenu} setShowPostMenu={setShowPostMenu} />
+            <PostMenu showPostMenu={showPostMenu} setShowPostMenu={setShowPostMenu} copyURL={copyURL} />
 
             {/* 댓글 */}
             <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
@@ -635,7 +635,8 @@ const PostView = () => {
                 </div>
             </div>
             
-            <div className={`absolute left-1/2 -translate-x-1/2 bottom-[50px] w-[90%] h-[50px] flex justify-center items-center bg-black/80 text-white text-sm px-2 py-1 rounded transition-all duration-300 ${
+            {/* URL Copy Quote */}
+            <div className={`fixed left-1/2 -translate-x-1/2 bottom-[80px] w-[90%] max-w-[700px] h-[50px] flex justify-center items-center bg-black/80 text-white text-sm px-2 py-1 rounded transition-all duration-300 ${
                 copied
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-4 pointer-events-none"
