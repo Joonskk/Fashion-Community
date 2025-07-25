@@ -7,6 +7,7 @@ type Comment = {
     postId: string;
     userEmail: string;
     userName: string;
+    profileImage: string;
     text: string;
     createdAt: Date;
   }
@@ -14,7 +15,7 @@ type Comment = {
 export async function POST(req: Request){
 
     const body = await req.json();
-    const {postId, userEmail, userName, text } = body;
+    const {postId, userEmail, profileImage, userName, text } = body;
 
     try {
         const db = (await clientPromise).db('wearly');
@@ -22,6 +23,7 @@ export async function POST(req: Request){
             postId,
             userEmail,
             userName,
+            profileImage,
             text,
             createdAt: new Date(),
         };
@@ -41,7 +43,7 @@ export async function GET() {
     const db = (await clientPromise).db('wearly');
 
     const comments = await db.collection('comments').find({}, {
-        projection: { _id: 1, postId: 1, userEmail: 1, userName: 1, text: 1, createdAt: 1 }
+        projection: { _id: 1, postId: 1, userEmail: 1, userName: 1, profileImage: 1, text: 1, createdAt: 1 }
     }).toArray()
   
     return NextResponse.json({ comments })

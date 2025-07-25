@@ -12,30 +12,27 @@ export async function POST(req: Request) {
   const name = formData.get("name") as string;
   const height = formData.get("height") as string;
   const weight = formData.get("weight") as string;
+  const profileImage = formData.get("profileImage") as string | null;
 
   const followers: string[] = [];
   const following: string[] = [];
   const followersCount: number = 0;
   const followingCount: number = 0;
 
+  const DEFAULT_PROFILE_IMAGE = "/profile-default.png";
+
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
   }
 
-  if (!name || !height || !weight || !email) {
-    return NextResponse.json({ error: '내용을 입력해주세요!' }, { status: 400 })
-  }
-
   try {
-      console.log(clientPromise);
-      console.log("MONGODB 연결중...")
       const db = (await clientPromise).db('wearly')
-      console.log("MongoDB 연결됨!")
       await db.collection('users').insertOne({ 
         name,
         height,
         weight,
         email,
+        profileImage: profileImage || DEFAULT_PROFILE_IMAGE,
         followers,
         following,
         followersCount,
@@ -55,7 +52,7 @@ export async function GET() {
     const db = client.db('wearly')
 
     const users = await db.collection('users').find({}, {
-      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1, followersCount: 1, followingCount: 1 } // _id 포함해서 필요한 필드 가져옴
+      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1, profileImage: 1, followersCount: 1, followingCount: 1 } // _id 포함해서 필요한 필드 가져옴
     }).toArray()
 
     return NextResponse.json({ users })
@@ -70,7 +67,7 @@ export async function PATCH(req: Request) {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email as string;
 
-  const { name, height, weight } = await req.json(); // JSON 데이터를 받음
+  const { name, height, weight, profileImage } = await req.json(); // JSON 데이터를 받음
   
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
@@ -78,15 +75,20 @@ export async function PATCH(req: Request) {
 
   try {
     const db = (await clientPromise).db('wearly');
+
+    const updateFields: Record<string, any> = {
+      name,
+      height,
+      weight,
+    };
+
+    if (profileImage) updateFields.profileImage = profileImage; // 이미지 있으면 업데이트
+
     // 사용자의 이메일을 기반으로 프로필 정보 업데이트
     const result = await db.collection('users').updateOne(
       { email }, // 이메일로 특정 사용자 찾기
       {
-        $set: {
-          name,
-          height,
-          weight,
-        },
+        $set: updateFields,
       }
     );
 

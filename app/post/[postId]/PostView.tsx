@@ -26,6 +26,7 @@ type User = {
     height?: string;
     weight?: string;
     email?: string;
+    profileImage: string;
     following?: string[];
     follower?: string[];
 }
@@ -35,6 +36,7 @@ type Comment = {
     postId?: string;
     userEmail?: string;
     userName: string;
+    profileImage?: string;
     text: string;
     createdAt: string;
 }
@@ -47,6 +49,9 @@ const PostView = () => {
     const postId = params?.postId as string;
 
     const { name, email } = useUser();
+
+    const [sessionUserName, setSessionUserName] = useState<string>("");
+    const [sessionUserProfileImage, setSessionUserProfileImage] = useState<string>("");
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -79,7 +84,6 @@ const PostView = () => {
 
     const prevImage = () => {
         setCurrentIndex((prev) => (prev === 0 ? 0 : prev - 1));
-        console.log(user);
     };
 
     const nextImage = () => {
@@ -186,7 +190,8 @@ const PostView = () => {
                 body: JSON.stringify({
                     postId,
                     userEmail: email,
-                    userName: name,
+                    profileImage: sessionUserProfileImage,
+                    userName: sessionUserName,
                     text: comment,
                 })
             })
@@ -234,6 +239,7 @@ const PostView = () => {
                     postId,
                     userEmail: email,
                     userName: name,
+                    profileImage: sessionUserProfileImage,
                     text: comment,
                     createdAt: "now",
                 };
@@ -341,27 +347,48 @@ const PostView = () => {
         }
     }
 
-    useEffect(() => {
-        // console.log(postId)
+    useEffect(() => { // 첫 렌더링 시
         const fetchPost = async () => {
             try {
                 const response = await fetch('/api/posts');
-                if (response.ok) {
-                    const data = await response.json()
+                if(response.ok) {
+                    const data = await response.json();
                     // console.log("post page data: ", data)
                     const foundPost: Post = data.posts.find((post: Post) => post._id === postId);
                     // console.log("foundPost:", foundPost);
                     setPost(foundPost); // 아이디가 일치하는 게시물 설정
                 } else {
-                console.error('DB 조회 실패')
+                console.error('DB 조회 실패');
                 }
             } catch (error) {
-                console.error('API 호출 오류:', error)
+                console.error('API 호출 오류:', error);
             }
         }
 
         fetchPost();
     }, [postId])  // postId가 변경될 때마다 실행
+
+    useEffect(() => {
+        if(!email) return;
+
+        const fetchSessionUser = async () => {
+            try {
+                const response = await fetch('/api/post/edit-profile');
+                if(response.ok) {
+                    const data = await response.json();
+                    const foundSessionUser: User = data.users.find((user: User) => user.email === email);
+                    setSessionUserName(foundSessionUser.name);
+                    setSessionUserProfileImage(foundSessionUser.profileImage);
+                } else {
+                    console.error('DB 조회 실패');
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error);
+            }
+        }
+
+        fetchSessionUser();
+    }, [email])
 
     useEffect(() => {
         const fetchUser = async () => { // 게시물 작성자 색출
@@ -391,7 +418,6 @@ const PostView = () => {
         }
 
         if (post) {
-            console.log(post);
             fetchUser();
             setImages(post.imageURLs);
             setLikesCount(post.likesCount || 0);
@@ -450,7 +476,7 @@ const PostView = () => {
             </button>
             <div className=""> {/* 게시물 div */}
                 <div className="relative w-full h-[60px] flex items-center"> {/* 유저 정보 */}
-                    <Image src="/profile-default.png" width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] cursor-pointer" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
+                    <Image src={user?.profileImage || "/profile-default.png"} width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] w-[36px] h-[36px] cursor-pointer object-cover" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
                     <div> {/* 유저 아이디, 키, 몸무게 */}
                         <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
                             {user?.name}
@@ -546,9 +572,7 @@ const PostView = () => {
                         commentsList.map((comment, index) => (
                             <div key={index} className="text-sm text-gray-700 w-full mb-[20px]">
                                 <div className="flex">
-                                    <div className="bg-gray-300 w-[35px] h-[35px] rounded-full mr-[10px]">
-                                        {/* user profile picture */}
-                                    </div>
+                                    <Image src={comment.profileImage || "/profile-default.png"} width={35} height={35} alt="User Profile Image" className="rounded-full w-[35px] h-[35px] cursor-pointer object-cover mr-[10px]" onClick={moveToUserPage} />
                                     <div className="flex-1">
                                         <div className="flex">
                                             <span className="font-bold">{comment.userName}</span>

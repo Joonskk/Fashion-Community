@@ -15,6 +15,7 @@ type User = {
     height: string;
     weight: string;
     email: string;
+    profileImage: string;
     followersCount: number;
     followingCount: number;
 }
@@ -33,7 +34,7 @@ const MyPageClient = () => {
 
     const { email, session } = useUser();
 
-    const [userData, setUserData] = useState<{ _id: string, name: string, height: string, weight: string, email: string, followersCount: number, followingCount: number } | null>(null)
+    const [userData, setUserData] = useState<{ _id: string, name: string, height: string, weight: string, email: string, profileImage: string, followersCount: number, followingCount: number } | null>(null)
     const [myPost, setMyPost] = useState<Post[]>([]);
     const userId = userData?._id;
 
@@ -45,6 +46,7 @@ const MyPageClient = () => {
             height: userData.height,
             weight: userData.weight,
             email: userData.email,
+            profileImage: userData.profileImage,
             followersCount: userData.followersCount.toString(),
             followingCount: userData.followingCount.toString(),
         }).toString();
@@ -109,7 +111,15 @@ const MyPageClient = () => {
                 <div className="flex flex-col">
                     <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
                         <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
-                            <Image src="/profile-default.png" width={150} height={150} alt="User Profile Image" className="rounded-full" />
+                            <div className="w-[150px] h-[150px] rounded-full overflow-hidden">
+                                <Image
+                                    src={userData?.profileImage || "/profile-default.png"}
+                                    alt="User Profile Image"
+                                    width={150}
+                                    height={150}
+                                    className="object-cover w-full h-full"
+                                />
+                            </div>
                             <div className="ml-[50px]">
                             {userData ? (
                                 <>
@@ -134,7 +144,7 @@ const MyPageClient = () => {
                                     </div>
                                 </div>
                                 <div className="flex mt-[10px]">
-                                    <button onClick={handleClick} className="mr-[20px]">Edit Profile</button>
+                                    <button onClick={handleClick} className="mr-[20px] cursor-pointer">Edit Profile</button>
                                     <LogoutButton />
                                 </div>
                             </div>
