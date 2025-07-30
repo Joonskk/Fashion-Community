@@ -14,6 +14,7 @@ type User = {
     height: string;
     weight: string;
     email: string;
+    profileImage: string;
     followersCount: number;
     followingCount: number;
 }
@@ -32,13 +33,14 @@ const UserPage = () => {
     const router = useRouter();
 
     const params = useParams();
-    const userId = params?.userId as string;
+    const userId = params?.userId as string; // 해당 프로필 페이지 유저
 
     const { email, session } = useUser();
 
-    const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string, followersCount: number, followingCount: number } | null>(null)
+    const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string, followersCount: number, followingCount: number } | null>(null) // 해당 프로필 페이지 유저
     const [userPost, setUserPost] = useState<Post[]>([]);
     const [isFollowed, setIsFollowed] = useState<boolean>(false);
+    const [postUserProfileImage, setPostUserProfileImage] = useState<string>("");
 
     const handleFollow = async () => {
         console.log("handleFollow executed")
@@ -89,6 +91,7 @@ const UserPage = () => {
                     console.log(foundUser);
                     if (foundUser) {
                         setUserData(foundUser); // 아이디가 일치하는 사용자 데이터 설정
+                        setPostUserProfileImage(foundUser.profileImage);
                     }
                     if (foundUser.email === email) {
                         router.push('/mypage')
@@ -152,7 +155,7 @@ const UserPage = () => {
                 <div className="flex flex-col">
                     <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
                         <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
-                            <Image src="/profile-default.png" width={150} height={150} alt="User Profile Image" className="rounded-full" />
+                            <Image src={postUserProfileImage || "/profile-default.png"} width={150} height={150} alt="User Profile Image" className="rounded-full w-[150px] h-[150px] object-cover" />
                             <div className="ml-[50px]">
                             {userData ? (
                                 <>

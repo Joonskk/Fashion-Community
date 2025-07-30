@@ -76,16 +76,14 @@ export async function GET(req: NextRequest){
         const client = await clientPromise;
         const db = client.db('wearly');
         
-        const user = await db.collection('users').findOne({
+        const user = await db.collection('users').findOne({ // 현재 세션 유저
             email: sessionUserEmail
         })
-
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
-
         const isFollowing = user.following?.includes(postAuthorEmail);
-      
+
         return NextResponse.json({ isFollowing })
     } catch(err) {
         console.error('DB 불러오기 에러:', err);
