@@ -13,6 +13,14 @@ export async function DELETE(req: NextRequest, context: any) {
             _id: new ObjectId(postId),
         })
 
+        await db.collection("comments").deleteMany({
+            postId: postId,
+        })
+
+        await db.collection("bookmarks").deleteMany({
+            postId: postId,
+        })
+
         return NextResponse.json(
             { message: "게시물이 성공적으로 삭제되었습니다." },
             { status: 200 }
