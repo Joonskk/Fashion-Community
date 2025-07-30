@@ -3,6 +3,13 @@ import clientPromise from '@/lib/mongodb'
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+type UpdateUserFields = {
+  name: string;
+  height: string;
+  weight: string;
+  profileImage?: string;
+};
+
 // Post ( 회원가입 )
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -76,11 +83,11 @@ export async function PATCH(req: Request) {
   try {
     const db = (await clientPromise).db('wearly');
 
-    const updateFields: Record<string, any> = {
+    const updateFields: UpdateUserFields = {
       name,
       height,
       weight,
-    };
+    };    
 
     if (profileImage) updateFields.profileImage = profileImage; // 이미지 있으면 업데이트
 
