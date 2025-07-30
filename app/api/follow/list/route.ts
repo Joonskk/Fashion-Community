@@ -32,13 +32,13 @@ export async function GET(req: NextRequest){
         const followers = await db.collection('users').find({
             email: {$in: followersEmails}
         })
-        .project({_id: 1, name: 1, email: 1})
+        .project({_id: 1, name: 1, email: 1, profileImage: 1})
         .toArray();
         
         const following = await db.collection('users').find({
             email: {$in: followingEmails}
         })
-        .project({_id: 1, name: 1, email: 1})
+        .project({_id: 1, name: 1, email: 1, profileImage: 1})
         .toArray();
 
         return NextResponse.json({userName, followers, following, followersCount, followingCount});

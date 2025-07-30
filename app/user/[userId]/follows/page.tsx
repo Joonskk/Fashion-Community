@@ -8,6 +8,7 @@ type User = {
     _id: string;
     name: string;
     email: string;
+    profileImage: string;
 }
 
 const Follows = () => {
@@ -80,8 +81,15 @@ const Follows = () => {
                     onClick={() => router.push(`/user/${user._id.toString()}`)}
                     >
                         <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-300" />
-                        <span className="text-sm">{user.name}</span>
+                            <div className="relative w-10 h-10 m-[4px] rounded-full overflow-hidden">
+                                <Image 
+                                    src={user.profileImage || "/profile-default.png"} 
+                                    alt="User Profile Image" 
+                                    fill 
+                                    className="object-cover" 
+                                />
+                            </div>
+                            <span className="text-sm">{user.name}</span>
                         </div>
                         <button className="text-sm text-black cursor-pointer">프로필</button>
                     </li>
@@ -94,8 +102,15 @@ const Follows = () => {
                     onClick={() => router.push(`/user/${user._id.toString()}`)}
                     >
                         <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-300" />
-                        <span className="text-sm">{user.name}</span>
+                            <div className="relative w-10 h-10 m-[4px] rounded-full overflow-hidden">
+                                <Image 
+                                    src={user.profileImage || "/profile-default.png"} 
+                                    alt="User Profile Image" 
+                                    fill 
+                                    className="object-cover" 
+                                />
+                            </div>
+                            <span className="text-sm">{user.name}</span>
                         </div>
                         <button className="text-sm text-black cursor-pointer">프로필</button>
                     </li>
