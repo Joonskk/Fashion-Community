@@ -15,7 +15,7 @@ type User = {
     height: string;
     weight: string;
     email: string;
-    profileImage: string;
+    profileImage: ImageInfo;
     followersCount: number;
     followingCount: number;
 }
@@ -23,10 +23,15 @@ type User = {
 type Post = {
     _id: string;
     userEmail: string;
-    imageURLs: string[];
+    images: ImageInfo[];
     description: string;
     likes: string[];
     likesCount: number;
+}
+
+type ImageInfo = {
+    url: string;
+    public_id: string;
 }
 
 const MyPageClient = () => {
@@ -34,7 +39,7 @@ const MyPageClient = () => {
 
     const { email, session } = useUser();
 
-    const [userData, setUserData] = useState<{ _id: string, name: string, height: string, weight: string, email: string, profileImage: string, followersCount: number, followingCount: number } | null>(null)
+    const [userData, setUserData] = useState<{ _id: string, name: string, height: string, weight: string, email: string, profileImage: ImageInfo, followersCount: number, followingCount: number } | null>(null)
     const [myPost, setMyPost] = useState<Post[]>([]);
     const userId = userData?._id;
 
@@ -46,7 +51,7 @@ const MyPageClient = () => {
             height: userData.height,
             weight: userData.weight,
             email: userData.email,
-            profileImage: userData.profileImage,
+            profileImage: JSON.stringify(userData.profileImage),
             followersCount: userData.followersCount.toString(),
             followingCount: userData.followingCount.toString(),
         }).toString();
@@ -65,7 +70,7 @@ const MyPageClient = () => {
                     const data = await response.json()
                     // console.log("session data: ", data);
                     const foundUser: User = data.users.find((user: { email: string }) => user.email === userEmail);
-                    console.log(foundUser);
+                    // console.log(foundUser);
                     if (foundUser) { // 로그인 시 동작
                         setUserData(foundUser); // 이메일이 일치하는 사용자 데이터 설정
                     } else { // 첫 회원가입 시 동작
@@ -89,10 +94,10 @@ const MyPageClient = () => {
                 const response = await fetch('/api/posts');
                 if (response.ok) {
                     const data = await response.json()
-                    console.log("post data: ", data);
-                    console.log(email);
+                    // console.log("post data: ", data);
+                    // console.log(email);
                     const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === email);
-                    console.log("foundPosts:", foundPosts);
+                    // console.log("foundPosts:", foundPosts);
                     setMyPost(foundPosts); // 이메일이 일치하는 게시물 설정
                 } else {
                 console.error('DB 조회 실패')
@@ -113,10 +118,11 @@ const MyPageClient = () => {
                         <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
                             <div className="w-[150px] h-[150px] rounded-full overflow-hidden">
                                 <Image
-                                    src={userData?.profileImage || "/profile-default.png"}
+                                    src={userData?.profileImage.url || "/profile-default.png"}
                                     alt="User Profile Image"
                                     width={150}
                                     height={150}
+                                    priority
                                     className="object-cover w-full h-full"
                                 />
                             </div>
@@ -168,7 +174,7 @@ const MyPageClient = () => {
                         <div className="flex flex-wrap">
                             {myPost.map((post, index) => (
                             <div key={index} className="w-1/2 md:w-1/3">
-                                <StyleCard postImageURL={post.imageURLs[0]} postID={post._id} />
+                                <StyleCard postImageURL={post.images[0].url} postID={post._id} />
                             </div>
                             ))}
                         </div>

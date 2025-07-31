@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 type UpdateUserFields = {
   name: string;
@@ -10,23 +17,31 @@ type UpdateUserFields = {
   profileImage?: string;
 };
 
+type ImageInfo = {
+  public_id: string;
+  url: string;
+};
+
 // Post ( 회원가입 )
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email as string;
 
   const formData = await req.formData();
+
   const name = formData.get("name") as string;
   const height = formData.get("height") as string;
   const weight = formData.get("weight") as string;
-  const profileImage = formData.get("profileImage") as string | null;
 
   const followers: string[] = [];
   const following: string[] = [];
   const followersCount: number = 0;
   const followingCount: number = 0;
 
-  const DEFAULT_PROFILE_IMAGE = "/profile-default.png";
+  const DEFAULT_PROFILE_IMAGE: ImageInfo = {
+    public_id: "",
+    url: "/profile-default.png"
+  };
 
   if (!name || !height || !weight || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
@@ -39,7 +54,7 @@ export async function POST(req: Request) {
         height,
         weight,
         email,
-        profileImage: profileImage || DEFAULT_PROFILE_IMAGE,
+        profileImage: DEFAULT_PROFILE_IMAGE,
         followers,
         following,
         followersCount,
@@ -82,6 +97,14 @@ export async function PATCH(req: Request) {
 
   try {
     const db = (await clientPromise).db('wearly');
+
+    const user = await db.collection("users").findOne({email: email});
+    if (!user) {
+      return NextResponse.json({ message: "유저를 찾을 수 없습니다." }, { status: 404 });
+    }
+    if(user.profileImage.public_id) {
+      await cloudinary.uploader.destroy(user.profileImage.public_id); // Cloudinary에서 기존 profileImage 삭제
+    }
 
     const updateFields: UpdateUserFields = {
       name,

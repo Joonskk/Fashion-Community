@@ -4,7 +4,7 @@ import clientPromise from "@/lib/mongodb";
 export async function POST(req: Request){
 
     const body = await req.json();
-    const { postId, imageURLs, userEmail } = body;
+    const { postId, userEmail } = body;
 
     try {
         const db = (await clientPromise).db('wearly');
@@ -13,10 +13,10 @@ export async function POST(req: Request){
         const existing = await bookmarks.findOne({postId, userEmail});
 
         if(existing){
-            await bookmarks.deleteOne({ postId, imageURLs, userEmail });
+            await bookmarks.deleteOne({ postId, userEmail });
             return NextResponse.json({ success: true, bookmarked: false });
         } else {
-            await bookmarks.insertOne({ postId, imageURLs, userEmail });
+            await bookmarks.insertOne({ postId, userEmail });
             return NextResponse.json({ success: true, bookmarked: true });
         }
     } catch(err) {

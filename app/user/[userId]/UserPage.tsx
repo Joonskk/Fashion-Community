@@ -14,7 +14,7 @@ type User = {
     height: string;
     weight: string;
     email: string;
-    profileImage: string;
+    profileImage: ImageInfo;
     followersCount: number;
     followingCount: number;
 }
@@ -22,11 +22,16 @@ type User = {
 type Post = {
     _id: string;
     userEmail: string;
-    imageURLs: string[];
+    images: ImageInfo[];
     description: string;
     likes: string[];
     likesCount: number;
 }
+
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
 
 const UserPage = () => {
 
@@ -91,7 +96,7 @@ const UserPage = () => {
                     console.log(foundUser);
                     if (foundUser) {
                         setUserData(foundUser); // 아이디가 일치하는 사용자 데이터 설정
-                        setPostUserProfileImage(foundUser.profileImage);
+                        setPostUserProfileImage(foundUser.profileImage.url);
                     }
                     if (foundUser.email === email) {
                         router.push('/mypage')
@@ -155,7 +160,7 @@ const UserPage = () => {
                 <div className="flex flex-col">
                     <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
                         <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
-                            <Image src={postUserProfileImage || "/profile-default.png"} width={150} height={150} alt="User Profile Image" className="rounded-full w-[150px] h-[150px] object-cover" />
+                            <Image src={postUserProfileImage || "/profile-default.png"} width={150} height={150} alt="User Profile Image" priority className="rounded-full w-[150px] h-[150px] object-cover" />
                             <div className="ml-[50px]">
                             {userData ? (
                                 <>
@@ -199,7 +204,7 @@ const UserPage = () => {
                         <div className="flex flex-wrap">
                             {userPost.map((post, index) => (
                             <div key={index} className="w-1/2 md:w-1/3">
-                                <StyleCard postImageURL={post.imageURLs[0]} postID={post._id} />
+                                <StyleCard postImageURL={post.images[0].url} postID={post._id} />
                             </div>
                             ))}
                         </div>

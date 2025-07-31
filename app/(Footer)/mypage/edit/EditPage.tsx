@@ -40,7 +40,7 @@ const EditPage = () => {
     if (nameParam !== null) setName(nameParam);
     if (heightParam !== null) setHeight(heightParam);
     if (weightParam !== null) setWeight(weightParam);
-    if (profileImageParam !== null) setPreview(profileImageParam);
+    if (profileImageParam !== null) setPreview(JSON.parse(profileImageParam).url);
   }, [searchParams]);  
 
   const uploadImageToCloudinary = async (file: File) => {
@@ -55,7 +55,7 @@ const EditPage = () => {
     });
 
     const data = await res.json();
-    return data.secure_url as string;
+    return {public_id: data.public_id, url: data.secure_url};
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

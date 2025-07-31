@@ -4,6 +4,11 @@ import { useUser } from '@/app/context/UserContext'
 import Link from 'next/link';
 import Image from 'next/image';
 
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
+
 const PostDescription = ({ images } : {images : File[]}) => {
     
     const router = useRouter();
@@ -26,11 +31,12 @@ const PostDescription = ({ images } : {images : File[]}) => {
         setIsPosting(true);
 
         try {
-            const imageURLs: string[] = [];
-            const formData = new FormData();
+            const imageInfos: ImageInfo[] = [];
             for (const file of images){
+                const formData = new FormData();
                 formData.append("file", file);
                 formData.append("upload_preset", "wearly_images");
+                formData.append("folder", "wearly_posts");
                 const res = await fetch("https://api.cloudinary.com/v1_1/wearly/image/upload", {
                     method: "POST",
                     body: formData,
@@ -38,7 +44,10 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 console.log("Uploaded to Cloudinary: ", res);
 
                 const data = await res.json();
-                imageURLs.push(data.secure_url);
+                imageInfos.push({
+                    url: data.secure_url,
+                    public_id: data.public_id,
+                });
             }
             
             const response = await fetch('/api/post/create-post',{
@@ -46,7 +55,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email,
-                    imageURLs,
+                    images: imageInfos,
                     description,
                     likes: [],
                     likesCount: 0,

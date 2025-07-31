@@ -11,13 +11,9 @@ export async function GET(req: Request) {
 
     const bookmarks = await db.collection('bookmarks').find({
         userEmail: email
-    }, {
-        projection: { postId: 1, imageURLs: 1, userEmail: 1 }
-    }).toArray()
+    }).toArray();
   
     const postIds = bookmarks.map(bookmark => bookmark.postId);
-
-    console.log(postIds);
 
     // posts 컬렉션에서 postId가 일치하는 게시물 조회 + 최신순 정렬
     const posts = await db.collection('posts')

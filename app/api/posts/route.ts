@@ -9,7 +9,7 @@ export async function GET(req:NextRequest) {
     const db = client.db('wearly');
 
     const { searchParams } = new URL(req.url);
-    const sortParam = searchParams.get("sort"); // newest || likes
+    const sortParam = searchParams.get("sort"); // newest || likes || following
     const userEmail = req.headers.get("user-email");
 
     let sortOption: Sort = { createdAt: -1}; // newest
@@ -36,7 +36,7 @@ export async function GET(req:NextRequest) {
     }
 
     const posts = await db.collection('posts').find(query, {
-        projection: { _id: 1, userEmail: 1, imageURLs: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+        projection: { _id: 1, userEmail: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
     }).sort(sortOption).toArray()
   
     return NextResponse.json({ posts })

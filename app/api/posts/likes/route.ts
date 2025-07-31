@@ -11,18 +11,8 @@ export async function GET(req: NextRequest) {
     const client = await clientPromise;
     const db = client.db('wearly');
 
-    const likedPostsRaw = await db.collection('posts').find(
-        { likes: email },
-        {
-            projection: { _id: 1, imageURLs: 1 }
-        }
-    ).sort({ createdAt: -1 }).toArray();
-
-    // _id를 postId로 변경
-    const likedPosts = likedPostsRaw.map(post => ({
-        _id: post._id,
-        imageURLs: post.imageURLs,
-    }));
+    const likedPosts = await db.collection('posts').find(
+        { likes: email }).sort({ createdAt: -1 }).toArray();
   
     return NextResponse.json({ likedPosts });
 }

@@ -8,8 +8,13 @@ type User = {
     _id: string;
     name: string;
     email: string;
-    profileImage: string;
+    profileImage: ImageInfo;
 }
+
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
 
 const Follows = () => {
 
@@ -51,7 +56,7 @@ const Follows = () => {
                 <button 
                 onClick={() => router.back()}
                 className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] z-[1] flex justify-center items-center">
-                    <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow Icon" />
+                    <Image src="/icons/BackArrow.png" width={30} height={30} priority alt="Back Arrow Icon" />
                 </button>
                 <div className="absolute w-full flex justify-center items-center h-[30px] mt-[20px]">
                     <h1 className="font-bold">{userName}</h1>
@@ -83,9 +88,10 @@ const Follows = () => {
                         <div className="flex items-center gap-3">
                             <div className="relative w-10 h-10 m-[4px] rounded-full overflow-hidden">
                                 <Image 
-                                    src={user.profileImage || "/profile-default.png"} 
+                                    src={user.profileImage.url || "/profile-default.png"} 
                                     alt="User Profile Image" 
                                     fill 
+                                    sizes="40px"
                                     className="object-cover" 
                                 />
                             </div>
@@ -104,9 +110,10 @@ const Follows = () => {
                         <div className="flex items-center gap-3">
                             <div className="relative w-10 h-10 m-[4px] rounded-full overflow-hidden">
                                 <Image 
-                                    src={user.profileImage || "/profile-default.png"} 
+                                    src={user.profileImage.url || "/profile-default.png"} 
                                     alt="User Profile Image" 
                                     fill 
+                                    sizes="40px"
                                     className="object-cover" 
                                 />
                             </div>

@@ -13,12 +13,17 @@ import Post from "./page";
 type Post = {
     _id: string;
     userEmail: string;
-    imageURLs: string[],
+    images: ImageInfo[],
     description: string,
     likes: string[],
     likesCount: number,
     createdAt: string,
 }
+
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
 
 type User = {
     _id: string;
@@ -26,7 +31,7 @@ type User = {
     height?: string;
     weight?: string;
     email?: string;
-    profileImage: string;
+    profileImage: ImageInfo;
     following?: string[];
     follower?: string[];
 }
@@ -57,7 +62,7 @@ const PostView = () => {
 
     const [post, setPost] = useState<Post | null>(null);
     const [user, setUser] = useState<User | null>(null);
-    const [images, setImages] = useState<string[]>([]);
+    const [images, setImages] = useState<ImageInfo[]>([]);
     const [likesCount, setLikesCount] = useState<number>(0);
     const [createdAt, setCreatedAt] = useState<string>("");
 
@@ -125,7 +130,6 @@ const PostView = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     postId,
-                    imageURLs: post?.imageURLs,
                     userEmail: email,
                 }),
             })
@@ -378,7 +382,7 @@ const PostView = () => {
                     const data = await response.json();
                     const foundSessionUser: User = data.users.find((user: User) => user.email === email);
                     setSessionUserName(foundSessionUser.name);
-                    setSessionUserProfileImage(foundSessionUser.profileImage);
+                    setSessionUserProfileImage(foundSessionUser.profileImage.url);
                 } else {
                     console.error('DB 조회 실패');
                 }
@@ -419,7 +423,7 @@ const PostView = () => {
 
         if (post) {
             fetchUser();
-            setImages(post.imageURLs);
+            setImages(post.images);
             setLikesCount(post.likesCount || 0);
             setLiked(post.likes?.includes(email) ?? false); // ?? 는 좌측 값이 null / undefined 일 때 우측 값을 사용한다는 의미
             setCreatedAt(post.createdAt);
@@ -476,7 +480,7 @@ const PostView = () => {
             </button>
             <div className=""> {/* 게시물 div */}
                 <div className="relative w-full h-[60px] flex items-center"> {/* 유저 정보 */}
-                    <Image src={user?.profileImage || "/profile-default.png"} width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] w-[36px] h-[36px] cursor-pointer object-cover" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
+                    <Image src={user?.profileImage.url || "/profile-default.png"} width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] w-[36px] h-[36px] cursor-pointer object-cover" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
                     <div> {/* 유저 아이디, 키, 몸무게 */}
                         <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
                             {user?.name}
@@ -504,9 +508,11 @@ const PostView = () => {
                 <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center"> {/* 사진 */}
                     {images[currentIndex] ? (
                     <Image
-                        src={images[currentIndex]}
+                        src={images[currentIndex].url}
                         fill
                         alt={`Preview ${currentIndex}`}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority
                         className="w-full h-full object-cover"
                     />
                     ) : (
@@ -524,7 +530,7 @@ const PostView = () => {
                         <Image src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} width={25} height={25} alt="Heart Icon" />
                     </div>
                     <div className="relative w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
-                        <Image src="/icons/comment.png" fill alt="Comment Icon" />
+                        <Image src="/icons/comment.png" fill sizes="25px" alt="Comment Icon" />
                     </div>
                     <div className="w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={copyURL} >
                         <Image src="/icons/Copy.png" width={25} height={25} alt="Copy Icon" />

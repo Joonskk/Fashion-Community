@@ -9,8 +9,13 @@ import { useUser } from '@/app/context/UserContext';
 
 type Post = {
   _id: string;
-  imageURLs: string[];
+  images: ImageInfo[];
   userEmail: string;
+};
+
+type ImageInfo = {
+  public_id: string;
+  url: string;
 };
 
 const BookmarkPage = () => {
@@ -95,7 +100,7 @@ const BookmarkPage = () => {
         <div className="flex flex-wrap mt-4">
           {posts.map((post, index) => (
             <div key={index} className="w-1/2 md:w-1/3">
-              <StyleCard postImageURL={post.imageURLs[0]} postID={post._id} />
+              <StyleCard postImageURL={post.images[0].url} postID={post._id} />
             </div>
           ))}
         </div>

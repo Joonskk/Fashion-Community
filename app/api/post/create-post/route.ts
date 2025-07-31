@@ -4,13 +4,13 @@ import clientPromise from '@/lib/mongodb';
 export async function POST(req: Request) {
 
     const body = await req.json();
-    const { email, imageURLs, description, likes, likesCount } = body;
+    const { email, images, description, likes, likesCount } = body;
     
     try {
         const db = (await clientPromise).db('wearly');
         await db.collection('posts').insertOne({
             userEmail: email,
-            imageURLs,
+            images,
             description,
             likes,
             likesCount,
