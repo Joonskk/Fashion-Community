@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { signOut } from "next-auth/react";
 import { useUser } from "@/app/context/UserContext";
-import LogoutButton from '@/app/components/LogoutButton';
 import LoginButton from '@/app/components/LoginButton';
 import StyleCard from "@/app/components/StyleCard";
 import Image from 'next/image';
@@ -43,7 +43,11 @@ const MyPageClient = () => {
     const [myPost, setMyPost] = useState<Post[]>([]);
     const userId = userData?._id;
 
-    const handleClick = () => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const menuButtonRef = useRef<HTMLDivElement>(null);
+
+    const handleEditClick = () => {
         if (!userData) return;
         const query = new URLSearchParams({
             _id: userData._id,
@@ -57,6 +61,27 @@ const MyPageClient = () => {
         }).toString();
         router.push(`/mypage/edit?${query}`);
     }
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+          if (menuRef.current && 
+            !menuRef.current.contains(event.target as Node) && 
+            menuButtonRef.current &&
+            !menuButtonRef.current.contains(event.target as Node)) {
+            setMenuOpen(false);
+          }
+        };
+    
+        if (menuOpen) {
+          document.addEventListener("mousedown", handleClickOutside);
+        } else {
+          document.removeEventListener("mousedown", handleClickOutside);
+        }
+    
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuOpen]);
 
     useEffect(() => {
         if (!session || !email) return; // 로그인 안돼있으면 바로 return
@@ -111,7 +136,7 @@ const MyPageClient = () => {
     },[session, email])
 
     return (
-        <div className="h-screen">
+        <div className="h-screen relative">
             {session ? (
                 <div className="flex flex-col">
                     <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
@@ -140,35 +165,82 @@ const MyPageClient = () => {
                                 <div className="text-gray-400 mt-[30px]">정보를 불러오는 중...</div>
                             )}
                                 <div className="flex text-[15px] mt-[10px]">
-                                <div className="flex items-center">
-                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=followers`)} className="cursor-pointer">팔로워</button>
-                                        <h2 className="ml-[6px]">{userData?.followersCount}</h2>
-                                    </div>
-                                    <div className="flex items-center ml-[20px]">
-                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=following`)} className="cursor-pointer">팔로잉</button>
-                                        <h2 className="ml-[6px]">{userData?.followingCount}</h2>
-                                    </div>
+                                    <button onClick={()=>router.push(`/user/${userId}/follows?tab=followers`)} className="flex items-center cursor-pointer active:opacity-50">
+                                        <div className="text-gray-500">팔로워</div>
+                                        <h2 className="ml-[6px] font-bold">{userData?.followersCount}</h2>
+                                    </button>
+                                    <button onClick={()=>router.push(`/user/${userId}/follows?tab=following`)} className="flex items-center cursor-pointer active:opacity-50 ml-[20px]">
+                                        <div className="text-gray-500">팔로잉</div>
+                                        <h2 className="ml-[6px] font-bold">{userData?.followingCount}</h2>
+                                    </button>
                                 </div>
                                 <div className="flex mt-[10px]">
-                                    <button onClick={handleClick} className="mr-[20px] cursor-pointer">Edit Profile</button>
-                                    <LogoutButton />
+                                    <button 
+                                    onClick={handleEditClick} 
+                                    className="px-[15px] py-[5px] text-[14px] cursor-pointer font-bold bg-gray-100 hover:bg-gray-200 rounded-lg active:text-gray-500 active:scale-97 mr-[10px]"
+                                    >
+                                        프로필 편집
+                                    </button>
+                                    <div 
+                                    className="px-[15px] py-[5px] text-[14px] cursor-pointer font-bold bg-gray-100 hover:bg-gray-200 rounded-lg active:text-gray-500 active:scale-97"
+                                    onClick={() => signOut({ callbackUrl: "/home" })}
+                                    >
+                                        로그아웃
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="flex absolute top-4 right-4">
-                        <Link 
+                        <Link // 새 게시물 버튼
                         href="/mypage/newpost"
-                        className="flex items-center justify-center text-[35px] text-black text-center border border-2 border-black rounded-[8px] w-[30px] h-[30px] mr-[20px] opacity-60 hover:opacity-100 hover:bg-black hover:text-white transition"
+                        className="flex items-center justify-center text-[35px] text-black text-center border border-2 border-black rounded-[8px] w-[30px] h-[30px] mr-[20px] opacity-60 hover:opacity-100 hover:bg-black hover:text-white active:scale-90 transition"
                         >
                             +
                         </Link>
-                        <Link
-                        href="/mypage/settings"
-                        className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150"
+
+                        <div // 메뉴창 토글 버튼
+                        ref={menuButtonRef}
+                        className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 active:scale-90 transition-all duration-100"
+                        onClick={(e) => {
+                            e.stopPropagation(); // 메뉴 버튼 클릭 이벤트가 외부로 안 퍼지게
+                            setMenuOpen((prev) => !prev);
+                        }}
                         >
                             <Image src="/icons/Menu.png" width={25} height={25} alt="Menu Icon" />
-                        </Link>
+                        </div>
+                        {menuOpen && (
+                        <div
+                        ref={menuRef}
+                        className="absolute top-[40px] right-0 w-[250px] bg-white shadow-lg border border-gray-100 rounded-xl p-[10px] z-100"
+                        onClick={(e) => e.stopPropagation()} // 메뉴 내부 클릭 시 닫힘 방지
+                        >
+                            <div 
+                            className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                            onClick={()=>router.push('/mypage/settings')}
+                            >
+                                설정
+                            </div>
+                            <div 
+                            className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                            onClick={()=>router.push('/mypage/activity')}
+                            >
+                                내 활동
+                            </div>
+                            <div 
+                            className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                            onClick={()=>router.push('/mypage/settings')}
+                            >
+                                모드 전환
+                            </div>
+                            <div 
+                            className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                            onClick={() => signOut({ callbackUrl: "/home" })}
+                            >
+                                로그아웃
+                            </div>
+                        </div>
+                        )}
                     </div>
                     <div className="mb-[60px]">
                         <div className="flex flex-wrap">
