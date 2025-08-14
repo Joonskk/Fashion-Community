@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 import Image from "next/image";
 
 const EditPage = () => {
 
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const { userData, session } = useUser();
 
   const [name, setName] = useState('');
   const [height, setHeight] = useState('');
@@ -17,6 +18,7 @@ const EditPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  const [isChanged, setIsChanged] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,17 +33,25 @@ const EditPage = () => {
     imageInputRef.current?.click();
   }
 
+  useEffect(() => {    
+    if(!session || !userData) return;
+    setName(userData.name);
+    setHeight(userData.height);
+    setWeight(userData.weight);
+    setPreview(userData.profileImage.url)
+  }, [session, userData]);  
+
   useEffect(() => {
-    const nameParam = searchParams.get('name');
-    const heightParam = searchParams.get('height');
-    const weightParam = searchParams.get('weight');
-    const profileImageParam = searchParams.get('profileImage');
+    if (!userData) return;
   
-    if (nameParam !== null) setName(nameParam);
-    if (heightParam !== null) setHeight(heightParam);
-    if (weightParam !== null) setWeight(weightParam);
-    if (profileImageParam !== null) setPreview(JSON.parse(profileImageParam).url);
-  }, [searchParams]);  
+    const hasChanged =
+      name !== userData.name ||
+      height !== userData.height ||
+      weight !== userData.weight ||
+      (file !== null);
+  
+    setIsChanged(hasChanged);
+  }, [name, height, weight, file, userData]);
 
   const uploadImageToCloudinary = async (file: File) => {
     const formData = new FormData();
@@ -88,8 +98,8 @@ const EditPage = () => {
   };
 
   return (
-    <div className="p-20">
-      <h4 className="mb-[10px]">프로필 편집</h4>
+    <div className="p-4">
+      <h4 className="font-bold text-[20px] mb-[10px]">프로필 편집</h4>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
         <div className="w-full flex justify-center">
           <Image src={preview || "/profile-default.png"} 
@@ -130,22 +140,14 @@ const EditPage = () => {
           className="border-l-[2px] border-gray-300 pl-[10px] mb-[5px] focus:outline-none"
         />
         <div className="w-full flex justify-center">
-          <div className="flex text-center w-[70px] h-[30px] mr-[10px]">
-            <button
-              onClick={() => router.push('/mypage')}
-              disabled={isSubmitting}
-              className={`w-[70px] h-[30px] border rounded-sm 
-                          ${isSubmitting ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-white text-black hover:bg-gray-100"}`}
-            >
-              Cancel
-            </button>
-          </div>
           <button 
             type="submit"
-            className={`cursor-pointer w-[50px] h-[30px] bg-black text-white border rounded-sm
-             ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-black"}`}
+            disabled={!isChanged || isSubmitting}
+            className={`cursor-pointer w-[150px] h-[40px] text-white font-bold border rounded-sm
+            ${isChanged ? "bg-black" : "bg-gray-300"}
+            ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-black"}`}
           >
-            {isSubmitting ? "Editing..." : "Edit"}
+            {isSubmitting ? "제출중..." : "제출"}
           </button>
         </div>
       </form>
