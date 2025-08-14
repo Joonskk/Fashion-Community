@@ -53,7 +53,7 @@ const PostView = () => {
     const params = useParams();
     const postId = params?.postId as string;
 
-    const { name, email } = useUser();
+    const { userData, email } = useUser();
 
     const [sessionUserName, setSessionUserName] = useState<string>("");
     const [sessionUserProfileImage, setSessionUserProfileImage] = useState<string>("");
@@ -224,6 +224,8 @@ const PostView = () => {
 
     const handleEditSubmit = async (e : React.FormEvent) => {
         e.preventDefault();
+        if (!userData || !email) return;
+        
         const textarea = textareaRef.current;
 
         try {
@@ -242,7 +244,7 @@ const PostView = () => {
                     _id: commentId,
                     postId,
                     userEmail: email,
-                    userName: name,
+                    userName: userData.name,
                     profileImage: sessionUserProfileImage,
                     text: comment,
                     createdAt: "now",
