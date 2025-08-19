@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 
 const Delete = () => {
 
@@ -8,6 +9,30 @@ const Delete = () => {
     const [inputValue, setInputValue] = useState("");
 
     const isMatch = inputValue === AGREEMENT_TEXT;
+
+    const handleDelete = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if(!isMatch) return;
+
+        try {
+            const res = await fetch("/api/user/delete", {
+                method: "DELETE",
+            })
+
+            if(res.ok){
+                alert("계정이 정상적으로 삭제되었습니다.");
+                // 필요 시 로그아웃 후 리다이렉트
+                signOut({ callbackUrl: "/" });
+            } else {
+                const data = await res.json();
+                alert("삭제 실패: " + data.error);
+            }
+
+        } catch(err) {
+            console.error(err);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    }
 
     return (
         <div className="p-4">
@@ -23,7 +48,7 @@ const Delete = () => {
             </div>
 
 
-            <form className="mt-[100px] flex flex-col">
+            <form onSubmit={handleDelete} className="mt-[100px] flex flex-col">
                 <div className="text-gray-800 text-[15px]">문장을 그대로 입력하세요:</div>
                 <div className="text-[15px] text-red-600 mb-[15px]">&quot;계정 탈퇴에 동의합니다.&quot;</div>
                 <input

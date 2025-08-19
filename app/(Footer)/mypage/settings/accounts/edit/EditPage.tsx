@@ -39,6 +39,7 @@ const EditPage = () => {
     setHeight(userData.height);
     setWeight(userData.weight);
     setPreview(userData.profileImage.url)
+    console.log(userData.profileImage.url)
   }, [session, userData]);  
 
   useEffect(() => {
