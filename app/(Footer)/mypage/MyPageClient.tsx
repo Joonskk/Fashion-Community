@@ -26,7 +26,7 @@ type ImageInfo = {
 const MyPageClient = () => {
     const router = useRouter();
 
-    const { userData, email, session } = useUser();
+    const { userData, userDataLoaded, email, session } = useUser();
 
     const [myPost, setMyPost] = useState<Post[]>([]);
     const userId = userData?._id;
@@ -35,11 +35,13 @@ const MyPageClient = () => {
     const menuRef = useRef<HTMLDivElement>(null);
     const menuButtonRef = useRef<HTMLDivElement>(null);
 
+    // 프로필 편집
     const handleEditClick = () => {
         if (!userData) return;
         router.push(`/mypage/settings/accounts/edit`);
     }
 
+    // 마이페이지 메뉴
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
           if (menuRef.current && 
@@ -61,6 +63,7 @@ const MyPageClient = () => {
         };
     }, [menuOpen]);
 
+    // 내 게시물 불러오기
     useEffect(() => {
         const posts = async () => {
             try {
@@ -83,6 +86,18 @@ const MyPageClient = () => {
         posts();
     },[session, email])
 
+    useEffect(() => {
+        // DB에 유저 데이터가 없는 경우 (첫 방문자)
+        if (session && userDataLoaded && !userData) {
+            router.push("/mypage/signup");
+        }
+    }, [session, userData, userDataLoaded, router]);
+
+    useEffect(() => {
+        console.log(userData);
+    }, [userData])
+
+    // 구글 로그인 UI
     if(!session) {
         return (
             <div className="login-form flex flex-col justify-center items-center h-screen">

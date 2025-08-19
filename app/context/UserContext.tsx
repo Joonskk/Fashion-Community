@@ -18,6 +18,8 @@ type UserContextType = {
   session: boolean;
   email: string;
   userData: UserData | null;
+  userDataLoaded: boolean;
+  refetchUserData: () => Promise<void>;
 };
 
 export const UserContext = createContext<UserContextType | null>(null);
@@ -33,27 +35,31 @@ export const useUser = () => {
 export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const { data: session, status } = useSession();
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
 
-  useEffect(() => {
+  const fetchUserData = async () => {
     if (!session?.user?.email) return;
 
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch("/api/post/edit-profile");
-        if (response.ok) {
-          const data = await response.json();
-          const foundUser: UserData | undefined = data.users.find(
-            (user: UserData) => user.email === session.user?.email
-          );
-          if (foundUser) setUserData(foundUser);
-        } else {
-          console.error("DB 조회 실패");
-        }
-      } catch (error) {
-        console.error("API 호출 오류:", error);
+    try {
+      const response = await fetch("/api/post/edit-profile");
+      if (response.ok) {
+        const data = await response.json();
+        const foundUser: UserData | undefined = data.users.find(
+          (user: UserData) => user.email === session.user?.email
+        );
+        if (foundUser) setUserData(foundUser);
+        console.log("foundUser: ", foundUser);
+      } else {
+        console.error("DB 조회 실패");
       }
-    };
+    } catch (error) {
+      console.error("API 호출 오류:", error);
+    } finally {
+      setUserDataLoaded(true);
+    }
+  };
 
+  useEffect(() => {
     fetchUserData();
   }, [session?.user?.email]);
 
@@ -63,6 +69,8 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
         session: status === "authenticated",
         email: session?.user?.email || "",
         userData,
+        userDataLoaded,
+        refetchUserData: fetchUserData,
       }}
     >
       {children}

@@ -8,7 +8,7 @@ import Image from "next/image";
 const EditPage = () => {
 
   const router = useRouter();
-  const { userData, session } = useUser();
+  const { userData, session, refetchUserData } = useUser();
 
   const [name, setName] = useState('');
   const [height, setHeight] = useState('');
@@ -91,6 +91,7 @@ const EditPage = () => {
     console.log(response);
 
     if (response.ok) {
+      await refetchUserData();
       router.push('/mypage');
     } else {
       alert('업데이트 실패!');

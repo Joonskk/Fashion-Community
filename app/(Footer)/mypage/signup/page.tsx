@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useUser } from '@/app/context/UserContext';
 
 const SignUp = () => {
+  const { refetchUserData } = useUser();
   const router = useRouter();
   const [form, setForm] = useState({ name: '', height: '', weight: '' });
 
@@ -24,6 +26,7 @@ const SignUp = () => {
     });
 
     if (res.ok) {
+      await refetchUserData();
       router.push('/mypage');  // 저장 후 마이페이지로 이동
     } else {
       const data = await res.json();
