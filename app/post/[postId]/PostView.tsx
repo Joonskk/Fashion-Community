@@ -39,6 +39,7 @@ type User = {
 type Comment = {
     _id?: string;
     postId?: string;
+    userId: string;
     userEmail?: string;
     userName: string;
     profileImage?: string;
@@ -83,8 +84,13 @@ const PostView = () => {
 
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    const moveToUserPage = () => {
+    const moveToUserPage = () => {  // 게시물 작성자의 프로필 페이지로 이동
         router.push(`/user/${user?._id}`);
+    }
+
+    const moveToCommentUserPage = (userId: string) => {   // 댓글 작성자의 프로필 페이지로 이동
+        router.push(`/user/${userId}`);
+        console.log(userId)
     }
 
     const prevImage = () => {
@@ -193,6 +199,7 @@ const PostView = () => {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     postId,
+                    userId: userData?._id,
                     userEmail: email,
                     profileImage: sessionUserProfileImage,
                     userName: sessionUserName,
@@ -243,6 +250,7 @@ const PostView = () => {
                 const editedCommentWithInfo : Comment = {
                     _id: commentId,
                     postId,
+                    userId: userData?._id,
                     userEmail: email,
                     userName: userData.name,
                     profileImage: sessionUserProfileImage,
@@ -581,7 +589,7 @@ const PostView = () => {
                         commentsList.map((comment, index) => (
                             <div key={index} className="text-sm text-gray-700 w-full mb-[20px]">
                                 <div className="flex">
-                                    <Image src={comment.profileImage || "/profile-default.png"} width={35} height={35} alt="User Profile Image" className="rounded-full w-[35px] h-[35px] cursor-pointer object-cover mr-[10px]" onClick={moveToUserPage} />
+                                    <Image src={comment.profileImage || "/profile-default.png"} width={35} height={35} alt="User Profile Image" className="rounded-full w-[35px] h-[35px] cursor-pointer object-cover mr-[10px]" onClick={() => moveToCommentUserPage(comment.userId)} />
                                     <div className="flex-1">
                                         <div className="flex">
                                             <span className="font-bold">{comment.userName}</span>

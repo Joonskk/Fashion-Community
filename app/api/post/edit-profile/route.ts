@@ -112,17 +112,8 @@ export async function PATCH(req: Request) {
       weight,
     };    
 
-    if (profileImage){
-      updateFields.profileImage = profileImage; // 이미지 있으면 업데이트
+    if (profileImage) updateFields.profileImage = profileImage; // 이미지 있으면 업데이트
 
-      // 댓글창에 profileImage 수정된거 반영하기
-      await db.collection('comments').updateMany(
-        { userEmail: email },
-        {
-          $set: { profileImage : profileImage.url }
-        }
-      )
-    } 
 
     // 사용자의 이메일을 기반으로 프로필 정보 업데이트
     const result = await db.collection('users').updateOne(
@@ -130,6 +121,21 @@ export async function PATCH(req: Request) {
       {
         $set: updateFields,
       }
+    );
+
+    // 댓글 정보 업데이트
+    const commentUpdateFields: any = {
+      userName: name,
+    };
+
+    // 프로필 이미지가 있을 때만 추가
+    if (profileImage) {
+      commentUpdateFields.profileImage = profileImage.url;
+    }
+
+    await db.collection("comments").updateMany(
+      { userEmail: email },
+      { $set: commentUpdateFields }
     );
 
     if (result.modifiedCount === 0) {
