@@ -40,7 +40,7 @@ const UserPage = () => {
     const params = useParams();
     const userId = params?.userId as string; // 해당 프로필 페이지 유저
 
-    const { email, session } = useUser();
+    const { email, session, refetchUserData } = useUser();
 
     const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string, followersCount: number, followingCount: number } | null>(null) // 해당 프로필 페이지 유저
     const [userPost, setUserPost] = useState<Post[]>([]);
@@ -77,6 +77,7 @@ const UserPage = () => {
                     followersCount: Math.max(0, newFollowersCount), // 음수 방지
                 };
             })
+            refetchUserData();
         } catch(err) {
             console.error("팔로우 중 오류 발생: ", err)
         }

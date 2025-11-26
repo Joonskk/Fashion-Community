@@ -112,7 +112,17 @@ export async function PATCH(req: Request) {
       weight,
     };    
 
-    if (profileImage) updateFields.profileImage = profileImage; // 이미지 있으면 업데이트
+    if (profileImage){
+      updateFields.profileImage = profileImage; // 이미지 있으면 업데이트
+
+      // 댓글창에 profileImage 수정된거 반영하기
+      await db.collection('comments').updateMany(
+        { userEmail: email },
+        {
+          $set: { profileImage : profileImage.url }
+        }
+      )
+    } 
 
     // 사용자의 이메일을 기반으로 프로필 정보 업데이트
     const result = await db.collection('users').updateOne(

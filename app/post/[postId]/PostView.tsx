@@ -53,7 +53,7 @@ const PostView = () => {
     const params = useParams();
     const postId = params?.postId as string;
 
-    const { userData, email } = useUser();
+    const { userData, email, refetchUserData } = useUser();
 
     const [sessionUserName, setSessionUserName] = useState<string>("");
     const [sessionUserProfileImage, setSessionUserProfileImage] = useState<string>("");
@@ -348,6 +348,7 @@ const PostView = () => {
             const data = await res.json();
             console.log("✅ DB 저장 성공:", data);
             setIsFollowed(data.isFollowing);
+            refetchUserData();
         } catch(err) {
             console.error("팔로우 중 오류 발생: ", err)
         }
