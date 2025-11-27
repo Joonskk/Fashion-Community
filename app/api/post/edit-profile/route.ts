@@ -22,6 +22,11 @@ type ImageInfo = {
   url: string;
 };
 
+type CommentUpdateFields = {
+  userName: string;
+  profileImage?: string;
+}
+
 // Post ( 회원가입 )
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -124,7 +129,7 @@ export async function PATCH(req: Request) {
     );
 
     // 댓글 정보 업데이트
-    const commentUpdateFields: any = {
+    const commentUpdateFields : CommentUpdateFields = {
       userName: name,
     };
 
