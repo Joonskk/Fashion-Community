@@ -102,6 +102,11 @@ const PostView = () => {
     };
 
     const toggleLike = async () => {
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+
         const likedAfterAction = !liked;
         setLiked(likedAfterAction);
         setLikesCount(likedAfterAction ? likesCount + 1 : likesCount -1);
@@ -130,6 +135,11 @@ const PostView = () => {
     }
 
     const toggleBookmark = async () => {
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+        
         try{
             const res = await fetch('/api/post/toggle-bookmarks',{
                 method: "POST",
@@ -191,6 +201,12 @@ const PostView = () => {
 
     const handleSubmit = async (e : React.FormEvent) => {
         e.preventDefault();
+
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+
         const textarea = textareaRef.current;
         
         try {
@@ -342,6 +358,11 @@ const PostView = () => {
     }
 
     const handleFollow = async () => {
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+
         console.log("handleFollow executed")
         try {
             const res = await fetch('/api/follow', {
@@ -372,6 +393,7 @@ const PostView = () => {
                     const foundPost: Post = data.posts.find((post: Post) => post._id === postId);
                     // console.log("foundPost:", foundPost);
                     setPost(foundPost); // 아이디가 일치하는 게시물 설정
+                    // console.log("userData = ", userData)
                 } else {
                 console.error('DB 조회 실패');
                 }

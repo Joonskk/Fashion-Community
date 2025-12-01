@@ -21,7 +21,7 @@ type ImageInfo = {
 const BookmarkPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { email } = useUser();
+  const { userData, email } = useUser();
 
   // URL 쿼리에서 tab 값 읽기, 없으면 "bookmark" 기본값
   const tabParam = searchParams.get('tab') as 'bookmark' | 'likes' | null;
@@ -37,7 +37,10 @@ const BookmarkPage = () => {
   };
 
   useEffect(() => {
-    if (!email) return;
+    if(!userData){
+      router.push("/mypage");
+      return;
+    }
 
     const fetchBookmarks = async () => {
       try {
