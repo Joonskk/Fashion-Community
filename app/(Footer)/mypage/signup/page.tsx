@@ -7,7 +7,7 @@ import { useUser } from '@/app/context/UserContext';
 const SignUp = () => {
   const { refetchUserData } = useUser();
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', height: '', weight: '' });
+  const [form, setForm] = useState({ name: '', height: '', weight: '', sex: '' });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,6 +19,7 @@ const SignUp = () => {
     formData.append('name', form.name);
     formData.append('height', form.height);
     formData.append('weight', form.weight);
+    formData.append('sex', form.sex);
 
     const res = await fetch('/api/post/edit-profile', {
       method: 'POST',
@@ -41,6 +42,10 @@ const SignUp = () => {
         <input name="name" placeholder="이름" value={form.name} onChange={handleChange} />
         <input name="height" placeholder="키(cm)" value={form.height} onChange={handleChange} />
         <input name="weight" placeholder="몸무게(kg)" value={form.weight} onChange={handleChange} />
+        <div className="sex" >
+          <input type="radio" name="sex" value="male" checked={form.sex === 'male'} onChange={handleChange} />남
+          <input type="radio" name="sex" value="female" checked={form.sex === 'female'} onChange={handleChange} />여
+        </div>
         <button type="submit">제출</button>
       </form>
     </div>

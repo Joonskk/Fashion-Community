@@ -37,6 +37,7 @@ export async function POST(req: Request) {
   const name = formData.get("name") as string;
   const height = formData.get("height") as string;
   const weight = formData.get("weight") as string;
+  const sex = formData.get("sex") as string;
 
   const followers: string[] = [];
   const following: string[] = [];
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
     url: "/profile-default.png"
   };
 
-  if (!name || !height || !weight || !email) {
+  if (!name || !height || !weight || !sex || !email) {
     return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
   }
 
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
         height,
         weight,
         email,
+        sex,
         profileImage: DEFAULT_PROFILE_IMAGE,
         followers,
         following,
