@@ -12,7 +12,7 @@ type ImageInfo = {
 const PostDescription = ({ images } : {images : File[]}) => {
     
     const router = useRouter();
-    const { email } = useUser();
+    const { email, userData } = useUser();
     
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [description, setDescription] = useState<string>("");
@@ -31,6 +31,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
         setIsPosting(true);
 
         try {
+            // Posting images to Cloudinary
             const imageInfos: ImageInfo[] = [];
             for (const file of images){
                 const formData = new FormData();
@@ -50,11 +51,13 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 });
             }
             
+            // Posting to MongoDB
             const response = await fetch('/api/post/create-post',{
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email,
+                    sex: userData?.sex,
                     images: imageInfos,
                     description,
                     likes: [],

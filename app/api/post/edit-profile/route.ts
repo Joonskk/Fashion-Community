@@ -80,8 +80,9 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db('wearly')
 
+    // All users list
     const users = await db.collection('users').find({}, {
-      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1, profileImage: 1, followersCount: 1, followingCount: 1 } // _id 포함해서 필요한 필드 가져옴
+      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1, sex: 1, profileImage: 1, followersCount: 1, followingCount: 1 } // _id 포함해서 필요한 필드 가져옴
     }).toArray()
 
     return NextResponse.json({ users })

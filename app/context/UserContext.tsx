@@ -6,9 +6,10 @@ import { useSession } from "next-auth/react";
 export type UserData = {
   _id: string;
   name: string;
-  email: string;
   height: string;
   weight: string;
+  email: string;
+  sex: string;
   profileImage: { url: string; public_id: string };
   followersCount: number;
   followingCount: number;
