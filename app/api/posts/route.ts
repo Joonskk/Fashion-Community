@@ -10,6 +10,7 @@ export async function GET(req:NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const sortParam = searchParams.get("sort"); // newest || likes || following
+    const sexParam = searchParams.get("sex");
     const userEmail = req.headers.get("user-email");
 
     let sortOption: Sort = { createdAt: -1}; // newest
@@ -17,7 +18,11 @@ export async function GET(req:NextRequest) {
         sortOption = { likesCount: -1 }; // likes
     }
 
-    let query = {};
+    let query : any = {};
+
+    if (sexParam && sexParam !== "all") {
+        query.sex = sexParam;
+    }
 
     // "팔로잉한 유저들" 필터
     if (sortParam === "following") {
@@ -32,12 +37,12 @@ export async function GET(req:NextRequest) {
 
         const followingList = user.following || [];
 
-        query = { userEmail: { $in: followingList } };
+        query.userEmail = { $in: followingList };
     }
 
     const posts = await db.collection('posts').find(query, {
-        projection: { _id: 1, userEmail: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
-    }).sort(sortOption).toArray()
+        projection: { _id: 1, userEmail: 1, sex:1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+    }).sort(sortOption).toArray();
   
     return NextResponse.json({ posts })
 }

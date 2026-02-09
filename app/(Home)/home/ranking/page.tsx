@@ -1,12 +1,13 @@
 "use client"
 
-import Filter from "@/app/components/Filter";
 import StyleCard from "@/app/components/StyleCard";
 import { useState, useEffect } from "react";
+import { useFeedFilter } from "@/app/context/FeedFilterContext";
 
 type Post = {
     _id: string;
     userEmail: string;
+    sex: string;
     images: ImageInfo[];
     description: string;
     likes: string[],
@@ -20,11 +21,20 @@ type ImageInfo = {
 
 const Ranking = () => {
     const [posts, setPosts] = useState<Post[]>([]);
+    const { filters } = useFeedFilter();
 
     useEffect(() => {
         const posts = async () => {
             try {
-                const response = await fetch('/api/posts?sort=likes');
+                const params = new URLSearchParams({
+                    sort: "likes",
+                });
+          
+                if (filters.sex !== "all") {
+                    params.append("sex", filters.sex);
+                }
+                
+                const response = await fetch(`/api/posts?${params.toString()}`);
                 if (response.ok) {
                     const data = await response.json()
                     console.log("post data: ", data)
@@ -38,11 +48,10 @@ const Ranking = () => {
         }
 
         posts();
-    },[])
+    },[filters])
 
     return (
-        <div className="mt-[88px] mb-[100px]">
-            <Filter />
+        <div className="">
             <div className="flex flex-wrap mt-4">
                 {posts.map((post, index) => (
                 <div key={index} className="w-1/2 md:w-1/3">

@@ -10,7 +10,7 @@ const Footer = () => {
     const menuItems = [
         { href: "/home", home: true, label: "홈", icon: "/icons/Home.png", selectedIcon: "/icons/Home-Selected.png", key: 1},
         { href: "/search", label: "검색", icon: "/icons/Search.png", selectedIcon: "/icons/Search-Selected.png", key: 2},
-        { href: "/bookmark", label: "북마크", icon: "/icons/Bookmark.png", selectedIcon: "/icons/Bookmark-Selected.png", key: 3},
+        { href: "/bookmarkTab/bookmark", bookmark: true, label: "북마크", icon: "/icons/Bookmark.png", selectedIcon: "/icons/Bookmark-Selected.png", key: 3},
         { href: "/mypage", label: "MY", icon: "/icons/MyPage.png", selectedIcon: "/icons/MyPage-Selected.png", key: 4}
     ]
 
@@ -20,7 +20,9 @@ const Footer = () => {
             {menuItems.map((item) => {
                 const isActive = item.home
                 ? pathname === "/" || pathname.startsWith("/home")
-                : pathname.startsWith(item.href);
+                : item.bookmark
+                  ? pathname.startsWith("/bookmarkTab")
+                  : pathname.startsWith(item.href);
 
                 return (
                     isActive ?
