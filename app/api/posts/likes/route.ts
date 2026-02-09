@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from "@/lib/mongodb";
+import type { Document } from 'mongodb'
 
 export async function GET(req: NextRequest) {
     const email = req.headers.get('user-email');
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const sexParam = searchParams.get("sex"); // male | female
 
-    let query: any = {
+    const query: Document = {
         likes: email
     };
 

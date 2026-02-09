@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import clientPromise from "@/lib/mongodb";
-import type { Sort } from 'mongodb';
+import type { Sort, Document } from 'mongodb';
 
 export async function GET(req:NextRequest) {
     const client = await clientPromise;
@@ -18,7 +18,7 @@ export async function GET(req:NextRequest) {
         sortOption = { likesCount: -1 }; // likes
     }
 
-    let query : any = {};
+    const query : Document = {};
 
     if (sexParam && sexParam !== "all") {
         query.sex = sexParam;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from 'mongodb';
+import type { Document } from 'mongodb'
 
 export async function GET(req: Request) {
     const email = req.headers.get('user-email');
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ posts: [] });
     }
 
-    let query: any = { _id: { $in: postIds } };
+    const query: Document = { _id: { $in: postIds } };
 
     if (sexParam && sexParam !== 'all') {
         query.sex = sexParam;
