@@ -12,7 +12,7 @@ cloudinary.config({
 // DELETE: 게시물 삭제
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function DELETE(req: NextRequest, context: any) {
-    const postId = context.params.postId;
+    const { postId } = await context.params;
 
     try {
         const db = (await clientPromise).db('wearly');
