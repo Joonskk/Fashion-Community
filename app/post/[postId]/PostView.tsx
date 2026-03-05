@@ -508,8 +508,8 @@ const PostView = () => {
         <div className="flex flex-col w-full relative mb-[60px]">
             <button 
             onClick={() => router.back()}
-            className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
-                <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow" />
+            className="relative cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
+                <Image src="/icons/BackArrow.png" fill alt="Back Arrow" />
             </button>
             <div className=""> {/* 게시물 div */}
                 <div className="relative w-full h-[60px] flex items-center"> {/* 유저 정보 */}
@@ -559,17 +559,17 @@ const PostView = () => {
                     </button>
                 </div>
                 <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
-                    <div className="w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
-                        <Image src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} width={25} height={25} alt="Heart Icon" />
+                    <div className="relative w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
+                        <Image src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} fill alt="Heart Icon" />
                     </div>
                     <div className="relative w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
                         <Image src="/icons/comment.png" fill sizes="25px" alt="Comment Icon" />
                     </div>
-                    <div className="w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={copyURL} >
-                        <Image src="/icons/Copy.png" width={25} height={25} alt="Copy Icon" />
+                    <div className="relative w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={copyURL} >
+                        <Image src="/icons/Copy.png" fill alt="Copy Icon" />
                     </div>
-                    <div className="w-[25px] h-[25px] ml-auto mr-[20px] cursor-pointer" onClick={toggleBookmark}>
-                        <Image src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} width={25} height={25} alt="Bookmark Icon" />
+                    <div className="relative w-[25px] h-[25px] ml-auto mr-[20px] cursor-pointer" onClick={toggleBookmark}>
+                        <Image src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} fill alt="Bookmark Icon" />
                     </div>
                 </div>
                 <div className="ml-[20px] font-bold text-[15px]">
