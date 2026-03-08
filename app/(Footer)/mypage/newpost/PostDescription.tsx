@@ -57,6 +57,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email,
+                    authorName: userData?.name,
                     sex: userData?.sex,
                     images: imageInfos,
                     description,
