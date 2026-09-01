@@ -6,6 +6,8 @@ Secure Authentication: Integrated Google OAuth for seamless login experiences.
 
 Route Protection & Authorization: Implemented smart guards that redirect unauthenticated users to the login page when attempting restricted actions (e.g., liking posts, commenting, accessing the My Page).
 
+AI-Powered Hashtag Recommendation: Integrated the OpenAI GPT-4 Turbo API into the backend architecture to automatically analyze uploaded outfit images/content and generate relevant, trending hashtags upon post creation.
+
 Interactive Social Engagement: Supports core social features including post creation, liking, bookmarking, and commenting.
 
 Optimized Cloud Media Pipeline: Integrated Cloudinary for image storage. Designed a robust backend API to handle immediate asset synchronization (automatic addition and deletion on Cloudinary upon post creation/deletion), prioritizing storage efficiency and media performance.
@@ -17,15 +19,17 @@ User: Manages user profiles and authentication data.
 
 Post: Stores outfit images, captions, and references to authors.
 
-Like: Tracks user interactions and post engagement.
+Comments: Tracks user comments and discussion threads on posts.
 
 Bookmark: Handles saved posts for individual users.
 
 ## 🛠️ Tech Stack
-Frontend / Backend: Node.js, Express.js (or Next.js Fullstack)
+Frontend / Backend: Next.js Fullstack
 
-Database: MongoDB, Mongoose
+Database: MongoDB
 
 Authentication: Google Auth / NextAuth.js
+
+AI Integration: OpenAI GPT-4 Turbo API
 
 Media Storage: Cloudinary API
