@@ -4,7 +4,7 @@ import clientPromise from '@/lib/mongodb';
 export async function POST(req: Request) {
 
     const body = await req.json();
-    const { email, authorName, sex, images, description, likes, likesCount } = body;
+    const { email, authorName, sex, images, description, styles, items, season, likes, likesCount } = body;
     
     try {
         const db = (await clientPromise).db('wearly');
@@ -14,6 +14,9 @@ export async function POST(req: Request) {
             sex,
             images,
             description,
+            styles,
+            items,
+            season,
             likes,
             likesCount,
             createdAt: new Date(),

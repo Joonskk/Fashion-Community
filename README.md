@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 📌 Project Overview
+Wearly is a full-stack social media platform tailored for fashion enthusiasts to share outfits, interact with posts, and explore style trends. It incorporates secure authentication, robust database schema design, and optimized cloud media management.
 
-## Getting Started
+## ✨ Key Features
+Secure Authentication: Integrated Google OAuth for seamless login experiences.
 
-First, run the development server:
+Route Protection & Authorization: Implemented smart guards that redirect unauthenticated users to the login page when attempting restricted actions (e.g., liking posts, commenting, accessing the My Page).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Interactive Social Engagement: Supports core social features including post creation, liking, bookmarking, and commenting.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Optimized Cloud Media Pipeline: Integrated Cloudinary for image storage. Designed a robust backend API to handle immediate asset synchronization (automatic addition and deletion on Cloudinary upon post creation/deletion), prioritizing storage efficiency and media performance.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🗄️ Database Schema (MongoDB)
+Designed a scalable schema structure containing 4 primary collections:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+User: Manages user profiles and authentication data.
 
-## Learn More
+Post: Stores outfit images, captions, and references to authors.
 
-To learn more about Next.js, take a look at the following resources:
+Like: Tracks user interactions and post engagement.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Bookmark: Handles saved posts for individual users.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Tech Stack
+Frontend / Backend: Node.js, Express.js (or Next.js Fullstack)
 
-## Deploy on Vercel
+Database: MongoDB, Mongoose
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Authentication: Google Auth / NextAuth.js
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Media Storage: Cloudinary API

@@ -31,7 +31,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
         setIsPosting(true);
 
         try {
-            // Posting images to Cloudinary
+            // 1. Posting images to Cloudinary
             const imageInfos: ImageInfo[] = [];
             for (const file of images){
                 const formData = new FormData();
@@ -50,8 +50,20 @@ const PostDescription = ({ images } : {images : File[]}) => {
                     public_id: data.public_id,
                 });
             }
+
+            // 2. Run AI API to generate tags (styles, items, season)
+            const aiResponse = await fetch('/api/ai/generate-tags', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    images: imageInfos.map((img) => img.url),
+                }),
+            });
             
-            // Posting to MongoDB
+            const aiData = await aiResponse.json();
+            const { styles, items, season } = aiData;
+            
+            // 3. Posting to MongoDB
             const response = await fetch('/api/post/create-post',{
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
@@ -61,6 +73,9 @@ const PostDescription = ({ images } : {images : File[]}) => {
                     sex: userData?.sex,
                     images: imageInfos,
                     description,
+                    styles,
+                    items,
+                    season,
                     likes: [],
                     likesCount: 0,
                 }),
@@ -76,6 +91,8 @@ const PostDescription = ({ images } : {images : File[]}) => {
         } catch(err) {
             console.error("❌ 오류 발생:", err);
             alert("업로드 중 오류가 발생했습니다.");
+        } finally {
+            setIsPosting(false);
         }
     }
 
