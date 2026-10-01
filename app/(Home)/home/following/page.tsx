@@ -1,75 +1,97 @@
-"use client"
-
+// app/(main)/home/following/page.tsx
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth"; // Path to your NextAuth config options
+import clientPromise from "@/lib/mongodb";
 import StyleCard from "@/app/components/StyleCard";
-import { useState, useEffect } from "react";
-import { useUser } from "@/app/context/UserContext";
-import { useFeedFilter } from "@/app/context/FeedFilterContext";
+import { redirect } from "next/navigation";
 
-
-type Post = {
-    _id: string;
-    userEmail: string;
-    sex: string;
-    images: ImageInfo[];
-    description: string;
-    likes: string[],
-    likesCount: number,
+interface ImageInfo {
+  public_id: string;
+  url: string;
 }
 
-type ImageInfo = {
-    public_id: string;
-    url: string;
-};
+interface Post {
+  _id: string;
+  userEmail: string;
+  sex: string;
+  images: ImageInfo[];
+  description?: string;
+  likes?: string[];
+  likesCount?: number;
+}
 
-const Following = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const { filters } = useFeedFilter();
-    const { email } = useUser();
+interface FollowingPageProps {
+  searchParams: Promise<{ sex?: string }>;
+}
 
-    useEffect(() => {
-        if(!email) return;
+export default async function FollowingPage({ searchParams }: FollowingPageProps) {
+  const { sex } = await searchParams;
 
-        const posts = async () => {
-            try {
-                const params = new URLSearchParams({
-                    sort: "following",
-                });
-          
-                if (filters.sex !== "all") {
-                    params.append("sex", filters.sex);
-                }
+  // 1. Get user session directly on the server (No client-side fetch or extra roundtrips!)
+  const session = await getServerSession(authOptions);
+  const userEmail = session?.user?.email;
 
-                const response = await fetch(`/api/posts?${params.toString()}`, {
-                    headers: {
-                        'user-email': email
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json()
-                    console.log("post data: ", data);
-                    setPosts(data.posts);
-                } else {
-                console.error('DB 조회 실패')
-                }
-            } catch (error) {
-                console.error('API 호출 오류:', error)
-            }
-        }
+  if (!userEmail) {
+    redirect("/mypage");
+  }
 
-        posts();
-    },[email, filters])
+  // 2. Connect to MongoDB using native driver
+  const client = await clientPromise;
+  const db = client.db("wearly");
 
+  // 3. Fetch current user's following list directly from DB
+  const currentUser = await db.collection("users").findOne({ email: userEmail });
+  const followingList: string[] = currentUser?.following || [];
+
+  if (followingList.length === 0) {
     return (
-        <div className="">
-            <div className="flex flex-wrap mt-4">
-                {posts.map((post, index) => (
-                <div key={index} className="w-1/2 md:w-1/3">
-                    <StyleCard postImageURL={post.images[0].url} postID={post._id} />
-                </div>
-                ))}
-            </div>
-        </div>
+      <div className="p-8 text-center text-gray-500">
+        You are not following anyone yet.
+      </div>
     );
-};
+  }
 
-export default Following;
+  // 4. Build query for posts written by followed users
+  const query: Record<string, unknown> = {
+    userEmail: { $in: followingList },
+  };
+
+  if (sex && sex !== "all") {
+    query.sex = sex;
+  }
+
+  // 5. Fetch posts
+  const rawPosts = await db
+    .collection("posts")
+    .find(query, {
+      projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 },
+    })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  const posts: Post[] = rawPosts.map((post) => ({
+    _id: post._id.toString(),
+    userEmail: post.userEmail,
+    sex: post.sex,
+    images: post.images,
+    description: post.description,
+    likes: post.likes || [],
+    likesCount: post.likesCount || 0,
+  }));
+
+  return (
+    <div>
+      <div className="flex flex-wrap mt-4">
+        {posts.map((post, index) => (
+          <div key={post._id} className="w-1/2 md:w-1/3">
+            <StyleCard 
+              postImageURL={post.images[0]?.url} 
+              postID={post._id} 
+              priority={index === 0} 
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

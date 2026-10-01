@@ -1,66 +1,65 @@
-"use client"
-
+// app/(main)/home/ranking/page.tsx
+import clientPromise from "@/lib/mongodb";
 import StyleCard from "@/app/components/StyleCard";
-import { useState, useEffect } from "react";
-import { useFeedFilter } from "@/app/context/FeedFilterContext";
 
-type Post = {
-    _id: string;
-    userEmail: string;
-    sex: string;
-    images: ImageInfo[];
-    description: string;
-    likes: string[],
-    likesCount: number,
+interface ImageInfo {
+  public_id: string;
+  url: string;
 }
 
-type ImageInfo = {
-    public_id: string;
-    url: string;
-};
+interface Post {
+  _id: string;
+  userEmail: string;
+  sex: string;
+  images: ImageInfo[];
+  description?: string;
+  likes?: string[];
+  likesCount?: number;
+}
 
-const Ranking = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const { filters } = useFeedFilter();
+interface RankingPageProps {
+  searchParams: Promise<{ sex?: string }>;
+}
 
-    useEffect(() => {
-        const posts = async () => {
-            try {
-                const params = new URLSearchParams({
-                    sort: "likes",
-                });
-          
-                if (filters.sex !== "all") {
-                    params.append("sex", filters.sex);
-                }
-                
-                const response = await fetch(`/api/posts?${params.toString()}`);
-                if (response.ok) {
-                    const data = await response.json()
-                    console.log("post data: ", data)
-                    setPosts(data.posts);
-                } else {
-                console.error('DB 조회 실패')
-                }
-            } catch (error) {
-                console.error('API 호출 오류:', error)
-            }
-        }
+export default async function RankingPage({ searchParams }: RankingPageProps) {
+  const { sex } = await searchParams;
 
-        posts();
-    },[filters])
+  const client = await clientPromise;
+  const db = client.db('wearly');
 
-    return (
-        <div className="">
-            <div className="flex flex-wrap mt-4">
-                {posts.map((post, index) => (
-                <div key={index} className="w-1/2 md:w-1/3">
-                    <StyleCard postImageURL={post.images[0].url} postID={post._id} />
-                </div>
-                ))}
-            </div>
-        </div>
-    );
-};
+  const query: Record<string, unknown> = {};
+  if (sex && sex !== "all") {
+    query.sex = sex;
+  }
 
-export default Ranking;
+  // Sort by highest likes count for Ranking feed
+  const rawPosts = await db.collection('posts').find(query, {
+    projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+  }).sort({ likesCount: -1 }).toArray();
+
+  const posts: Post[] = rawPosts.map((post) => ({
+    _id: post._id.toString(),
+    userEmail: post.userEmail,
+    sex: post.sex,
+    images: post.images,
+    description: post.description,
+    likes: post.likes || [],
+    likesCount: post.likesCount || 0,
+  }));
+
+  return (
+    <div>
+      <div className="flex flex-wrap mt-4">
+        {posts.map((post, index) => (
+          <div key={post._id} className="w-1/2 md:w-1/3">
+            <StyleCard 
+              postImageURL={post.images[0]?.url} 
+              postID={post._id} 
+              priority={index === 0} 
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
