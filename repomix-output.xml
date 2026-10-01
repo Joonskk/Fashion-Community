@@ -1,0 +1,4423 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/
+  (Footer)/
+    bookmarkTab/
+      bookmark/
+        page.tsx
+      likes/
+        page.tsx
+      layout.tsx
+    mypage/
+      newpost/
+        ImageSelect.tsx
+        page.tsx
+        PostDescription.tsx
+      settings/
+        accounts/
+          delete/
+            page.tsx
+          edit/
+            EditPage.tsx
+            page.tsx
+        layout.tsx
+        SettingsNav.tsx
+      signup/
+        page.tsx
+      MyPageClient.tsx
+      page.tsx
+    search/
+      page.tsx
+  (Home)/
+    home/
+      following/
+        page.tsx
+      ranking/
+        page.tsx
+      recommend/
+        page.tsx
+      layout.tsx
+      page.tsx
+  api/
+    ai/
+      generate-tags/
+        route.ts
+    auth/
+      [...nextauth]/
+        route.ts
+    follow/
+      list/
+        route.ts
+      route.ts
+    post/
+      comments/
+        [commentId]/
+          route.ts
+        route.ts
+      create-post/
+        route.ts
+      delete-post/
+        [postId]/
+          route.ts
+      edit-profile/
+        route.ts
+      toggle-bookmarks/
+        route.ts
+      toggle-likes/
+        route.ts
+    posts/
+      bookmarks/
+        route.ts
+      likes/
+        route.ts
+      route.ts
+    user/
+      delete/
+        route.ts
+  components/
+    BackArrow.tsx
+    BookmarkNavbar.tsx
+    Filter.tsx
+    Footer.tsx
+    LoginButton.tsx
+    LogoutAction.ts
+    Navbar.tsx
+    SessionProviderWrapper.tsx
+    StyleCard.tsx
+  context/
+    UserContext.tsx
+  post/
+    [postId]/
+      page.tsx
+      PostMenu.tsx
+      PostView.tsx
+  user/
+    [userId]/
+      follows/
+        page.tsx
+      page.tsx
+      UserPage.tsx
+  layout.tsx
+  page.tsx
+lib/
+  auth.ts
+  mongodb.ts
+public/
+  icons/
+    BackArrow.png
+    bookmark-clicked.png
+    Bookmark-Selected.png
+    bookmark-unclicked.png
+    Bookmark.png
+    comment.png
+    commentMenu.png
+    Copy.png
+    filter.png
+    heart-clicked.png
+    heart-unclicked.png
+    Home-Selected.png
+    Home.png
+    Menu.png
+    MyPage-Selected.png
+    MyPage.png
+    Notification-Selected.png
+    Notification.png
+    Option.png
+    Remove.png
+    Search-Selected.png
+    Search.png
+  styles/
+    Style12.jpeg
+    Style13.jpeg
+    Style14.jpeg
+    Style15.jpeg
+    Style16.jpeg
+  profile-default.png
+  WearlyLogo (Low File Capacity).png
+styles/
+  globals.css
+.gitignore
+auth.ts
+eslint.config.mjs
+next.config.ts
+package.json
+postcss.config.mjs
+README.md
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/(Footer)/mypage/settings/accounts/edit/page.tsx">
+import EditPage from './EditPage'
+import { Suspense } from 'react'
+
+const Edit = () => {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <EditPage />
+        </Suspense>
+    )
+}
+
+export default Edit;
+</file>
+
+<file path="app/(Footer)/mypage/settings/layout.tsx">
+// app/settings/layout.tsx
+"use client"
+
+import { ReactNode } from "react";
+import SettingsNav from "./SettingsNav";
+
+type SettingsLayoutProps = {
+  children: ReactNode;
+};
+
+const SettingsLayout = ({ children }: SettingsLayoutProps) => {
+  return (
+    <div className="w-full min-h-screen">
+        <div className="flex pt-[20px]">
+            {/* 왼쪽 네비게이션 */}
+            <div className="border-r border-gray-200 w-[200px] h-screen">
+                <SettingsNav />
+            </div>
+
+            {/* 오른쪽 페이지 내용 */}
+            <div className="flex-1 p-6">
+                {children}
+            </div>
+        </div>
+    </div>
+  );
+};
+
+export default SettingsLayout;
+</file>
+
+<file path="app/(Home)/home/page.tsx">
+import { redirect } from "next/navigation"
+
+const Homepage = () => {
+    redirect("/home/recommend");
+}
+
+export default Homepage
+</file>
+
+<file path="app/api/ai/generate-tags/route.ts">
+import { NextResponse } from "next/server";
+import vision from "@google-cloud/vision";
+
+const client = new vision.ImageAnnotatorClient();
+
+type GenerateTagsRequest = {
+  images: string[];       // Cloudinary URL
+};
+
+export async function POST(req: Request) {
+  try {
+    const body: GenerateTagsRequest = await req.json();
+    const { images } = body;
+
+    if (!images || images.length === 0) {
+      return NextResponse.json({ error: "No images provided" }, { status: 400 });
+    }
+
+    // Sample Tags
+    const styles = [
+      "casual","street","minimal","classic","formal","preppy",
+      "sporty","vintage","retro","bohemian","chic","grunge",
+      "edgy","punk","hiphop","k-pop","elegant","romantic",
+      "modern","artsy","androgynous","techwear","athleisure",
+      "outdoor","luxury","business","smart casual","cozy","monochrome",
+    ];
+
+    const items = [
+      "t-shirt","shirt","blouse","sweater","hoodie","knit","cardigan",
+      "denim jacket","leather jacket","bomber jacket","coat","trench coat",
+      "puffer jacket","jeans","chinos","skirt","dress","shorts","leggings",
+      "sneakers","boots","loafers","heels","sandals","bag","cap","hat",
+      "scarf","belt","glasses","watch","socks","tie","necklace","bracelet",
+    ];
+
+    const season = ["spring","summer","fall","winter"];
+
+
+    let combinedLabels: string[] = [];
+
+    // Call Google Vision Label Detection for all images
+    for (const imageUrl of images) {
+      const [result] = await client.labelDetection(imageUrl);
+      const labels = result.labelAnnotations
+    ?.map(label => label.description?.toLowerCase())
+    .filter((desc): desc is string => !!desc) || [];
+      combinedLabels.push(...labels);
+    }
+
+    console.log("combinedLabels: ", combinedLabels);
+
+    // 추출한 라벨을 미리 정의한 카테고리에 매핑
+    const extracted = {
+      styles: styles.filter(s => combinedLabels.includes(s)),
+      items: items.filter(i => combinedLabels.includes(i)),
+      season: season.filter(se => combinedLabels.includes(se)),
+    };
+
+    return NextResponse.json(extracted);
+
+  } catch (err) {
+    console.error("Google Vision AI 태그 생성 오류:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
+</file>
+
+<file path="app/api/post/toggle-likes/route.ts">
+import clientPromise from "@/lib/mongodb";
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+
+export async function POST(req: Request){
+
+    const body = await req.json();
+
+    const { postId, userEmail } = body;
+
+    const _id = new ObjectId(postId as string);
+
+    try {
+        const db = (await clientPromise).db('wearly');
+        const post = await db.collection('posts').findOne({ _id });
+        if (!post) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+
+        const alreadyLiked  = post.likes.includes(userEmail);
+        const updatedLikes = alreadyLiked
+            ? post.likes.filter((email: string) => email !== userEmail)
+            : [...post.likes, userEmail];
+
+        await db.collection('posts').updateOne(
+            { _id },
+            {
+                $set: {
+                    likes: updatedLikes,
+                    likesCount: updatedLikes.length,
+                }
+            }
+        )
+        
+        return NextResponse.json({
+            liked: !alreadyLiked,
+            likesCount: updatedLikes.length,
+        });
+
+    } catch(err) {
+        console.error(err);
+        return NextResponse.json({ error: '서버 오류' }, { status: 500 });
+    }
+}
+</file>
+
+<file path="app/api/user/delete/route.ts">
+import clientPromise from "@/lib/mongodb";
+import { getServerSession } from 'next-auth';
+import { authOptions } from "@/lib/auth";
+
+export async function DELETE(){
+    try {
+        const client = await clientPromise;
+        const db = client.db('wearly');
+        
+        // 현재 로그인한 유저 가져오기
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user?.email) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                status: 401,
+            });
+        }
+
+        const userEmail = session.user.email;
+
+        // 유저 관련 정보 모두 삭제
+        await db.collection("users").deleteOne({email: userEmail}); // 유저 정보 삭제
+        await db.collection("posts").deleteMany({userEmail});       // 유저가 올린 게시물 삭제
+        await db.collection("comments").deleteMany({userEmail});    // 유저가 남긴 댓글 삭제
+        await db.collection("bookmarks").deleteMany({userEmail});   // 유저가 한 북마크 삭제
+        await db.collection("users").updateMany(                    // 다른 유저 팔로워 목록에서 삭제
+            { followers: userEmail },
+            [
+                { $set: { followers: { $setDifference: ["$followers", [userEmail]] } } },
+                { $set: { followersCount: { $size: "$followers" } } }
+            ]
+        );
+          
+        await db.collection("users").updateMany(                    // 다른 유저 팔로잉 목록에서 삭제
+            { following: userEmail },
+            [
+                { $set: { following: { $setDifference: ["$following", [userEmail]] } } },
+                { $set: { followingCount: { $size: "$following" } } }
+            ]
+        );
+
+        await db.collection("posts").updateMany(                    // 다른 게시물에서 좋아요한 정보 삭제
+            { likes: userEmail },
+            [
+              { $set: { likes: { $setDifference: ["$likes", [userEmail]] } } },
+              { $set: { likesCount: { $size: "$likes" } } }
+            ]
+          );
+
+        return new Response(
+            JSON.stringify({ message: "User and related data deleted successfully" }),
+            { status: 200 }
+        );
+    } catch(error) {
+        console.error("Delete user error:", error);
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+    }
+}
+</file>
+
+<file path="app/components/BackArrow.tsx">
+"use client"
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+
+const BackArrow = () => {
+    const router = useRouter();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
+    return (
+        <button 
+            onClick={() => router.back()}
+            className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
+            <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow" className="w-[30px] h-[30px]" />
+        </button>
+  );
+};
+
+export default BackArrow;
+</file>
+
+<file path="app/components/LogoutAction.ts">
+"use server"
+
+import {signOut} from '@/auth'
+
+const LogoutAction = async () => {
+    await signOut({ redirectTo: '/home' })
+}
+
+export default LogoutAction;
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path="eslint.config.mjs">
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+];
+
+export default eslintConfig;
+</file>
+
+<file path="app/(Footer)/bookmarkTab/bookmark/page.tsx">
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import StyleCard from "@/app/components/StyleCard";
+
+interface ImageInfo {
+    public_id: string;
+    url: string;
+}
+
+interface Post {
+    _id: string;
+    userEmail: string;
+    sex: string;
+    images: ImageInfo[];
+    description?: string;
+    likes?: string[];
+    likesCount?: number;
+}
+
+interface BookmarkPageProps {
+    searchParams: Promise<{ sex?: string }>;
+}
+
+export default async function BookmarkPage({ searchParams }: BookmarkPageProps) {
+    const { sex } = await searchParams;
+
+    // 1. Get authenticated session
+    const session = await getServerSession(authOptions);
+    const userEmail = session?.user?.email;
+
+    if (!userEmail) {
+        redirect("/mypage");
+    }
+
+    // 2. Connect to MongoDB
+    const client = await clientPromise;
+    const db = client.db("wearly");
+
+    // 3. Query the 'bookmarks' collection using the user's email
+    const userBookmarks = await db
+        .collection("bookmarks")
+        .find({ userEmail })
+        .toArray();
+
+    if (userBookmarks.length === 0) {
+        return (
+        <div className="p-8 text-center text-gray-500">
+            북마크한 게시물이 없습니다.
+        </div>
+        );
+    }
+
+    // 4. Extract string postIds and convert them to ObjectIds for the posts query
+    const postObjectIds = userBookmarks
+        .map((b) => b.postId)
+        .filter((id) => id && ObjectId.isValid(id))
+        .map((id) => new ObjectId(id));
+
+    // 5. Build query for posts
+    const query: Record<string, unknown> = {
+        _id: { $in: postObjectIds },
+    };
+
+    if (sex && sex !== "all") {
+        query.sex = sex;
+    }
+
+    // 6. Fetch bookmarked posts from 'posts' collection
+    const rawPosts = await db
+        .collection("posts")
+        .find(query, {
+        projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 },
+        })
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    const posts: Post[] = rawPosts.map((post) => ({
+        _id: post._id.toString(),
+        userEmail: post.userEmail,
+        sex: post.sex,
+        images: post.images,
+        description: post.description,
+        likes: post.likes || [],
+        likesCount: post.likesCount || 0,
+    }));
+
+    return (
+        <div>
+        <div className="flex flex-wrap mt-4">
+            {posts.map((post, index) => (
+            <div key={post._id} className="w-1/2 md:w-1/3">
+                {post.images[0]?.url ? (
+                <StyleCard 
+                    postImageURL={post.images[0].url} 
+                    postID={post._id} 
+                    priority={index === 0} 
+                />
+                ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                    이미지 없음
+                </div>
+                )}
+            </div>
+            ))}
+        </div>
+        </div>
+    );
+}
+</file>
+
+<file path="app/(Footer)/bookmarkTab/likes/page.tsx">
+// app/(main)/likes/page.tsx
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import clientPromise from "@/lib/mongodb";
+import StyleCard from "@/app/components/StyleCard";
+
+interface ImageInfo {
+    public_id: string;
+    url: string;
+}
+
+interface Post {
+    _id: string;
+    userEmail: string;
+    sex: string;
+    images: ImageInfo[];
+    description?: string;
+    likes?: string[];
+    likesCount?: number;
+}
+
+interface LikesPageProps {
+    searchParams: Promise<{ sex?: string }>;
+}
+
+export default async function LikesPage({ searchParams }: LikesPageProps) {
+    const { sex } = await searchParams;
+
+    // 1. Authenticate user on the server
+    const session = await getServerSession(authOptions);
+    const userEmail = session?.user?.email;
+
+    if (!userEmail) {
+        redirect("/mypage");
+    }
+
+    // 2. Connect to MongoDB
+    const client = await clientPromise;
+    const db = client.db("wearly");
+
+    // 3. Build query for posts liked by the user
+    const query: Record<string, unknown> = {
+        likes: userEmail, // Matches posts where userEmail is included in the likes array
+    };
+
+    if (sex && sex !== "all") {
+        query.sex = sex;
+    }
+
+    // 4. Fetch liked posts
+    const rawPosts = await db
+        .collection("posts")
+        .find(query, {
+        projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 },
+        })
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    const posts: Post[] = rawPosts.map((post) => ({
+        _id: post._id.toString(),
+        userEmail: post.userEmail,
+        sex: post.sex,
+        images: post.images,
+        description: post.description,
+        likes: post.likes || [],
+        likesCount: post.likesCount || 0,
+    }));
+
+    if (posts.length === 0) {
+        return (
+        <div className="p-8 text-center text-gray-500">
+            좋아요를 누른 게시물이 없습니다.
+        </div>
+        );
+    }
+
+    return (
+        <div>
+        <div className="flex flex-wrap mt-4">
+            {posts.map((post, index) => (
+            <div key={post._id} className="w-1/2 md:w-1/3">
+                {post.images[0]?.url ? (
+                <StyleCard 
+                    postImageURL={post.images[0].url} 
+                    postID={post._id} 
+                    priority={index === 0} 
+                />
+                ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                    이미지 없음
+                </div>
+                )}
+            </div>
+            ))}
+        </div>
+        </div>
+    );
+}
+</file>
+
+<file path="app/(Footer)/bookmarkTab/layout.tsx">
+import "@/styles/globals.css";
+import BookmarkNavbar from '@/app/components/BookmarkNavbar';
+import Filter from "@/app/components/Filter";
+import { Suspense } from "react";
+
+export const viewport = {
+  scrollRestoration: "manual",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <div className="relative">
+      <BookmarkNavbar />
+      <main className="mt-[88px] mb-[100px]">
+        <Suspense fallback={<div className="h-[56px]" />}>
+          <Filter />
+        </Suspense>
+        {children}
+      </main>
+    </div>
+  );
+}
+</file>
+
+<file path="app/(Footer)/mypage/newpost/ImageSelect.tsx">
+'use client'
+
+import { useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+const ImageSelect = ({ onSelect }: { onSelect: (file: FileList) => void }) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const initial = useRef(true); // useRef로 재렌더링 막기 (useState 는 사진 선택 창을 두 번 실행함)
+    const router = useRouter();
+
+    useEffect(() => {
+        if (initial.current) {
+            inputRef.current?.click();
+            initial.current = false;
+        }
+    }, []);
+
+    return (
+        <>
+            <input
+                type="file"
+                accept="image/*"
+                multiple
+                ref={inputRef}
+                onChange={(e) => {
+                    if (e.target.files) {
+                        onSelect(e.target.files);
+                    }
+                }}
+                className="hidden"
+            />
+            <button onClick={()=>router.push("/mypage")}>Get Back to My Page</button>
+        </>
+    );
+};
+
+export default ImageSelect;
+</file>
+
+<file path="app/(Footer)/mypage/newpost/page.tsx">
+'use client'
+
+import ImageSelect from '@/app/(Footer)/mypage/newpost/ImageSelect';
+import PostDescription from '@/app/(Footer)/mypage/newpost/PostDescription';
+import { useState, useEffect } from 'react';
+
+const  NewPost = () => {
+
+    const [images, setImages] = useState<File[]>([]);
+
+    const addImages = (files: FileList) => {
+        setImages(Array.from(files));
+    }
+
+    useEffect(()=>{
+        console.log("Images: ", images);
+    }, [images]);
+    
+    return (
+        <div className="flex justify-center items-center">
+            {images.length === 0 ? (
+                <ImageSelect onSelect={addImages} />
+            ) : (
+                <PostDescription images={images} />
+            )}
+        </div>
+
+    );
+}
+
+export default NewPost;
+</file>
+
+<file path="app/(Footer)/mypage/settings/accounts/delete/page.tsx">
+"use client"
+
+import { useState } from "react";
+import { signOut } from "next-auth/react";
+
+const Delete = () => {
+
+    const AGREEMENT_TEXT = "계정 탈퇴에 동의합니다.";
+    const [inputValue, setInputValue] = useState("");
+
+    const isMatch = inputValue === AGREEMENT_TEXT;
+
+    const handleDelete = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if(!isMatch) return;
+
+        try {
+            const res = await fetch("/api/user/delete", {
+                method: "DELETE",
+            })
+
+            if(res.ok){
+                alert("계정이 정상적으로 삭제되었습니다.");
+                // 필요 시 로그아웃 후 리다이렉트
+                signOut({ callbackUrl: "/" });
+            } else {
+                const data = await res.json();
+                alert("삭제 실패: " + data.error);
+            }
+
+        } catch(err) {
+            console.error(err);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    }
+
+    return (
+        <div className="p-4">
+            <div className="font-bold text-[20px] mb-[10px]">계정 탈퇴</div>
+            <div className="text-gray-700 text-[15px] mb-[70px]">계정 탈퇴를 진행하기 전에 아래 항목을 꼭 확인해주세요.</div>
+
+            <div className="text-gray-800 text-[15px] mb-[15px]">탈퇴 후 개인정보는 모두 삭제됩니다.</div>
+            <div className="grid grid-cols-[150px_1fr] mb-6 border-t border-b border-gray-200">
+                <div className="p-3 text-gray-600 text-[15px] text-left font-medium border-b border-r border-gray-200">프로필 정보</div>
+                <div className="p-3 text-gray-600 text-[15px] text-left border-b border-gray-200">이메일, 이름 등 유저 정보 전부 삭제</div>
+                <div className="p-3 text-gray-600 text-[15px] text-left font-medium border-r border-gray-200">유저 활동</div>
+                <div className="p-3 text-gray-600 text-[15px] text-left">댓글, 좋아요, 게시물 등 모든 활동 삭제</div>
+            </div>
+
+
+            <form onSubmit={handleDelete} className="mt-[100px] flex flex-col">
+                <div className="text-gray-800 text-[15px]">문장을 그대로 입력하세요:</div>
+                <div className="text-[15px] text-red-600 mb-[15px]">&quot;계정 탈퇴에 동의합니다.&quot;</div>
+                <input
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className="w-[250px] h-[30px] p-[5px] text-[15px] text-red-600 border border-red-600 rounded-md focus:outline-none" 
+                />
+                <button
+                type="submit"
+                disabled={!isMatch}
+                className={`w-[60px] mt-[30px] px-[5px] py-[3px] font-bold text-[15px] rounded-md border-2
+                    ${isMatch ? "bg-red-600 text-white border-red-600 hover:bg-red-400 cursor-pointer" : "bg-white text-red-400 border-red-400"}
+                `}
+                >
+                    제출
+                </button>
+            </form>
+        </div>
+    )
+}
+
+export default Delete;
+</file>
+
+<file path="app/(Footer)/mypage/settings/SettingsNav.tsx">
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const SettingsNav = () => {
+    const pathname = usePathname();
+    const lastSegment = pathname.split("/").pop();
+
+    return (
+        <div>
+            <div className="font-bold text-[20px] my-[20px] px-[25px]">설정</div>
+            <div className="mx-[10px]">
+                <div className="text-gray-500 text-[13px] px-[15px]">계정 관련</div>
+                <Link href={'/mypage/settings/accounts/edit'} className={`${lastSegment === "edit" ? "bg-gray-100 hover:bg-gray-200" : "bg-white hover:bg-gray-100"} flex items-center gap-2 p-3 text-[15px] cursor-pointer rounded-xl active:text-gray-500`}>
+                    <Image 
+                        src="/icons/MyPage.png" 
+                        width={18} 
+                        height={18} 
+                        alt="Selected Footer Icons" 
+                        className="flex-shrink-0" 
+                    />
+                    <span>프로필 편집</span>
+                </Link>
+                <Link href={'/mypage/settings/accounts/delete'} className={`${lastSegment === "delete" ? "bg-gray-100 hover:bg-gray-200" : "bg-white hover:bg-gray-100"} flex items-center gap-2 p-3 text-[15px] cursor-pointer rounded-xl active:text-gray-500`}>
+                    <Image 
+                        src="/icons/Remove.png" 
+                        width={18} 
+                        height={18} 
+                        alt="Selected Footer Icons" 
+                        className="flex-shrink-0" 
+                    />
+                    <span>계정 탈퇴</span>
+                </Link>
+                <div className="flex items-center gap-2 p-3 text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500">
+                    <Image 
+                        src="/icons/Notification.png" 
+                        width={18} 
+                        height={18} 
+                        alt="Selected Footer Icons" 
+                        className="flex-shrink-0" 
+                    />
+                    <span>알림</span>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default SettingsNav;
+</file>
+
+<file path="app/(Footer)/search/page.tsx">
+"use client"
+
+import { useEffect } from "react";
+import { useUser } from "@/app/context/UserContext";
+import { useRouter } from "next/navigation";
+
+export default function Search() {
+
+    const { userData } = useUser();
+    const router = useRouter();
+
+    useEffect(()=>{
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+    })
+
+    return (
+        <div>
+            Search
+        </div>
+    )
+}
+</file>
+
+<file path="app/api/auth/[...nextauth]/route.ts">
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
+</file>
+
+<file path="app/api/follow/list/route.ts">
+import clientPromise from "@/lib/mongodb";
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+
+export async function GET(req: NextRequest){
+    const { searchParams } = new URL(req.url);
+    const sessionUserId = searchParams.get('userId');
+
+    if(!sessionUserId) {
+        return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    }
+
+    try {
+        const client = await clientPromise;
+        const db = client.db('wearly');
+
+        const user = await db.collection('users').findOne({
+            _id: new ObjectId(sessionUserId)
+        })
+
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        const userName = user.name;
+        const followersCount = user.followersCount;
+        const followingCount = user.followingCount;
+
+        const followersEmails = user.followers || [];
+        const followingEmails = user.following || [];
+
+        const followers = await db.collection('users').find({
+            email: {$in: followersEmails}
+        })
+        .project({_id: 1, name: 1, email: 1, profileImage: 1})
+        .toArray();
+        
+        const following = await db.collection('users').find({
+            email: {$in: followingEmails}
+        })
+        .project({_id: 1, name: 1, email: 1, profileImage: 1})
+        .toArray();
+
+        return NextResponse.json({userName, followers, following, followersCount, followingCount});
+    } catch(err) {
+        console.error('DB 불러오기 에러:', err);
+        return NextResponse.json({ error: 'DB 조회 오류' }, { status: 500 })
+    }
+}
+</file>
+
+<file path="app/components/LoginButton.tsx">
+'use client'
+
+import { signIn } from 'next-auth/react'
+
+const LoginButton = () => {
+  return (
+    <button
+      type="button"
+      className="google__btn"
+      onClick={() => signIn('google',{
+        callbackUrl: '/mypage'
+      })}
+    >
+      <i className="fa fa-google"></i>
+      Sign in with Google
+    </button>
+  )
+}
+
+export default LoginButton
+</file>
+
+<file path="app/user/[userId]/page.tsx">
+import UserPage from './UserPage'
+
+const UserPageClient = async () => {
+    return <UserPage />;
+}
+
+export default UserPageClient;
+</file>
+
+<file path="app/page.tsx">
+import { redirect } from "next/navigation";
+
+const Home = () => {
+    redirect("/home");
+}
+
+export default Home;
+</file>
+
+<file path="lib/auth.ts">
+import GoogleProvider from "next-auth/providers/google";
+import type { NextAuthOptions } from "next-auth";
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+};
+</file>
+
+<file path="lib/mongodb.ts">
+import { MongoClient } from 'mongodb'
+
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
+
+const uri: string = process.env.MONGODB_URI!;
+const options = {};
+
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
+
+if (!process.env.MONGODB_URI) {
+  throw new Error('Please add your MongoDB URI to .env.local');
+}
+
+if (process.env.NODE_ENV === 'development') {
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    global._mongoClientPromise = client.connect();
+  }
+  clientPromise = global._mongoClientPromise;
+} else {
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
+}
+
+export default clientPromise;
+</file>
+
+<file path="auth.ts">
+import GoogleProvider from "next-auth/providers/google";
+import NextAuth from "next-auth"
+import Google from "next-auth/providers/google"
+ 
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+})
+</file>
+
+<file path="postcss.config.mjs">
+const config = {
+  plugins: ["@tailwindcss/postcss"],
+};
+
+export default config;
+</file>
+
+<file path="app/(Footer)/mypage/settings/accounts/edit/EditPage.tsx">
+"use client"
+
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
+import Image from "next/image";
+
+const EditPage = () => {
+
+  const router = useRouter();
+  const { userData, session, refetchUserData } = useUser();
+
+  const [name, setName] = useState('');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+
+  const [preview, setPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const [isChanged, setIsChanged] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
+    }
+  };
+
+  const handleImageClick = () => {
+    imageInputRef.current?.click();
+  }
+
+  useEffect(() => {    
+    if(!session || !userData) return;
+    setName(userData.name);
+    setHeight(userData.height);
+    setWeight(userData.weight);
+    setPreview(userData.profileImage.url)
+    console.log(userData.profileImage.url)
+  }, [session, userData]);  
+
+  useEffect(() => {
+    if (!userData) return;
+  
+    const hasChanged =
+      name !== userData.name ||
+      height !== userData.height ||
+      weight !== userData.weight ||
+      (file !== null);
+  
+    setIsChanged(hasChanged);
+  }, [name, height, weight, file, userData]);
+
+  const uploadImageToCloudinary = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "wearly_images");
+    formData.append("folder", "wearly_profiles");
+
+    const res = await fetch("https://api.cloudinary.com/v1_1/wearly/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    return {public_id: data.public_id, url: data.secure_url};
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    let profileImage = null;
+    if (file){
+      profileImage = await uploadImageToCloudinary(file);
+    }
+    
+    const updatedProfile = { name, height, weight, profileImage: profileImage };
+
+    const response = await fetch('/api/post/edit-profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedProfile),
+    });
+
+    console.log(response);
+
+    if (response.ok) {
+      await refetchUserData();
+      router.push('/mypage');
+    } else {
+      alert('업데이트 실패!');
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <h4 className="font-bold text-[20px] mb-[10px]">프로필 편집</h4>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="w-full flex justify-center">
+          <Image src={preview || "/profile-default.png"} 
+            width={150} 
+            height={150}
+            alt="User Profile Image" 
+            unoptimized
+            className="rounded-full cursor-pointer w-[150px] h-[150px] object-cover transition duration-300 hover:brightness-70" 
+            onClick={handleImageClick}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            ref={imageInputRef}
+            className="hidden"
+            onChange={handleImageChange}
+          />
+        </div>
+        <input
+          name="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="이름"
+          className="border-l-[2px] border-gray-300 pl-[10px] mb-[5px] focus:outline-none"
+        />
+        <input
+          name="height"
+          value={height}
+          onChange={(e) => setHeight(e.target.value)}
+          placeholder="키(cm)"
+          className="border-l-[2px] border-gray-300 pl-[10px] mb-[5px] focus:outline-none"
+        />
+        <input
+          name="weight"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          placeholder="몸무게(kg)"
+          className="border-l-[2px] border-gray-300 pl-[10px] mb-[5px] focus:outline-none"
+        />
+        <div className="w-full flex justify-center">
+          <button 
+            type="submit"
+            disabled={!isChanged || isSubmitting}
+            className={`cursor-pointer w-[150px] h-[40px] text-white font-bold border rounded-sm
+            ${isChanged ? "bg-black" : "bg-gray-300"}
+            ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-black"}`}
+          >
+            {isSubmitting ? "제출중..." : "제출"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default EditPage;
+</file>
+
+<file path="app/api/follow/route.ts">
+import clientPromise from "@/lib/mongodb";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(req: NextRequest){
+
+    const body = await req.json();
+    const { sessionUserEmail, postAuthorEmail } = body;
+
+    if (!sessionUserEmail || !postAuthorEmail) {
+        return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+    }
+
+    try {
+        const db = (await clientPromise).db('wearly');
+
+        const sessionUser = await db.collection("users").findOne({ email: sessionUserEmail });
+        const authorUser = await db.collection("users").findOne({ email: postAuthorEmail });
+
+        if (!sessionUser || !authorUser) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        const isFollowing = sessionUser.following?.includes(postAuthorEmail);
+
+        if (isFollowing) { // 언팔로우 처리
+            await db.collection("users").updateOne(
+              { email: sessionUserEmail },
+              {
+                $pull: { following: postAuthorEmail },
+                $inc: { followingCount: -1 },
+              }
+            );
+      
+            await db.collection("users").updateOne(
+              { email: postAuthorEmail },
+              { 
+                $pull: { followers: sessionUserEmail },
+                $inc: { followersCount: -1 },
+              }
+            );
+        } else { // 팔로우 처리
+            await db.collection("users").updateOne(
+              { email: sessionUserEmail },
+              { 
+                $addToSet: { following: postAuthorEmail },
+                $inc: { followingCount: 1 },
+              }
+            );
+      
+            await db.collection("users").updateOne(
+              { email: postAuthorEmail },
+              { 
+                $addToSet: { followers: sessionUserEmail },
+                $inc: { followersCount: 1 },
+              }
+            );
+        }
+
+        return NextResponse.json({ isFollowing: !isFollowing });
+    } catch(err) {
+        console.error(err);
+        return NextResponse.json({ error: '서버 오류' }, { status: 500 });
+    }
+}
+
+export async function GET(req: NextRequest){
+    const { searchParams } = new URL(req.url);
+    const sessionUserEmail = searchParams.get('sessionUserEmail');
+    const postAuthorEmail = searchParams.get('postAuthorEmail');
+
+    if (!sessionUserEmail || !postAuthorEmail) {
+        return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+      }
+
+    try {
+        const client = await clientPromise;
+        const db = client.db('wearly');
+        
+        const user = await db.collection('users').findOne({ // 현재 세션 유저
+            email: sessionUserEmail
+        })
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+        const isFollowing = user.following?.includes(postAuthorEmail);
+
+        return NextResponse.json({ isFollowing })
+    } catch(err) {
+        console.error('DB 불러오기 에러:', err);
+        return NextResponse.json({ error: 'DB 조회 오류' }, { status: 500 })
+    }
+}
+</file>
+
+<file path="app/api/post/comments/[commentId]/route.ts">
+import clientPromise from "@/lib/mongodb";
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+
+// DELETE: 댓글 삭제
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(req: NextRequest, context: any) {
+  const commentId = context.params.commentId;
+
+  try {
+    const db = (await clientPromise).db("wearly");
+    await db.collection("comments").deleteOne({
+      _id: new ObjectId(commentId),
+    });
+
+    return NextResponse.json(
+      { message: "댓글이 성공적으로 삭제되었습니다." },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("댓글 삭제 오류:", err);
+    return NextResponse.json({ message: "서버 오류" }, { status: 500 });
+  }
+}
+
+// PATCH: 댓글 수정
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function PATCH(req: NextRequest, context: any) {
+  const commentId = context.params.commentId;
+
+  try {
+    const { text } = await req.json();
+    const db = (await clientPromise).db("wearly");
+    await db.collection("comments").updateOne(
+      { _id: new ObjectId(commentId) },
+      { $set: { text } }
+    );
+
+    return NextResponse.json(
+      { message: "댓글이 성공적으로 수정되었습니다." },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("댓글 수정 오류:", err);
+    return NextResponse.json({ message: "서버 오류" }, { status: 500 });
+  }
+}
+</file>
+
+<file path="app/api/post/toggle-bookmarks/route.ts">
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+
+export async function POST(req: Request){
+
+    const body = await req.json();
+    const { postId, userEmail } = body;
+
+    try {
+        const db = (await clientPromise).db('wearly');
+        const bookmarks = db.collection('bookmarks');
+
+        const existing = await bookmarks.findOne({postId, userEmail});
+
+        if(existing){
+            await bookmarks.deleteOne({ postId, userEmail });
+            return NextResponse.json({ success: true, bookmarked: false });
+        } else {
+            await bookmarks.insertOne({ postId, userEmail });
+            return NextResponse.json({ success: true, bookmarked: true });
+        }
+    } catch(err) {
+        console.error('DB 저장 중 에러:', err)
+        return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
+    }
+}
+
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const postId = searchParams.get("postId");
+    const userEmail = searchParams.get("userEmail");
+
+    try {
+        const db = (await clientPromise).db('wearly');
+        const bookmarks = db.collection('bookmarks');
+
+        const isBookmarked = await bookmarks.findOne({ postId, userEmail });
+        return NextResponse.json({ bookmarked: !!isBookmarked });
+    } catch (err) {
+        console.error("DB 조회 실패:", err);
+        return NextResponse.json({ error: '조회 실패' }, { status: 500 });
+    }
+}
+</file>
+
+<file path="app/components/Filter.tsx">
+"use client";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+const Filter = () => {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  // Read current 'sex' filter from URL query string
+  const currentSex = searchParams.get("sex") || "all";
+
+  const toggleSex = (sex: "male" | "female") => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Toggle: if clicking the active sex filter, reset to 'all'
+    const newSex = currentSex === sex ? "all" : sex;
+
+    if (newSex !== "all") {
+      params.set("sex", newSex);
+    } else {
+      params.delete("sex");
+    }
+
+    // Triggers a fast Server Component re-render with updated query params
+    replace(`${pathname}?${params.toString()}`);
+  };
+
+  return (
+    <div className="px-5 pt-4 flex">
+      <div className="flex">
+        <button
+          onClick={() => toggleSex("male")}
+          className={`w-[40px] h-[40px] mx-1 rounded-md border font-bold cursor-pointer
+            ${currentSex === "male" ? "bg-black text-white" : "border-gray-200"}
+          `}
+        >
+          남
+        </button>
+
+        <button
+          onClick={() => toggleSex("female")}
+          className={`w-[40px] h-[40px] mx-1 rounded-md border font-bold cursor-pointer
+            ${currentSex === "female" ? "bg-black text-white" : "border-gray-200"}
+          `}
+        >
+          여
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Filter;
+</file>
+
+<file path="app/components/SessionProviderWrapper.tsx">
+// app/providers/SessionProviderWrapper.tsx
+"use client";
+
+import { ReactNode } from "react";
+import { SessionProvider } from "next-auth/react";
+import { UserContextProvider } from "@/app/context/UserContext";
+
+export const SessionProviderWrapper = ({ children }: { children: ReactNode }) => {
+  return (
+    <SessionProvider>
+      <UserContextProvider>{children}</UserContextProvider>
+    </SessionProvider>
+  );
+};
+</file>
+
+<file path="README.md">
+## 📌 Project Overview
+Wearly is a full-stack social media platform tailored for fashion enthusiasts to share outfits, interact with posts, and explore style trends. It incorporates secure authentication, robust database schema design, and optimized cloud media management.
+
+## ✨ Key Features
+Secure Authentication: Integrated Google OAuth for seamless login experiences.
+
+Route Protection & Authorization: Implemented smart guards that redirect unauthenticated users to the login page when attempting restricted actions (e.g., liking posts, commenting, accessing the My Page).
+
+AI-Powered Hashtag Recommendation: Integrated the OpenAI GPT-4 Turbo API into the backend architecture to automatically analyze uploaded outfit images/content and generate relevant, trending hashtags upon post creation.
+
+Interactive Social Engagement: Supports core social features including post creation, liking, bookmarking, and commenting.
+
+Optimized Cloud Media Pipeline: Integrated Cloudinary for image storage. Designed a robust backend API to handle immediate asset synchronization (automatic addition and deletion on Cloudinary upon post creation/deletion), prioritizing storage efficiency and media performance.
+
+## 🗄️ Database Schema (MongoDB)
+Designed a scalable schema structure containing 4 primary collections:
+
+User: Manages user profiles and authentication data.
+
+Post: Stores outfit images, captions, and references to authors.
+
+Comments: Tracks user comments and discussion threads on posts.
+
+Bookmark: Handles saved posts for individual users.
+
+## 🛠️ Tech Stack
+Frontend / Backend: Next.js Fullstack
+
+Database: MongoDB
+
+Authentication: Google Auth / NextAuth.js
+
+AI Integration: OpenAI GPT-4 Turbo API
+
+Media Storage: Cloudinary API
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+</file>
+
+<file path="app/(Footer)/mypage/signup/page.tsx">
+"use client"
+
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useUser } from '@/app/context/UserContext';
+
+const SignUp = () => {
+  const { refetchUserData } = useUser();
+  const router = useRouter();
+  const [form, setForm] = useState({ name: '', height: '', weight: '', sex: '' });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('name', form.name);
+    formData.append('height', form.height);
+    formData.append('weight', form.weight);
+    formData.append('sex', form.sex);
+
+    const res = await fetch('/api/post/edit-profile', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (res.ok) {
+      await refetchUserData();
+      router.push('/mypage');  // 저장 후 마이페이지로 이동
+    } else {
+      const data = await res.json();
+      alert(data.error || '회원가입 중 오류가 발생했습니다.');
+    }
+  };
+
+  return (
+    <div className="p-20">
+      <h4>정보 입력</h4>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+        <input name="name" placeholder="이름" value={form.name} onChange={handleChange} />
+        <input name="height" placeholder="키(cm)" value={form.height} onChange={handleChange} />
+        <input name="weight" placeholder="몸무게(kg)" value={form.weight} onChange={handleChange} />
+        <div className="sex" >
+          <input type="radio" name="sex" value="male" checked={form.sex === 'male'} onChange={handleChange} />남
+          <input type="radio" name="sex" value="female" checked={form.sex === 'female'} onChange={handleChange} />여
+        </div>
+        <button type="submit">제출</button>
+      </form>
+    </div>
+  );
+};
+
+export default SignUp;
+</file>
+
+<file path="app/api/post/delete-post/[postId]/route.ts">
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// DELETE: 게시물 삭제
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(req: NextRequest, context: any) {
+    const { postId } = await context.params;
+
+    try {
+        const db = (await clientPromise).db('wearly');
+
+        // Cloudinary에서 사진 삭제
+        const post = await db.collection("posts").findOne({_id: new ObjectId(postId)});
+        if (!post) {
+            return NextResponse.json({ message: "게시물을 찾을 수 없습니다." }, { status: 404 });
+        }
+        if (post.images && Array.isArray(post.images)) {
+            for (const image of post.images) {
+              if (image.public_id) {
+                await cloudinary.uploader.destroy(image.public_id);
+              }
+            }
+        }
+
+        // DB에서 게시물, 댓글, 북마크 삭제
+        await db.collection("posts").deleteOne({_id: new ObjectId(postId)})
+        await db.collection("comments").deleteMany({postId: postId,})
+        await db.collection("bookmarks").deleteMany({postId: postId,})
+
+        return NextResponse.json(
+            { message: "게시물이 성공적으로 삭제되었습니다." },
+            { status: 200 }
+        );
+    } catch(err) {
+        console.error("게시물 삭제 오류:", err);
+        return NextResponse.json({ message: "서버 오류" }, { status: 500 });
+    }
+}
+</file>
+
+<file path="app/components/BookmarkNavbar.tsx">
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import Image from "next/image"
+
+const Navbar = () => {
+    const pathname = usePathname();
+
+    const navMenu = [
+        { href: "/bookmarkTab/bookmark", label: "북마크", key: 1 },
+        { href: "/bookmarkTab/likes", label: "좋아요", key: 2 }
+    ]
+
+    return (
+        <nav className="fixed top-0 left-0 right-0 z-50 max-w-[750px] mx-auto opacity-95 bg-white text-xl font-bold px-7 border-x border-x-gray-200 border-b border-b-gray-200">
+            <div className="my-4 flex justify-between items-center">
+                <Link href="/">Wearly</Link>
+                <Link href="/"><Image src="/icons/Notification.png" width={25} height={25} alt="Notification Icon" /></Link>
+            </div>
+            <div className="flex text-base">
+                {
+                    navMenu.map((item) => {
+                        const isActive = pathname.startsWith(item.href);
+                        return (
+                            isActive 
+                            ?
+                            <Link href={item.href} className="mr-4 h-[32px] border-b-2" key={item.key}>{item.label}</Link>
+                            :
+                            <Link href={item.href} className="mr-4 h-[32px] text-gray-400" key={item.key}>{item.label}</Link>
+                        )
+                    })
+                }
+            </div>
+        </nav>
+    )
+}
+
+export default Navbar
+</file>
+
+<file path="app/components/Navbar.tsx">
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import Image from "next/image"
+
+const Navbar = () => {
+    const pathname = usePathname();
+
+    const navMenu = [
+        { href: "/home/recommend", label: "추천", key: 1 },
+        { href: "/home/ranking", label: "스타일랭킹", key: 2 },
+        { href: "/home/following", label: "팔로잉", key: 3 }
+    ]
+
+    return (
+        <nav className="fixed top-0 left-0 right-0 z-50 max-w-[750px] mx-auto opacity-95 bg-white text-xl font-bold px-7 border-x border-x-gray-200 border-b border-b-gray-200">
+            <div className="my-4 flex justify-between items-center">
+                <Link href="/">Wearly</Link>
+                <Link href="/"><Image src="/icons/Notification.png" width={25} height={25} alt="Notification Icon" /></Link>
+            </div>
+            <div className="flex text-base">
+                {
+                    navMenu.map((item) => {
+                        const isActive = pathname.startsWith(item.href);
+                        return (
+                            isActive 
+                            ?
+                            <Link href={item.href} className="mr-4 h-[32px] border-b-2" key={item.key}>{item.label}</Link>
+                            :
+                            <Link href={item.href} className="mr-4 h-[32px] text-gray-400" key={item.key}>{item.label}</Link>
+                        )
+                    })
+                }
+            </div>
+        </nav>
+    )
+}
+
+export default Navbar
+</file>
+
+<file path="app/context/UserContext.tsx">
+"use client";
+
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { useSession } from "next-auth/react";
+
+export type UserData = {
+  _id: string;
+  name: string;
+  height: string;
+  weight: string;
+  email: string;
+  sex: string;
+  profileImage: { url: string; public_id: string };
+  followersCount: number;
+  followingCount: number;
+};
+
+type UserContextType = {
+  session: boolean;
+  email: string;
+  userData: UserData | null;
+  userDataLoaded: boolean;
+  refetchUserData: () => Promise<void>;
+};
+
+export const UserContext = createContext<UserContextType | null>(null);
+
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser must be used within a UserProvider");
+  }
+  return context;
+};
+
+export const UserContextProvider = ({ children }: { children: ReactNode }) => {
+  const { data: session, status } = useSession();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
+
+  const fetchUserData = async () => {
+    if (!session?.user?.email) return;
+
+    try {
+      const response = await fetch("/api/post/edit-profile");
+      if (response.ok) {
+        const data = await response.json();
+        const foundUser: UserData | undefined = data.users.find(
+          (user: UserData) => user.email === session.user?.email
+        );
+        if (foundUser) setUserData(foundUser);
+        console.log("foundUser: ", foundUser);
+      } else {
+        console.error("DB 조회 실패");
+      }
+    } catch (error) {
+      console.error("API 호출 오류:", error);
+    } finally {
+      setUserDataLoaded(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [session?.user?.email]);
+
+  return (
+    <UserContext.Provider
+      value={{
+        session: status === "authenticated",
+        email: session?.user?.email || "",
+        userData,
+        userDataLoaded,
+        refetchUserData: fetchUserData,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
+  );
+};
+</file>
+
+<file path="app/post/[postId]/page.tsx">
+import PostView from "./PostView";
+
+const Post = async () => {
+    return <PostView />;
+};
+
+export default Post;
+</file>
+
+<file path="app/post/[postId]/PostMenu.tsx">
+import { useParams, useRouter } from "next/navigation";
+
+type PostMenuProps = {
+    showPostMenu: boolean,
+    setShowPostMenu: React.Dispatch<React.SetStateAction<boolean>>;
+    copyURL: () => void;
+}
+
+const PostMenu = ({showPostMenu, setShowPostMenu, copyURL} : PostMenuProps) => {
+
+    const router = useRouter();
+
+    const params = useParams();
+    const postId = params?.postId as string;
+
+    const togglePostMenu = () => {
+        setShowPostMenu((prev)=>!prev);
+    }
+
+    const deletePost = async () => {
+        try {
+            const res = await fetch(`/api/post/delete-post/${postId}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                throw new Error('게시물 삭제 실패');
+            }
+
+            if (res.ok){
+                console.log('게시물 삭제 성공');
+                router.push('/mypage');
+            }
+
+        } catch(err) {
+            console.error('게시물 삭제 중 오류 발생:', err);
+        } finally {
+            router.refresh();
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
+            <div
+                className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+                showPostMenu ? "opacity-50 pointer-events-auto" : "opacity-0"
+                }`}
+                onClick={() => {
+                    togglePostMenu();
+                }}
+            />
+            {/* 메뉴창 */}
+            <div
+                className={`relative bg-white rounded-t-xl w-full max-w-[750px] h-[180px] py-[10px] transform transition-transform duration-300 ${
+                showPostMenu ? "translate-y-0" : "translate-y-full"
+                } pointer-events-auto`}
+            >
+                <div 
+                    className="w-full h-[80px] flex justify-center items-center hover:bg-gray-100 cursor-pointer text-[18px] text-black"
+                    onClick={()=>{togglePostMenu(); copyURL()}}
+                >
+                    링크 복사
+                </div>
+                <div 
+                    className="w-full h-[80px] flex justify-center items-center hover:bg-gray-100 cursor-pointer text-[18px] text-red-500"
+                    onClick={()=>deletePost()}
+                >
+                    삭제
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default PostMenu;
+</file>
+
+<file path="app/user/[userId]/follows/page.tsx">
+"use client"
+
+import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+
+type User = {
+    _id: string;
+    name: string;
+    email: string;
+    profileImage: ImageInfo;
+}
+
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
+
+const Follows = () => {
+
+    const router = useRouter();
+    const params = useParams();
+    const userId = params?.userId as string;
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get("tab");
+    const isTabValid = tabParam === "followers" || tabParam === "following";
+    const [tab, setTab] = useState<"followers" | "following" | null>(isTabValid ? tabParam : null);
+
+    const [userName, setUserName] = useState<string>("");
+    const [followers, setFollowers] = useState<User[]>([]);
+    const [following, setFollowing] = useState<User[]>([]);
+
+    useEffect(() => {
+        if(!userId) return;
+
+        const fetchFollow = async () => {
+            try {
+                const res = await fetch(`/api/follow/list?userId=${userId}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    setUserName(data.userName);
+                    setFollowers(data.followers);
+                    setFollowing(data.following);
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+
+        fetchFollow();
+    }, [userId])
+
+    return (
+        <div>
+            <div className="relative flex">
+                <button 
+                onClick={() => router.back()}
+                className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] z-[1] flex justify-center items-center">
+                    <Image src="/icons/BackArrow.png" width={30} height={30} priority alt="Back Arrow Icon" />
+                </button>
+                <div className="absolute w-full flex justify-center items-center h-[30px] mt-[20px]">
+                    <h1 className="font-bold">{userName}</h1>
+                </div>
+            </div>
+            <div className="mt-4 flex justify-evenly border-b border-gray-200">
+                <button 
+                className={`font-bold w-[50%] h-[50px] cursor-pointer ${tab === "followers" ? "border-b-2 text-black" : "text-gray-300"}`}
+                onClick={()=>setTab("followers")}
+                >
+                    팔로워
+                </button>
+                <button 
+                className={`font-bold w-[50%] h-[50px] cursor-pointer ${tab === "following" ? "border-b-2 text-black" : "text-gray-300"}`}
+                onClick={()=>setTab("following")}
+                >
+                    팔로잉
+                </button>
+            </div>
+
+            <div>
+                {tab === "followers" ? 
+                followers.map((user)=>(
+                    <li
+                    key={user._id}
+                    className="flex items-center justify-between px-[10px] py-[5px] cursor-pointer active:bg-gray-100"
+                    onClick={() => router.push(`/user/${user._id.toString()}`)}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-10 h-10 m-[4px] rounded-full overflow-hidden">
+                                <Image 
+                                    src={user.profileImage.url || "/profile-default.png"} 
+                                    alt="User Profile Image" 
+                                    fill 
+                                    sizes="40px"
+                                    className="object-cover" 
+                                />
+                            </div>
+                            <span className="text-sm">{user.name}</span>
+                        </div>
+                        <button className="text-sm text-black cursor-pointer">프로필</button>
+                    </li>
+                ))
+                :
+                following.map((user)=>(
+                    <li
+                    key={user._id}
+                    className="flex items-center justify-between px-[10px] py-[5px] cursor-pointer active:bg-gray-100"
+                    onClick={() => router.push(`/user/${user._id.toString()}`)}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-10 h-10 m-[4px] rounded-full overflow-hidden">
+                                <Image 
+                                    src={user.profileImage.url || "/profile-default.png"} 
+                                    alt="User Profile Image" 
+                                    fill 
+                                    sizes="40px"
+                                    className="object-cover" 
+                                />
+                            </div>
+                            <span className="text-sm">{user.name}</span>
+                        </div>
+                        <button className="text-sm text-black cursor-pointer">프로필</button>
+                    </li>
+                ))
+                }
+            </div>
+        </div>
+    )
+}
+
+export default Follows;
+</file>
+
+<file path="styles/globals.css">
+@import "tailwindcss";
+
+:root {
+  --white: #ffffff;
+  --black: #111111;
+  --grey: #999999;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--white);
+  color: var(--black);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.login-form form {
+  width: 100%;
+}
+
+.google__btn {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+  height: 50px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  line-height: 40px;
+  background: var(--black);
+  color: white;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.36);
+  transition: .2s linear;
+}
+
+.google__btn .fa {
+  font-size: 20px;
+  padding: 0 5px 0 0;
+}
+
+.google__btn:hover {
+  box-shadow: 0 15px 30px rgba(91, 144, 240, 0.8);
+}
+
+.follow-button button {
+  transition: .2s linear;
+  cursor: pointer;
+}
+.follow-button button:hover {
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3)
+}
+</file>
+
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**", // 모든 경로 허용
+      }
+    ]
+  },
+  // 다른 설정들...
+};
+
+export default nextConfig;
+</file>
+
+<file path="app/api/post/comments/route.ts">
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+
+type Comment = {
+    _id?: ObjectId;
+    postId: string;
+    userId: string;
+    userEmail: string;
+    userName: string;
+    profileImage: string;
+    text: string;
+    createdAt: Date;
+  }
+
+export async function POST(req: Request){
+
+    const body = await req.json();
+    const {postId, userId, userEmail, profileImage, userName, text } = body;
+
+    try {
+        const db = (await clientPromise).db('wearly');
+        const newComment : Comment = {
+            postId,
+            userId,
+            userEmail,
+            userName,
+            profileImage,
+            text,
+            createdAt: new Date(),
+        };
+
+        const result = await db.collection('comments').insertOne(newComment);
+
+        newComment._id = result.insertedId;
+
+        return NextResponse.json({ success: true, comment: newComment });
+    } catch(err) {
+        console.error('DB 저장 중 에러:', err)
+        return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
+    }
+}
+
+export async function GET() {
+    const db = (await clientPromise).db('wearly');
+
+    const comments = await db.collection('comments').find({}, {
+        projection: { _id: 1, postId: 1, userId: 1, userEmail: 1, userName: 1, profileImage: 1, text: 1, createdAt: 1 }
+    }).toArray()
+  
+    return NextResponse.json({ comments })
+}
+</file>
+
+<file path="app/components/Footer.tsx">
+"use client"
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import Image from "next/image";
+
+const Footer = () => {
+    const pathname = usePathname();
+
+    const menuItems = [
+        { href: "/home", home: true, label: "홈", icon: "/icons/Home.png", selectedIcon: "/icons/Home-Selected.png", key: 1},
+        { href: "/search", label: "검색", icon: "/icons/Search.png", selectedIcon: "/icons/Search-Selected.png", key: 2},
+        { href: "/bookmarkTab/bookmark", bookmark: true, label: "북마크", icon: "/icons/Bookmark.png", selectedIcon: "/icons/Bookmark-Selected.png", key: 3},
+        { href: "/mypage", label: "MY", icon: "/icons/MyPage.png", selectedIcon: "/icons/MyPage-Selected.png", key: 4}
+    ]
+
+    return (
+        <div className="fixed bottom-0 left-0 w-full bg-white ">
+            <div className="max-w-[750px] mx-auto flex justify-around border-t border-t-gray-200 border-x border-x-gray-200">
+            {menuItems.map((item) => {
+                const isActive = item.home
+                ? pathname === "/" || pathname.startsWith("/home")
+                : item.bookmark
+                  ? pathname.startsWith("/bookmarkTab")
+                  : pathname.startsWith(item.href);
+
+                return (
+                    isActive ?
+                    <Link href={item.href} className="w-1/4 h-[60px] flex items-center justify-center" key={item.key}>
+                        <div className="flex flex-col items-center">
+                            <Image src={item.selectedIcon} width={18} height={18} alt="Selected Footer Icons" />
+                            <p className="mt-1 text-[11px] font-bold">{item.label}</p>
+                        </div>
+                    </Link>
+                        :
+                    <Link href={item.href} className="w-1/4 h-[60px] flex items-center justify-center" key={item.key}>    
+                        <div className="flex flex-col items-center">
+                            <Image src={item.icon} width={18} height={18} alt="Unselected Footer Icons" />
+                            <p className="mt-1 text-[11px]">{item.label}</p>
+                        </div>
+                    </Link>
+                )
+            })}
+            </div>
+        </div>
+    )
+}
+
+export default Footer;
+</file>
+
+<file path="app/(Home)/home/following/page.tsx">
+// app/(main)/home/following/page.tsx
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth"; // Path to your NextAuth config options
+import clientPromise from "@/lib/mongodb";
+import StyleCard from "@/app/components/StyleCard";
+import { redirect } from "next/navigation";
+
+interface ImageInfo {
+  public_id: string;
+  url: string;
+}
+
+interface Post {
+  _id: string;
+  userEmail: string;
+  sex: string;
+  images: ImageInfo[];
+  description?: string;
+  likes?: string[];
+  likesCount?: number;
+}
+
+interface FollowingPageProps {
+  searchParams: Promise<{ sex?: string }>;
+}
+
+export default async function FollowingPage({ searchParams }: FollowingPageProps) {
+  const { sex } = await searchParams;
+
+  // 1. Get user session directly on the server (No client-side fetch or extra roundtrips!)
+  const session = await getServerSession(authOptions);
+  const userEmail = session?.user?.email;
+
+  if (!userEmail) {
+    redirect("/mypage");
+  }
+
+  // 2. Connect to MongoDB using native driver
+  const client = await clientPromise;
+  const db = client.db("wearly");
+
+  // 3. Fetch current user's following list directly from DB
+  const currentUser = await db.collection("users").findOne({ email: userEmail });
+  const followingList: string[] = currentUser?.following || [];
+
+  if (followingList.length === 0) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        You are not following anyone yet.
+      </div>
+    );
+  }
+
+  // 4. Build query for posts written by followed users
+  const query: Record<string, unknown> = {
+    userEmail: { $in: followingList },
+  };
+
+  if (sex && sex !== "all") {
+    query.sex = sex;
+  }
+
+  // 5. Fetch posts
+  const rawPosts = await db
+    .collection("posts")
+    .find(query, {
+      projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 },
+    })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  const posts: Post[] = rawPosts.map((post) => ({
+    _id: post._id.toString(),
+    userEmail: post.userEmail,
+    sex: post.sex,
+    images: post.images,
+    description: post.description,
+    likes: post.likes || [],
+    likesCount: post.likesCount || 0,
+  }));
+
+  return (
+    <div>
+      <div className="flex flex-wrap mt-4">
+        {posts.map((post, index) => (
+          <div key={post._id} className="w-1/2 md:w-1/3">
+            <StyleCard 
+              postImageURL={post.images[0]?.url} 
+              postID={post._id} 
+              priority={index === 0} 
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="app/(Home)/home/layout.tsx">
+import "@/styles/globals.css";
+import Navbar from '@/app/components/Navbar';
+import Filter from "@/app/components/Filter";
+import { Suspense } from "react";
+
+export const viewport = {
+  scrollRestoration: "manual",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <div className="relative">
+      <Navbar />
+      <main className="mt-[88px] mb-[100px]">
+        <Suspense fallback={<div className="h-[56px]" />}>
+          <Filter />
+        </Suspense>
+        {children}
+      </main>
+    </div>
+  );
+}
+</file>
+
+<file path="app/api/posts/bookmarks/route.ts">
+import { NextResponse } from 'next/server'
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from 'mongodb';
+import type { Document, Filter } from 'mongodb'
+
+export async function GET(req: Request) {
+    const email = req.headers.get('user-email');
+    if (!email) return NextResponse.json({ error: 'No email' }, { status: 400 });
+
+    const client = await clientPromise;
+    const db = client.db('wearly');
+
+    const { searchParams } = new URL(req.url);
+    const sexParam = searchParams.get("sex"); // male | female
+
+    const bookmarks = await db.collection('bookmarks').find({
+        userEmail: email
+    }).toArray();
+  
+    const postIds = bookmarks.map(bookmark => new ObjectId(bookmark.postId));
+    if (postIds.length === 0) {
+        return NextResponse.json({ posts: [] });
+    }
+
+    const query: Filter<Document> = { _id: { $in: postIds } };
+
+    if (sexParam && sexParam !== 'all') {
+        query.sex = sexParam;
+    }
+
+    // posts 컬렉션에서 postId가 일치하는 게시물 조회 + 최신순 정렬
+    const bookmarkedPosts = await db.collection('posts')
+        .find(query, {
+            projection: { _id: 1, userEmail: 1, sex:1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+        })
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    return NextResponse.json({ bookmarkedPosts })
+}
+</file>
+
+<file path="app/api/posts/likes/route.ts">
+import { NextRequest, NextResponse } from 'next/server'
+import clientPromise from "@/lib/mongodb";
+import type { Document } from 'mongodb'
+
+export async function GET(req: NextRequest) {
+    const email = req.headers.get('user-email');
+    if (!email) {
+        return NextResponse.json({ message: 'Missing email' }, { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db('wearly');
+
+    const { searchParams } = new URL(req.url);
+    const sexParam = searchParams.get("sex"); // male | female
+
+    const query: Document = {
+        likes: email
+    };
+
+    if (sexParam && sexParam !== "all") {
+        query.sex = sexParam;
+    }
+
+    const likedPosts = await db.collection('posts')
+        .find(query, {
+            projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+        })
+        .sort({ createdAt: -1 })
+        .toArray();
+
+    return NextResponse.json({ likedPosts });
+}
+</file>
+
+<file path="app/components/StyleCard.tsx">
+import Link from "next/link";
+import Image from "next/image";
+
+interface StyleCardProps {
+    postImageURL: string;
+    postID: string;
+    priority?: boolean;
+}
+
+export default function StyleCard({postImageURL, postID, priority = false} : StyleCardProps) {
+    return (
+        <div className="relative h-[300px] max-w-sm border border-gray-200">
+            <Link href={`/post/${postID}`} className=" block relative w-full h-full">
+                <Image 
+                    src={postImageURL} 
+                    fill 
+                    sizes="(max-width: 640px) 100vw, 384px" 
+                    alt="First Image of the Post" 
+                    priority={priority}
+                    loading={priority ? "eager" : "lazy"}
+                    className="object-cover" 
+                />
+            </Link>
+        </div>
+
+    )
+}
+</file>
+
+<file path="app/layout.tsx">
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "@/styles/globals.css";
+import Footer from '@/app/components/Footer'
+import { SessionProviderWrapper } from "./components/SessionProviderWrapper";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Wearly",
+  icons: "/WearlyLogo (Low File Capacity).png",
+  description: "Wearly Website Layout",
+};
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="h-full">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
+        <SessionProviderWrapper>
+          <div className="flex flex-col min-h-full max-w-[750px] mx-auto border-x border-x-gray-200 relative">
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </div>
+        </SessionProviderWrapper>
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="app/(Footer)/mypage/page.tsx">
+import MyPageClient from "./MyPageClient"
+
+const MyPage = async () => {
+    return <MyPageClient />
+}
+
+export default MyPage
+</file>
+
+<file path="app/(Home)/home/ranking/page.tsx">
+// app/(main)/home/ranking/page.tsx
+import clientPromise from "@/lib/mongodb";
+import StyleCard from "@/app/components/StyleCard";
+
+interface ImageInfo {
+  public_id: string;
+  url: string;
+}
+
+interface Post {
+  _id: string;
+  userEmail: string;
+  sex: string;
+  images: ImageInfo[];
+  description?: string;
+  likes?: string[];
+  likesCount?: number;
+}
+
+interface RankingPageProps {
+  searchParams: Promise<{ sex?: string }>;
+}
+
+export default async function RankingPage({ searchParams }: RankingPageProps) {
+  const { sex } = await searchParams;
+
+  const client = await clientPromise;
+  const db = client.db('wearly');
+
+  const query: Record<string, unknown> = {};
+  if (sex && sex !== "all") {
+    query.sex = sex;
+  }
+
+  // Sort by highest likes count for Ranking feed
+  const rawPosts = await db.collection('posts').find(query, {
+    projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+  }).sort({ likesCount: -1 }).toArray();
+
+  const posts: Post[] = rawPosts.map((post) => ({
+    _id: post._id.toString(),
+    userEmail: post.userEmail,
+    sex: post.sex,
+    images: post.images,
+    description: post.description,
+    likes: post.likes || [],
+    likesCount: post.likesCount || 0,
+  }));
+
+  return (
+    <div>
+      <div className="flex flex-wrap mt-4">
+        {posts.map((post, index) => (
+          <div key={post._id} className="w-1/2 md:w-1/3">
+            <StyleCard 
+              postImageURL={post.images[0]?.url} 
+              postID={post._id} 
+              priority={index === 0} 
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="app/user/[userId]/UserPage.tsx">
+"use client"
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import { useUser } from "@/app/context/UserContext";
+import LoginButton from '@/app/components/LoginButton';
+import StyleCard from "@/app/components/StyleCard";
+import Image from 'next/image';
+
+type User = {
+    _id: string;
+    name: string;
+    height: string;
+    weight: string;
+    email: string;
+    profileImage: ImageInfo;
+    followersCount: number;
+    followingCount: number;
+}
+
+type Post = {
+    _id: string;
+    userEmail: string;
+    images: ImageInfo[];
+    description: string;
+    likes: string[];
+    likesCount: number;
+}
+
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
+
+const UserPage = () => {
+
+    const router = useRouter();
+
+    const params = useParams();
+    const userId = params?.userId as string; // 해당 프로필 페이지 유저
+
+    const { email, session, refetchUserData } = useUser();
+
+    const [userData, setUserData] = useState<{ name: string, height: string, weight: string, email: string, followersCount: number, followingCount: number } | null>(null) // 해당 프로필 페이지 유저
+    const [userPost, setUserPost] = useState<Post[]>([]);
+    const [isFollowed, setIsFollowed] = useState<boolean>(false);
+    const [postUserProfileImage, setPostUserProfileImage] = useState<string>("");
+
+    const handleFollow = async () => {
+        console.log("handleFollow executed")
+        try {
+            const res = await fetch('/api/follow', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionUserEmail: email,
+                    postAuthorEmail: userData?.email,
+                })
+            })
+
+            const data = await res.json();
+            console.log("✅ DB 저장 성공:", data);
+
+            const updatedFollowed = data.isFollowing;
+            setIsFollowed(updatedFollowed);
+
+            setUserData(prev => {
+                if(!prev) return prev;
+
+                const newFollowersCount = updatedFollowed
+                ? prev.followersCount + 1
+                : prev.followersCount - 1;
+
+                return {
+                    ...prev,
+                    followersCount: Math.max(0, newFollowersCount), // 음수 방지
+                };
+            })
+            refetchUserData();
+        } catch(err) {
+            console.error("팔로우 중 오류 발생: ", err)
+        }
+    }
+
+    useEffect(() => {
+        if (!session) return; // 로그인 안돼있으면 바로 return
+
+        // fetch 호출하여 DB에서 데이터 가져오기
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch('/api/post/edit-profile');
+                if (response.ok) {
+                    const data = await response.json()
+                    // console.log("session data: ", data);
+                    const foundUser: User = data.users.find((user: { _id: string }) => user._id === userId);
+                    console.log(foundUser);
+                    if (foundUser) {
+                        setUserData(foundUser); // 아이디가 일치하는 사용자 데이터 설정
+                        setPostUserProfileImage(foundUser.profileImage.url);
+                    }
+                    if (foundUser.email === email) {
+                        router.push('/mypage')
+                    } 
+                } else {
+                console.error('DB 조회 실패')
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error)
+            }
+        }
+        
+        fetchUserData()
+    }, [session, email, router, userId])
+
+    useEffect(() => {
+        if (!session || !userData) return;
+
+        const posts = async () => {
+            try {
+                const response = await fetch('/api/posts');
+                if (response.ok) {
+                    const data = await response.json()
+                    console.log("post data: ", data);
+                    const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === userData?.email);
+                    console.log("foundPosts:", foundPosts);
+                    setUserPost(foundPosts); // 이메일이 일치하는 게시물 설정
+                } else {
+                console.error('DB 조회 실패')
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error)
+            }
+        }
+
+        posts();
+    },[session, userData])
+
+    useEffect(() => { // 팔로우 여부
+        if (!email || !userData) return;
+
+        const fetchFollow = async () => {
+            try {
+                const res = await fetch(`/api/follow?sessionUserEmail=${email}&postAuthorEmail=${userData.email}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    setIsFollowed(data.isFollowing);
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+        
+        fetchFollow();
+    }, [userData, email])
+    
+
+    return (
+        <div className="h-screen">
+            {session ? (
+                <div className="flex flex-col">
+                    <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
+                        <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
+                            <Image src={postUserProfileImage || "/profile-default.png"} width={150} height={150} alt="User Profile Image" priority className="rounded-full w-[150px] h-[150px] object-cover" />
+                            <div className="ml-[50px]">
+                            {userData ? (
+                                <>
+                                <h1 className="mt-[30px] text-[20px]">{userData.name}</h1>
+                                <div className="flex text-gray-500 text-[15px]">
+                                    <h2>{userData.height}cm</h2>
+                                    <h2 className="ml-[3px]">/</h2>
+                                    <h2 className="ml-[3px]">{userData.weight}kg</h2>
+                                </div>
+                                </>
+                            ) : (
+                                <div className="text-gray-400 mt-[30px]">정보를 불러오는 중...</div>
+                            )}
+                                <div className="flex text-[15px] mt-[10px]">
+                                    <div className="flex items-center">
+                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=followers`)} className="cursor-pointer">팔로워</button>
+                                        <h2 className="ml-[6px]">{userData?.followersCount}</h2>
+                                    </div>
+                                    <div className="flex items-center ml-[20px]">
+                                        <button onClick={()=>router.push(`/user/${userId}/follows?tab=following`)} className="cursor-pointer">팔로잉</button>
+                                        <h2 className="ml-[6px]">{userData?.followingCount}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="follow-button">
+                            <button 
+                            className={`mt-[100px] mr-[50px] cursor-pointer ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
+                            onClick={handleFollow}
+                            > {/* 팔로우 버튼 */}
+                                {isFollowed ? "팔로잉" :"팔로우"}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex absolute top-4 right-4">
+                        <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
+                            <Image src="/icons/Option.png" width={25} height={25} alt="Option Icon" />
+                        </div>
+                    </div>
+                    <div className="mb-[60px]">
+                        <div className="flex flex-wrap">
+                            {userPost.map((post, index) => (
+                            <div key={index} className="w-1/2 md:w-1/3">
+                                <StyleCard postImageURL={post.images[0].url} postID={post._id} />
+                            </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="login-form flex flex-col justify-center items-center h-screen">
+                    <div className="font-bold text-[15px]">
+                        Login to view My Page
+                    </div>
+                    <LoginButton />
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default UserPage;
+</file>
+
+<file path="app/api/post/create-post/route.ts">
+import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
+
+export async function POST(req: Request) {
+
+    const body = await req.json();
+    const { email, authorName, sex, images, description, styles, items, season, likes, likesCount } = body;
+    
+    try {
+        const db = (await clientPromise).db('wearly');
+        await db.collection('posts').insertOne({
+            userEmail: email,
+            authorName,
+            sex,
+            images,
+            description,
+            styles,
+            items,
+            season,
+            likes,
+            likesCount,
+            createdAt: new Date(),
+        })
+        return NextResponse.json({ success: true });
+    } catch(err) {
+        console.error('DB 저장 중 에러:', err)
+        return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
+    }
+}
+</file>
+
+<file path="app/api/posts/route.ts">
+// 홈 화면용 게시물 받아오기 API
+
+import { NextRequest, NextResponse } from 'next/server'
+import clientPromise from "@/lib/mongodb";
+import type { Sort, Document } from 'mongodb';
+
+export async function GET(req:NextRequest) {
+    const client = await clientPromise;
+    const db = client.db('wearly');
+
+    const { searchParams } = new URL(req.url);
+    const sortParam = searchParams.get("sort"); // newest || likes || following
+    const sexParam = searchParams.get("sex");
+    const userEmail = req.headers.get("user-email");
+
+    let sortOption: Sort = { createdAt: -1}; // newest
+    if(sortParam == "likes"){
+        sortOption = { likesCount: -1 }; // likes
+    }
+
+    const query : Document = {};
+
+    if (sexParam && sexParam !== "all") {
+        query.sex = sexParam;
+    }
+
+    // "팔로잉한 유저들" 필터
+    if (sortParam === "following") {
+        if (!userEmail) {
+        return NextResponse.json({ error: "Missing user email in headers" }, { status: 400 });
+        }
+
+        const user = await db.collection("users").findOne({ email: userEmail });
+        if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        const followingList = user.following || [];
+
+        query.userEmail = { $in: followingList };
+    }
+
+    const posts = await db.collection('posts').find(query, {
+        projection: { _id: 1, userEmail: 1, sex:1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+    }).sort(sortOption).toArray();
+  
+    return NextResponse.json({ posts })
+}
+</file>
+
+<file path="app/(Home)/home/recommend/page.tsx">
+// app/(main)/home/recommend/page.tsx
+import clientPromise from "@/lib/mongodb";
+import StyleCard from "@/app/components/StyleCard";
+
+// 1. Types for post objects
+interface ImageInfo {
+    public_id: string;
+    url: string;
+}
+
+interface Post {
+    _id: string;
+    userEmail: string;
+    sex: string;
+    images: ImageInfo[];
+    description?: string;
+    likes?: string[];
+    likesCount?: number;
+}
+
+// 2. Next.js Page Props
+interface RecommendPageProps {
+    searchParams: Promise<{ sex?: string }>;
+}
+
+export default async function RecommendPage({ searchParams }: RecommendPageProps) {
+    // Read URL search params directly (e.g. ?sex=female)
+    const { sex } = await searchParams;
+
+    // Connect to MongoDB using your existing native driver
+    const client = await clientPromise;
+    const db = client.db('wearly');
+
+    // Build query exact same way as your API route
+    const query: Record<string, unknown> = {};
+    if (sex && sex !== "all") {
+        query.sex = sex;
+    }
+
+    // Fetch raw posts from 'wearly' DB & 'posts' collection
+    const rawPosts = await db.collection('posts').find(query, {
+        projection: { _id: 1, userEmail: 1, sex: 1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
+    }).sort({ createdAt: -1 }).toArray();
+
+    // Convert MongoDB ObjectId to String for Client serialization
+    const posts: Post[] = rawPosts.map((post) => ({
+        _id: post._id.toString(),
+        userEmail: post.userEmail,
+        sex: post.sex,
+        images: post.images,
+        description: post.description,
+        likes: post.likes || [],
+        likesCount: post.likesCount || 0,
+    }));
+
+    return (
+        <div>
+        <div className="flex flex-wrap mt-4">
+            {posts.map((post, index) => (
+            <div key={post._id} className="w-1/2 md:w-1/3">
+                <StyleCard 
+                postImageURL={post.images[0]?.url} 
+                postID={post._id} 
+                priority={index === 0} // Preloads LCP image only for 1st card
+                />
+            </div>
+            ))}
+        </div>
+        </div>
+    );
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "fashion-community",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@google-cloud/vision": "^5.3.4",
+    "cloudinary": "^2.7.0",
+    "lucide-react": "^0.511.0",
+    "mongodb": "^6.16.0",
+    "next": "^16.1.6",
+    "next-auth": "^4.24.11",
+    "next-cloudinary": "^6.16.0",
+    "openai": "^6.19.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.33",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="app/(Footer)/mypage/newpost/PostDescription.tsx">
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext'
+import Link from 'next/link';
+import Image from 'next/image';
+
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
+
+const PostDescription = ({ images } : {images : File[]}) => {
+    
+    const router = useRouter();
+    const { email, userData } = useUser();
+    
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
+    const [description, setDescription] = useState<string>("");
+    const [isPosting, setIsPosting] = useState<boolean>(false);
+
+    const prevImage = () => {
+        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    };
+
+    const nextImage = () => {
+        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    };
+
+    const handleSubmit = async (e : React.FormEvent) => {
+        e.preventDefault();
+        setIsPosting(true);
+
+        try {
+            // 1. Posting images to Cloudinary
+            const imageInfos: ImageInfo[] = [];
+            for (const file of images){
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("upload_preset", "wearly_images");
+                formData.append("folder", "wearly_posts");
+                const res = await fetch("https://api.cloudinary.com/v1_1/wearly/image/upload", {
+                    method: "POST",
+                    body: formData,
+                })
+                console.log("Uploaded to Cloudinary: ", res);
+
+                const data = await res.json();
+                imageInfos.push({
+                    url: data.secure_url,
+                    public_id: data.public_id,
+                });
+            }
+
+            // 2. Run AI API to generate tags (styles, items, season)
+            const aiResponse = await fetch('/api/ai/generate-tags', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    images: imageInfos.map((img) => img.url),
+                }),
+            });
+            
+            const aiData = await aiResponse.json();
+            const { styles, items, season } = aiData;
+            
+            // 3. Posting to MongoDB
+            const response = await fetch('/api/post/create-post',{
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    authorName: userData?.name,
+                    sex: userData?.sex,
+                    images: imageInfos,
+                    description,
+                    styles,
+                    items,
+                    season,
+                    likes: [],
+                    likesCount: 0,
+                }),
+            })
+
+            const result = await response.json();
+            console.log("✅ DB 저장 성공:", result);
+
+            if (result.success) {
+                router.push('/mypage');
+            }
+
+        } catch(err) {
+            console.error("❌ 오류 발생:", err);
+            alert("업로드 중 오류가 발생했습니다.");
+        } finally {
+            setIsPosting(false);
+        }
+    }
+
+    return (
+        <div className="flex flex-col w-full relative">
+            <div>
+                <button 
+                onClick={() => router.push("/mypage")}
+                className="cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
+                    <Image src="/icons/BackArrow.png" width={30} height={30} alt="Back Arrow" />
+                </button>
+            </div>
+            <div className="relative w-[300px] h-[400px] mx-auto flex items-center justify-center mt-[20px]">
+                <Image
+                    src={URL.createObjectURL(images[currentIndex])}
+                    fill
+                    alt={`Preview ${currentIndex}`}
+                    className="object-cover rounded-lg shadow-lg"
+                />
+                <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
+                    ◀
+                </button>
+                <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
+                    ▶
+                </button>
+            </div>
+            <div className="my-[20px] w-full">
+                <textarea 
+                placeholder="Add Description..."
+                className="w-full h-[150px] p-[15px] resize-none"
+                onChange={(e)=>setDescription(e.target.value)}
+                />
+            </div>
+            <form onSubmit={handleSubmit} className="flex justify-center mx-auto" >
+                <div className="flex text-center w-[70px] h-[30px] mr-[10px]">
+                {isPosting ? (
+                <div className="w-full h-full flex justify-center items-center border rounded-sm bg-gray-200 text-gray-400 cursor-not-allowed">
+                    Cancel
+                </div>
+                ) : (
+                <Link
+                    href="/mypage"
+                    className="cursor-pointer w-full h-full flex justify-center items-center border rounded-sm hover:bg-gray-100"
+                >
+                    Cancel
+                </Link>
+                )}
+                </div>
+                <button
+                type="submit"
+                disabled={isPosting}
+                className={`w-[70px] h-[30px] border rounded-md flex items-center justify-center
+                    ${isPosting ? 'bg-gray-200 text-white cursor-not-allowed' : 'bg-black text-white hover:bg-opacity-80 cursor-pointer'}
+                `}
+                >
+                    {isPosting ? 'Posting...' : 'Post'}
+                </button>
+            </form>
+        </div>
+    )
+}
+
+export default PostDescription;
+</file>
+
+<file path="app/(Footer)/mypage/MyPageClient.tsx">
+"use client"
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { signOut } from "next-auth/react";
+import { useUser } from "@/app/context/UserContext";
+import LoginButton from '@/app/components/LoginButton';
+import StyleCard from "@/app/components/StyleCard";
+import Image from 'next/image';
+
+type Post = {
+    _id: string;
+    userEmail: string;
+    images: ImageInfo[];
+    description: string;
+    likes: string[];
+    likesCount: number;
+}
+
+type ImageInfo = {
+    url: string;
+    public_id: string;
+}
+
+const MyPageClient = () => {
+    const router = useRouter();
+
+    const { userData, userDataLoaded, email, session } = useUser();
+
+    const [myPost, setMyPost] = useState<Post[]>([]);
+    const userId = userData?._id;
+
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const menuButtonRef = useRef<HTMLDivElement>(null);
+
+    // 프로필 편집
+    const handleEditClick = () => {
+        if (!userData) return;
+        router.push(`/mypage/settings/accounts/edit`);
+    }
+
+    // 마이페이지 메뉴
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+          if (menuRef.current && 
+            !menuRef.current.contains(event.target as Node) && 
+            menuButtonRef.current &&
+            !menuButtonRef.current.contains(event.target as Node)) {
+            setMenuOpen(false);
+          }
+        };
+    
+        if (menuOpen) {
+          document.addEventListener("mousedown", handleClickOutside);
+        } else {
+          document.removeEventListener("mousedown", handleClickOutside);
+        }
+    
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuOpen]);
+
+    // 내 게시물 불러오기
+    useEffect(() => {
+        const posts = async () => {
+            try {
+                const response = await fetch('/api/posts');
+                if (response.ok) {
+                    const data = await response.json()
+                    // console.log("post data: ", data);
+                    // console.log(email);
+                    const foundPosts: Post[] = data.posts.filter((post: Post) => post.userEmail === email);
+                    // console.log("foundPosts:", foundPosts);
+                    setMyPost(foundPosts); // 이메일이 일치하는 게시물 설정
+                } else {
+                console.error('DB 조회 실패')
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error)
+            }
+        }
+
+        posts();
+    },[session, email])
+
+    useEffect(() => {
+        // DB에 유저 데이터가 없는 경우 (첫 방문자)
+        if (session && userDataLoaded && !userData) {
+            router.push("/mypage/signup");
+        }
+    }, [session, userData, userDataLoaded, router]);
+
+    useEffect(() => {
+        console.log(userData);
+    }, [userData])
+
+    // 구글 로그인 UI
+    if(!session) {
+        return (
+            <div className="login-form flex flex-col justify-center items-center h-screen">
+                <div className="font-bold text-[15px]">
+                    Login to view My Page
+                </div>
+                <LoginButton />
+            </div>
+        )
+    }
+
+    return (
+        <div className="h-screen relative">
+            <div className="flex flex-col">
+                <div className="flex justify-between w-full pl-[50px] border-b border-b-gray-200">
+                    <div className="flex max-w-[750px] mt-[50px] pb-[50px]">
+                        <div className="w-[150px] h-[150px] rounded-full overflow-hidden">
+                            <Image
+                                src={userData?.profileImage.url || "/profile-default.png"}
+                                alt="User Profile Image"
+                                width={150}
+                                height={150}
+                                priority
+                                className="object-cover w-full h-full"
+                            />
+                        </div>
+                        <div className="ml-[50px]">
+                        {userData ? (
+                            <>
+                                <h1 className="mt-[30px] text-[20px]">{userData.name}</h1>
+                                <div className="flex text-gray-500 text-[15px]">
+                                    <h2>{userData.height}cm</h2>
+                                    <h2 className="ml-[3px]">/</h2>
+                                    <h2 className="ml-[3px]">{userData.weight}kg</h2>
+                                </div>
+                            </>
+                            ) : (
+                                <div className="text-gray-400 mt-[30px]">정보를 불러오는 중...</div>
+                            )}
+                            <div className="flex text-[15px] mt-[10px]">
+                                <button onClick={()=>router.push(`/user/${userId}/follows?tab=followers`)} className="flex items-center cursor-pointer active:opacity-50">
+                                    <div className="text-gray-500">팔로워</div>
+                                    <h2 className="ml-[6px] font-bold">{userData?.followersCount}</h2>
+                                </button>
+                                <button onClick={()=>router.push(`/user/${userId}/follows?tab=following`)} className="flex items-center cursor-pointer active:opacity-50 ml-[20px]">
+                                    <div className="text-gray-500">팔로잉</div>
+                                    <h2 className="ml-[6px] font-bold">{userData?.followingCount}</h2>
+                                </button>
+                            </div>
+                            <div className="flex mt-[10px]">
+                                <button 
+                                onClick={handleEditClick} 
+                                className="px-[15px] py-[5px] text-[14px] cursor-pointer font-bold bg-gray-100 hover:bg-gray-200 rounded-lg active:text-gray-500 active:scale-97 mr-[10px]"
+                                >
+                                    프로필 편집
+                                </button>
+                                <div 
+                                className="px-[15px] py-[5px] text-[14px] cursor-pointer font-bold bg-gray-100 hover:bg-gray-200 rounded-lg active:text-gray-500 active:scale-97"
+                                onClick={() => signOut({ callbackUrl: "/home" })}
+                                >
+                                    로그아웃
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex absolute top-4 right-4">
+                    <Link // 새 게시물 버튼
+                    href="/mypage/newpost"
+                    className="flex items-center justify-center text-[35px] text-black text-center border border-2 border-black rounded-[8px] w-[30px] h-[30px] mr-[20px] opacity-60 hover:opacity-100 hover:bg-black hover:text-white active:scale-90 transition"
+                    >
+                        +
+                    </Link>
+                    <div // 메뉴창 토글 버튼
+                    ref={menuButtonRef}
+                    className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 active:scale-90 transition-all duration-100"
+                    onClick={(e) => {
+                    e.stopPropagation(); // 메뉴 버튼 클릭 이벤트가 외부로 안 퍼지게
+                    setMenuOpen((prev) => !prev);
+                    }}
+                    >
+                        <Image src="/icons/Menu.png" width={25} height={25} alt="Menu Icon" />
+                    </div>
+                    {menuOpen && (
+                    <div
+                    ref={menuRef}
+                    className="absolute top-[40px] right-0 w-[250px] bg-white shadow-lg border border-gray-100 rounded-xl p-[10px] z-100"
+                    onClick={(e) => e.stopPropagation()} // 메뉴 내부 클릭 시 닫힘 방지
+                    >
+                        <div 
+                        className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                        onClick={handleEditClick}
+                        >
+                            설정
+                        </div>
+                        <div 
+                        className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                        onClick={()=>router.push('/mypage/settings/accounts/edit')}
+                        >
+                            내 활동
+                        </div>
+                        <div 
+                        className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                        onClick={()=>router.push('/mypage/settings/accounts/edit')}
+                        >
+                            모드 전환
+                        </div>
+                        <div 
+                        className="p-[15px] text-[15px] cursor-pointer bg-white hover:bg-gray-100 rounded-xl active:text-gray-500"
+                        onClick={() => signOut({ callbackUrl: "/home" })}
+                        >
+                            로그아웃
+                        </div>
+                    </div>
+                    )}
+                </div>
+                <div className="mb-[60px]">
+                    <div className="flex flex-wrap">
+                        {myPost.map((post, index) => (
+                        <div key={index} className="w-1/2 md:w-1/3">
+                            <StyleCard postImageURL={post.images[0].url} postID={post._id} />
+                        </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default MyPageClient;
+</file>
+
+<file path="app/api/post/edit-profile/route.ts">
+import { NextResponse } from 'next/server'
+import clientPromise from '@/lib/mongodb'
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+type UpdateUserFields = {
+  name: string;
+  height: string;
+  weight: string;
+  profileImage?: string;
+};
+
+type ImageInfo = {
+  public_id: string;
+  url: string;
+};
+
+type CommentUpdateFields = {
+  userName: string;
+  profileImage?: string;
+}
+
+// Post ( 회원가입 )
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email as string;
+
+  const formData = await req.formData();
+
+  const name = formData.get("name") as string;
+  const height = formData.get("height") as string;
+  const weight = formData.get("weight") as string;
+  const sex = formData.get("sex") as string;
+
+  const followers: string[] = [];
+  const following: string[] = [];
+  const followersCount: number = 0;
+  const followingCount: number = 0;
+
+  const DEFAULT_PROFILE_IMAGE: ImageInfo = {
+    public_id: "",
+    url: "/profile-default.png"
+  };
+
+  if (!name || !height || !weight || !sex || !email) {
+    return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
+  }
+
+  try {
+      const db = (await clientPromise).db('wearly')
+      await db.collection('users').insertOne({ 
+        name,
+        height,
+        weight,
+        email,
+        sex,
+        profileImage: DEFAULT_PROFILE_IMAGE,
+        followers,
+        following,
+        followersCount,
+        followingCount,
+      })
+      return NextResponse.redirect(new URL('/mypage', req.url))
+    } catch (error) {
+      console.error('DB 저장 중 에러:', error)
+      return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 })
+    }
+}
+
+// Get ( My Page 로 정보 받아올 때 )
+export async function GET() {
+  try {
+    const client = await clientPromise;
+    const db = client.db('wearly')
+
+    // All users list
+    const users = await db.collection('users').find({}, {
+      projection: { _id: 1, name: 1, height: 1, weight: 1, email: 1, sex: 1, profileImage: 1, followersCount: 1, followingCount: 1 } // _id 포함해서 필요한 필드 가져옴
+    }).toArray()
+
+    return NextResponse.json({ users })
+  } catch (error) {
+    console.error('DB 불러오기 에러:', error)
+    return NextResponse.json({ error: 'DB 조회 오류' }, { status: 500 })
+  }
+}
+
+// Patch ( Edit Proifile 할 때)
+export async function PATCH(req: Request) {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email as string;
+
+  const { name, height, weight, profileImage } = await req.json(); // JSON 데이터를 받음
+  
+  if (!name || !height || !weight || !email) {
+    return NextResponse.json({ error: '모든 정보를 입력해주세요.' }, { status: 400 });
+  }
+
+  try {
+    const db = (await clientPromise).db('wearly');
+
+    const user = await db.collection("users").findOne({email: email});
+    if (!user) {
+      return NextResponse.json({ message: "유저를 찾을 수 없습니다." }, { status: 404 });
+    }
+    if(user.profileImage.public_id) {
+      await cloudinary.uploader.destroy(user.profileImage.public_id); // Cloudinary에서 기존 profileImage 삭제
+    }
+
+    const updateFields: UpdateUserFields = {
+      name,
+      height,
+      weight,
+    };    
+
+    if (profileImage) updateFields.profileImage = profileImage; // 이미지 있으면 업데이트
+
+
+    // 사용자의 이메일을 기반으로 프로필 정보 업데이트
+    const result = await db.collection('users').updateOne(
+      { email }, // 이메일로 특정 사용자 찾기
+      {
+        $set: updateFields,
+      }
+    );
+
+    // 댓글 정보 업데이트
+    const commentUpdateFields : CommentUpdateFields = {
+      userName: name,
+    };
+
+    // 프로필 이미지가 있을 때만 추가
+    if (profileImage) {
+      commentUpdateFields.profileImage = profileImage.url;
+    }
+
+    await db.collection("comments").updateMany(
+      { userEmail: email },
+      { $set: commentUpdateFields }
+    );
+
+    if (result.modifiedCount === 0) {
+      return NextResponse.json({ message: '업데이트할 데이터가 없습니다.' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: '프로필이 성공적으로 업데이트되었습니다.' });
+  } catch (error) {
+    console.error('DB 업데이트 오류:', error);
+    return NextResponse.json({ error: 'DB 업데이트 오류' }, { status: 500 });
+  }
+}
+</file>
+
+<file path="app/post/[postId]/PostView.tsx">
+"use client"
+
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
+import { useRef } from "react";
+import { X, ArrowUp } from "lucide-react";
+import Image from "next/image";
+import PostMenu from "./PostMenu";
+import Post from "./page";
+
+type Post = {
+    _id: string;
+    userEmail: string;
+    images: ImageInfo[],
+    description: string,
+    likes: string[],
+    likesCount: number,
+    createdAt: string,
+}
+
+type ImageInfo = {
+    public_id: string;
+    url: string;
+};
+
+type User = {
+    _id: string;
+    name: string;
+    height?: string;
+    weight?: string;
+    email?: string;
+    profileImage: ImageInfo;
+    following?: string[];
+    follower?: string[];
+}
+
+type Comment = {
+    _id?: string;
+    postId?: string;
+    userId: string;
+    userEmail?: string;
+    userName: string;
+    profileImage?: string;
+    text: string;
+    createdAt: string;
+}
+
+const PostView = () => {
+
+    const router = useRouter();
+
+    const params = useParams();
+    const postId = params?.postId as string;
+
+    const { userData, email, refetchUserData } = useUser();
+
+    const [sessionUserName, setSessionUserName] = useState<string>("");
+    const [sessionUserProfileImage, setSessionUserProfileImage] = useState<string>("");
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const [post, setPost] = useState<Post | null>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [images, setImages] = useState<ImageInfo[]>([]);
+    const [likesCount, setLikesCount] = useState<number>(0);
+    const [createdAt, setCreatedAt] = useState<string>("");
+
+    const [liked, setLiked] = useState<boolean>(false);
+    const [showComments, setShowComments] = useState<boolean>(false);
+    const [comment, setComment] = useState<string>("");
+    const [commentsList, setCommentsList] = useState<Comment[]>([]);
+    const [isEditingComment, setIsEditingComment] = useState<boolean>(false);
+    const [bookmarked, setBookmarked] = useState<boolean>(false);
+    const [isFollowed, setIsFollowed] = useState<boolean>(false);
+    const [copied, setCopied] = useState(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+
+    const [commentId, setCommentId] = useState<string | undefined>("");
+    const [showCommentMenu, setShowCommentMenu] = useState<{[key : string] : boolean}>({});
+    const [showPostMenu, setShowPostMenu] = useState<boolean>(false);
+
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    const moveToUserPage = () => {  // 게시물 작성자의 프로필 페이지로 이동
+        router.push(`/user/${user?._id}`);
+    }
+
+    const moveToCommentUserPage = (userId: string) => {   // 댓글 작성자의 프로필 페이지로 이동
+        router.push(`/user/${userId}`);
+        console.log(userId)
+    }
+
+    const prevImage = () => {
+        setCurrentIndex((prev) => (prev === 0 ? 0 : prev - 1));
+    };
+
+    const nextImage = () => {
+        setCurrentIndex((prev) => (prev === images?.length - 1 ? images?.length - 1 : prev + 1));
+    };
+
+    const toggleLike = async () => {
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+
+        const likedAfterAction = !liked;
+        setLiked(likedAfterAction);
+        setLikesCount(likedAfterAction ? likesCount + 1 : likesCount -1);
+
+        try{
+            const res = await fetch('/api/post/toggle-likes',{
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    postId,
+                    userEmail: email,
+                }),
+            })
+
+            const data = await res.json();
+            setLikesCount(data.likesCount);
+        } catch(err) {
+            console.error("Failed to toggle likes: ", err)
+            setLiked(!likedAfterAction);
+            setLikesCount(likedAfterAction ? likesCount - 1 : likesCount + 1);
+        }
+    }
+
+    const toggleComment = () => {
+        setShowComments((prev)=>!prev);
+    }
+
+    const toggleBookmark = async () => {
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+        
+        try{
+            const res = await fetch('/api/post/toggle-bookmarks',{
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    postId,
+                    userEmail: email,
+                }),
+            })
+
+            const data = await res.json();
+            setBookmarked(data.bookmarked);
+        } catch(err) {
+            console.error("Failed to toggle bookmarks: ", err)
+        }
+
+    }
+
+    const copyURL = async () => {
+        try {
+        await navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+
+        timerRef.current = setTimeout(() => {
+            setCopied(false);
+        }, 2000);
+        } catch (err) {
+        console.error("URL 복사 실패", err);
+        }
+    }
+
+    const handleInput = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = "auto";
+    
+            // 최소 높이 고정 (초기 높이와 동일하게)
+            const minHeight = "36px"; // 적당한 높이 (기본 1줄)
+            textarea.style.height = minHeight;
+    
+            // 내용이 많아지면 늘어나게
+            textarea.style.height = `${textarea.scrollHeight}px`;
+
+            setComment(textarea.value);
+        }
+    };
+
+    const deleteInput = () => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            textarea.value = ""
+        }
+        setComment("");
+    }
+
+    const handleSubmit = async (e : React.FormEvent) => {
+        e.preventDefault();
+
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+
+        const textarea = textareaRef.current;
+        
+        try {
+            const res = await fetch('/api/post/comments', {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    postId,
+                    userId: userData?._id,
+                    userEmail: email,
+                    profileImage: sessionUserProfileImage,
+                    userName: sessionUserName,
+                    text: comment,
+                })
+            })
+
+            const result = await res.json();
+            console.log("✅ DB 저장 성공:", result);
+
+            if (result.success) {
+                console.log(result);
+                if(textarea) textarea.value = "";
+            
+                setCommentsList(prev => [...prev, result.comment]);
+                setShowComments(true);
+                router.refresh();
+            } else{
+                console.log("실패")
+            }
+            
+        } catch(err) {
+            console.error("❌ 오류 발생:", err);
+            alert("업로드 중 오류가 발생했습니다.");
+        } finally {
+            router.refresh();
+        }
+    }
+
+    const handleEditSubmit = async (e : React.FormEvent) => {
+        e.preventDefault();
+        if (!userData || !email) return;
+        
+        const textarea = textareaRef.current;
+
+        try {
+            const res = await fetch(`/api/post/comments/${commentId}`,{
+                method: "PATCH",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: comment }),
+            });
+
+            const result = await res.json();
+            console.log("✅ DB 저장 성공:", result);
+
+            if(res.ok) {
+                if(textarea) textarea.value = "";
+                const editedCommentWithInfo : Comment = {
+                    _id: commentId,
+                    postId,
+                    userId: userData?._id,
+                    userEmail: email,
+                    userName: userData.name,
+                    profileImage: sessionUserProfileImage,
+                    text: comment,
+                    createdAt: "now",
+                };
+            
+                setCommentsList(prev => prev.map(comment => comment._id === editedCommentWithInfo._id ? editedCommentWithInfo : comment));
+                setShowComments(true);
+                router.refresh();
+            } else{
+                console.log("실패")
+            }
+
+        } catch(err) {
+            console.error('댓글 수정 중 오류 발생:', err);
+        } finally {
+            setIsEditingComment(false);
+            router.refresh();
+        }
+    }
+
+    const getTimeAgo = (dateStr: string) => {
+        if(dateStr === "now") return "방금 전";
+
+        const now = new Date();
+        const past = new Date(dateStr);
+        const diffMs = now.getTime() - past.getTime();
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHrs = Math.floor(diffMin / 60);
+        const diffDays = Math.floor(diffHrs / 24);
+    
+        if (diffSec < 60) return `${diffSec}초 전`;
+        if (diffMin < 60) return `${diffMin}분 전`;
+        if (diffHrs < 24) return `${diffHrs}시간 전`;
+        if (diffDays < 7) return `${diffDays}일 전`;
+    
+        const year = past.getFullYear();
+        const month = String(past.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+        const day = String(past.getDate()).padStart(2, '0');
+
+        return `${year}.${month}.${day}`;
+    };
+
+    const toggleCommentMenu = (key : string | undefined) => {  
+        if(!key) return;
+
+        setShowCommentMenu((prev) => ({
+            ...prev,
+            [key]: !prev[key],
+        }));
+    }
+
+    const deleteComment = async (commentId : string | undefined) => {
+        // console.log("commentId: ", commentId);
+        try {
+            const res = await fetch(`/api/post/comments/${commentId}`,{
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                throw new Error('댓글 삭제 실패');
+            }
+
+            if (res.ok) {
+                setCommentsList((prev) => prev.filter(c => c._id !== commentId));
+                console.log('댓글 삭제 성공');
+            }
+        } catch(err) {
+            console.error('댓글 삭제 중 오류 발생:', err);
+        } finally {
+            router.refresh();
+        }
+    }
+
+    const clickEdit = (commentId : string | undefined, originalText : string) => {
+        toggleCommentMenu(commentId);
+        setIsEditingComment(true);
+
+        const textarea = textareaRef.current;
+        if(textarea){
+            textarea.focus();
+            textarea.value = originalText;
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+
+    }
+
+    const handleFollow = async () => {
+        if(!userData){
+            router.push("/mypage");
+            return;
+        }
+
+        console.log("handleFollow executed")
+        try {
+            const res = await fetch('/api/follow', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionUserEmail: email,
+                    postAuthorEmail: post?.userEmail,
+                })
+            })
+
+            const data = await res.json();
+            console.log("✅ DB 저장 성공:", data);
+            setIsFollowed(data.isFollowing);
+            refetchUserData();
+        } catch(err) {
+            console.error("팔로우 중 오류 발생: ", err)
+        }
+    }
+
+    useEffect(() => { // 첫 렌더링 시
+        const fetchPost = async () => {
+            try {
+                const response = await fetch('/api/posts');
+                if(response.ok) {
+                    const data = await response.json();
+                    // console.log("post page data: ", data)
+                    const foundPost: Post = data.posts.find((post: Post) => post._id === postId);
+                    // console.log("foundPost:", foundPost);
+                    setPost(foundPost); // 아이디가 일치하는 게시물 설정
+                    // console.log("userData = ", userData)
+                } else {
+                console.error('DB 조회 실패');
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error);
+            }
+        }
+
+        fetchPost();
+    }, [postId])  // postId가 변경될 때마다 실행
+
+    useEffect(() => {
+        if(!email) return;
+
+        const fetchSessionUser = async () => {
+            try {
+                const response = await fetch('/api/post/edit-profile');
+                if(response.ok) {
+                    const data = await response.json();
+                    const foundSessionUser: User = data.users.find((user: User) => user.email === email);
+                    setSessionUserName(foundSessionUser.name);
+                    setSessionUserProfileImage(foundSessionUser.profileImage.url);
+                } else {
+                    console.error('DB 조회 실패');
+                }
+            } catch (error) {
+                console.error('API 호출 오류:', error);
+            }
+        }
+
+        fetchSessionUser();
+    }, [email])
+
+    useEffect(() => {
+        const fetchUser = async () => { // 게시물 작성자 색출
+            try {
+                const response = await fetch('/api/post/edit-profile');
+                if(response.ok){
+                    const userData = await response.json();
+                    const foundUser: User = userData.users.find((user: User) => user.email === post?.userEmail);
+                    // console.log("foundUser:", foundUser);
+                    setUser(foundUser); // post 정보의 이메일과 일치하는 user 색출 후 저장
+                } else {
+                    console.error('DB 조회 실패');
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+
+        const fetchBookmark = async () => { // 북마크 여부
+            try {
+                const response = await fetch(`/api/post/toggle-bookmarks?postId=${postId}&userEmail=${email}`);
+                const data = await response.json();
+                setBookmarked(data.bookmarked);
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+
+        if (post) {
+            fetchUser();
+            setImages(post.images);
+            setLikesCount(post.likesCount || 0);
+            setLiked(post.likes?.includes(email) ?? false); // ?? 는 좌측 값이 null / undefined 일 때 우측 값을 사용한다는 의미
+            setCreatedAt(post.createdAt);
+            fetchBookmark();
+        }
+    }, [post, email, postId])  // post가 변경될 때마다 실행
+
+    useEffect(() => { // 댓글 불러오기
+        const fetchComment = async () => {
+            try {
+                const res = await fetch('/api/post/comments');
+                if(res.ok) {
+                    const data = await res.json();
+                    const foundComments: Comment[] = data.comments.filter((comment: Comment) => comment.postId === postId);
+                    // console.log(foundComments);
+                    if(foundComments){
+                        setCommentsList(foundComments);
+                    } else{
+                        console.error('DB 조회 실패');
+                    }
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+
+        fetchComment();
+    }, [email, postId])
+
+    useEffect(() => { // 팔로우 여부
+        if (!email || !post?.userEmail) return;
+
+        const fetchFollow = async () => {
+            try {
+                const res = await fetch(`/api/follow?sessionUserEmail=${email}&postAuthorEmail=${post?.userEmail}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    setIsFollowed(data.isFollowing);
+                }
+            } catch(err) {
+                console.error('API 호출 오류:', err);
+            }
+        }
+        
+        fetchFollow();
+    }, [post, email, postId])
+
+    return (
+        <div className="flex flex-col w-full relative mb-[60px]">
+            <button 
+            onClick={() => router.back()}
+            className="relative cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
+                <Image src="/icons/BackArrow.png" fill alt="Back Arrow" />
+            </button>
+            <div className=""> {/* 게시물 div */}
+                <div className="relative w-full h-[60px] flex items-center"> {/* 유저 정보 */}
+                    <Image src={user?.profileImage.url || "/profile-default.png"} width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] w-[36px] h-[36px] cursor-pointer object-cover" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
+                    <div> {/* 유저 아이디, 키, 몸무게 */}
+                        <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
+                            {user?.name}
+                        </div>
+                        <div className="text-[13px] h-[20px]">
+                            {user?.height}cm · {user?.weight}kg
+                        </div>
+                    </div>
+                    {
+                        user?.email === email ?
+                        <div className="flex absolute right-4">
+                            <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
+                                <Image src="/icons/Option.png" width={25} height={25} alt="Option Icon" onClick={()=>setShowPostMenu(!showPostMenu)} />
+                            </div>
+                        </div>
+                        :
+                        <button 
+                        className={`ml-auto mr-[10px] cursor-pointer ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
+                        onClick={handleFollow}
+                        > {/* 팔로우 버튼 */}
+                            {isFollowed ? "팔로잉" :"팔로우"}
+                        </button>
+                    }
+                </div>
+                <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center"> {/* 사진 */}
+                    {images[currentIndex] ? (
+                    <Image
+                        src={images[currentIndex].url}
+                        fill
+                        alt={`Preview ${currentIndex}`}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority
+                        className="w-full h-full object-cover"
+                    />
+                    ) : (
+                        <div>이미지가 없습니다</div> // 혹은 로딩 스피너, 플레이스홀더 이미지 등
+                    )}
+                    <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
+                        ◀
+                    </button>
+                    <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
+                        ▶
+                    </button>
+                </div>
+                <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
+                    <div className="relative w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
+                        <Image src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} fill alt="Heart Icon" />
+                    </div>
+                    <div className="relative w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={toggleComment}>
+                        <Image src="/icons/comment.png" fill sizes="25px" alt="Comment Icon" />
+                    </div>
+                    <div className="relative w-[25px] h-[25px] ml-[25px] cursor-pointer" onClick={copyURL} >
+                        <Image src="/icons/Copy.png" fill alt="Copy Icon" />
+                    </div>
+                    <div className="relative w-[25px] h-[25px] ml-auto mr-[20px] cursor-pointer" onClick={toggleBookmark}>
+                        <Image src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} fill alt="Bookmark Icon" />
+                    </div>
+                </div>
+                <div className="ml-[20px] font-bold text-[15px]">
+                    {likesCount} likes
+                </div>
+                <div className="ml-[20px] mb-[40px]"> {/* 설명 */}
+                    <div className="font-bold inline-block mr-[10px]">{user?.name}</div>
+                    <div className="inline">{post?.description}</div>
+                    <div className="text-gray-400">{createdAt && getTimeAgo(createdAt)}</div>
+                </div>
+            </div>
+
+            <PostMenu showPostMenu={showPostMenu} setShowPostMenu={setShowPostMenu} copyURL={copyURL} />
+
+            {/* 댓글 */}
+            <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
+                <div
+                    className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+                    showComments ? "opacity-50 pointer-events-auto" : "opacity-0"
+                    }`}
+                    onClick={() => {
+                        toggleComment();
+                        toggleCommentMenu(commentId);
+                    }}
+                />
+                {/* 댓글창 */}
+                <div
+                    className={`relative bg-white rounded-t-xl w-full max-w-[750px] h-[70%] p-[20px] transform transition-transform duration-300 ${
+                    showComments ? "translate-y-0" : "translate-y-full"
+                    } pointer-events-auto`}
+                >
+                    <div className="h-[30px] flex items-center font-bold text-[18px] w-[98%] mx-auto mb-4">
+                        <span className="mr-1">댓글</span>
+                        <span className="text-[16px] align-middle leading-none">({commentsList.length})</span>
+                    </div>
+                    {/* Comments list */}
+                    <div className="flex-1 overflow-y-scroll h-[calc(100%-100px)] space-y-3 mb-4 w-[98%] mx-auto">
+                    {
+                        commentsList.map((comment, index) => (
+                            <div key={index} className="text-sm text-gray-700 w-full mb-[20px]">
+                                <div className="flex">
+                                    <Image src={comment.profileImage || "/profile-default.png"} width={35} height={35} alt="User Profile Image" className="rounded-full w-[35px] h-[35px] cursor-pointer object-cover mr-[10px]" onClick={() => moveToCommentUserPage(comment.userId)} />
+                                    <div className="flex-1">
+                                        <div className="flex">
+                                            <span className="font-bold">{comment.userName}</span>
+                                            <div className="ml-[10px]" >
+                                                {getTimeAgo(comment.createdAt)}
+                                            </div>
+                                        </div>
+                                        <div className="">
+                                            {comment.text}
+                                        </div>
+                                    </div>
+                                    <div className="w-[40px] relative">
+                                        { comment.userEmail === email &&
+                                        <Image
+                                        src={"/icons/commentMenu.png"}
+                                        width={15} height={15}
+                                        alt="Comment Menu Icon"
+                                        className={`cursor-pointer hover:opacity-100 ${showCommentMenu[comment._id ?? ""] ? "opacity-100" : "opacity-50"}`} 
+                                        onClick={() => {
+                                            toggleCommentMenu(comment._id)
+                                            setCommentId(comment._id)
+                                        }}
+                                        />
+                                        }
+                                        { showCommentMenu[comment._id ?? ""] &&
+                                        <div className="absolute right-[10px] z-5 w-[45px] h-[60px] flex flex-col justify-center items-center bg-white border border-gray-300 rounded text-[12px]">
+                                            <button 
+                                            className="cursor-pointer w-full h-full hover:bg-gray-200 duration-200"
+                                            onClick={()=>{clickEdit(comment._id, comment.text)}}
+                                            >
+                                                수정
+                                            </button>
+                                            <button
+                                            className="cursor-pointer w-full h-full hover:bg-gray-200 duration-200"
+                                            onClick={()=>{deleteComment(comment._id)}}
+                                            >
+                                                삭제
+                                            </button>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+
+                    {/* New comment input */}
+                    <form
+                    onSubmit={isEditingComment ? handleEditSubmit : handleSubmit}
+                    className="w-[calc(100%-40px)] absolute bottom-[14px]"
+                    >
+                        <div className="relative w-full">
+                            <textarea
+                                ref={textareaRef}
+                                onInput={handleInput}
+                                rows={1}
+                                required
+                                className="w-full border rounded-md p-2 pr-17 text-sm resize-none h-[36px] min-h-[36px] focus:outline-none"
+                                placeholder="댓글을 남겨주세요."
+                            />
+                            {comment ?
+                            (
+                            <div>
+                                <div className="absolute right-[40px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
+                                    <X size={12} className="text-white cursor-pointer" onClick={deleteInput} />
+                                </div>
+
+                                <button type="submit" className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-black flex items-center justify-center cursor-pointer">
+                                    <ArrowUp size={12} className="text-white" />
+                                </button>
+                            </div>
+                            ) :
+                            (
+                            <div className="absolute right-[10px] bottom-[14px] w-[20px] h-[20px] rounded-full bg-gray-200 flex items-center justify-center">
+                                <ArrowUp size={12} className="text-white" />
+                            </div>
+                            )
+                            }
+                            
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+            
+            {/* URL Copy Quote */}
+            <div className={`fixed left-1/2 -translate-x-1/2 bottom-[80px] w-[90%] max-w-[700px] h-[50px] flex justify-center items-center bg-black/80 text-white text-sm px-2 py-1 rounded transition-all duration-300 ${
+                copied
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-4 pointer-events-none"
+                }`}
+            >
+                링크를 복사했습니다.
+            </div>
+
+        </div>
+    );
+}
+
+export default PostView;
+</file>
+
+</files>

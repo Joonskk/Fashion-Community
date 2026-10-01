@@ -39,17 +39,21 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const [userDataLoaded, setUserDataLoaded] = useState(false);
 
   const fetchUserData = async () => {
-    if (!session?.user?.email) return;
+    if (!session?.user?.email) {
+      setUserDataLoaded(true);
+      return;
+    }
 
     try {
-      const response = await fetch("/api/post/edit-profile");
+      // Call the new targeted endpoint
+      const response = await fetch("/api/user/me");
       if (response.ok) {
         const data = await response.json();
-        const foundUser: UserData | undefined = data.users.find(
-          (user: UserData) => user.email === session.user?.email
-        );
-        if (foundUser) setUserData(foundUser);
-        console.log("foundUser: ", foundUser);
+        // Extract the specific user object directly from response
+        if (data.user) {
+          setUserData(data.user);
+          console.log("foundUser: ", data.user);
+        }
       } else {
         console.error("DB 조회 실패");
       }
@@ -61,8 +65,13 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchUserData();
-  }, [session?.user?.email]);
+    if (status === "authenticated") {
+      fetchUserData();
+    } else if (status === "unauthenticated") {
+      setUserData(null);
+      setUserDataLoaded(true);
+    }
+  }, [session?.user?.email, status]);
 
   return (
     <UserContext.Provider

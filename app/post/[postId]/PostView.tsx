@@ -389,13 +389,10 @@ const PostView = () => {
                 const response = await fetch('/api/posts');
                 if(response.ok) {
                     const data = await response.json();
-                    // console.log("post page data: ", data)
                     const foundPost: Post = data.posts.find((post: Post) => post._id === postId);
-                    // console.log("foundPost:", foundPost);
-                    setPost(foundPost); // 아이디가 일치하는 게시물 설정
-                    // console.log("userData = ", userData)
+                    setPost(foundPost);
                 } else {
-                console.error('DB 조회 실패');
+                    console.error('DB 조회 실패');
                 }
             } catch (error) {
                 console.error('API 호출 오류:', error);
@@ -403,21 +400,23 @@ const PostView = () => {
         }
 
         fetchPost();
-    }, [postId])  // postId가 변경될 때마다 실행
+    }, [postId])
 
+    // Target Fetch 1: Current Session User
     useEffect(() => {
         if(!email) return;
 
         const fetchSessionUser = async () => {
             try {
-                const response = await fetch('/api/post/edit-profile');
+                const response = await fetch('/api/user/me');
                 if(response.ok) {
                     const data = await response.json();
-                    const foundSessionUser: User = data.users.find((user: User) => user.email === email);
-                    setSessionUserName(foundSessionUser.name);
-                    setSessionUserProfileImage(foundSessionUser.profileImage.url);
+                    if(data.user) {
+                        setSessionUserName(data.user.name);
+                        setSessionUserProfileImage(data.user.profileImage?.url || "/profile-default.png");
+                    }
                 } else {
-                    console.error('DB 조회 실패');
+                    console.error('Session user DB 조회 실패');
                 }
             } catch (error) {
                 console.error('API 호출 오류:', error);
@@ -427,24 +426,29 @@ const PostView = () => {
         fetchSessionUser();
     }, [email])
 
+    // Target Fetch 2: Post Author User
     useEffect(() => {
-        const fetchUser = async () => { // 게시물 작성자 색출
+        const fetchUser = async () => {
+            if (!post?.userEmail) return;
+        
             try {
-                const response = await fetch('/api/post/edit-profile');
-                if(response.ok){
-                    const userData = await response.json();
-                    const foundUser: User = userData.users.find((user: User) => user.email === post?.userEmail);
-                    // console.log("foundUser:", foundUser);
-                    setUser(foundUser); // post 정보의 이메일과 일치하는 user 색출 후 저장
+                // Use clean template string without extra encoding wrappers
+                const response = await fetch(`/api/user/${encodeURIComponent(post.userEmail.trim())}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.user) {
+                        setUser(data.user);
+                    }
                 } else {
-                    console.error('DB 조회 실패');
+                    console.error('Author DB 조회 실패:', response.status);
                 }
-            } catch(err) {
+            } catch (err) {
                 console.error('API 호출 오류:', err);
             }
-        }
+        };        
 
-        const fetchBookmark = async () => { // 북마크 여부
+        const fetchBookmark = async () => {
             try {
                 const response = await fetch(`/api/post/toggle-bookmarks?postId=${postId}&userEmail=${email}`);
                 const data = await response.json();
@@ -458,11 +462,11 @@ const PostView = () => {
             fetchUser();
             setImages(post.images);
             setLikesCount(post.likesCount || 0);
-            setLiked(post.likes?.includes(email) ?? false); // ?? 는 좌측 값이 null / undefined 일 때 우측 값을 사용한다는 의미
+            setLiked(post.likes?.includes(email) ?? false);
             setCreatedAt(post.createdAt);
             fetchBookmark();
         }
-    }, [post, email, postId])  // post가 변경될 때마다 실행
+    }, [post, email, postId])
 
     useEffect(() => { // 댓글 불러오기
         const fetchComment = async () => {
@@ -471,7 +475,6 @@ const PostView = () => {
                 if(res.ok) {
                     const data = await res.json();
                     const foundComments: Comment[] = data.comments.filter((comment: Comment) => comment.postId === postId);
-                    // console.log(foundComments);
                     if(foundComments){
                         setCommentsList(foundComments);
                     } else{
@@ -549,7 +552,7 @@ const PostView = () => {
                         className="w-full h-full object-cover"
                     />
                     ) : (
-                        <div>이미지가 없습니다</div> // 혹은 로딩 스피너, 플레이스홀더 이미지 등
+                        <div>이미지가 없습니다</div>
                     )}
                     <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
                         ◀
