@@ -62,7 +62,6 @@ export const ALLOWED_SEASONS = [
   "summer",
   "fall",
   "winter",
-  "all-season",
 ] as const;
 
 export type SeasonTag = (typeof ALLOWED_SEASONS)[number];
