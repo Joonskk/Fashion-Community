@@ -71,7 +71,6 @@ export type SeasonTag = (typeof ALLOWED_SEASONS)[number];
 // Genders / Fits (3 tags)
 // -----------------------------------------------------------------------------
 export const ALLOWED_GENDERS = [
-  "unisex",
   "menswear",
   "womenswear",
 ] as const;

@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    
+
     const { imageUrl } = await req.json();
 
     if (!imageUrl) {
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
           - Select 1 to 3 styles ONLY from this list: ${ALLOWED_STYLES.join(", ")}.
           - Select 1 to 5 items ONLY from this list: ${ALLOWED_ITEMS.join(", ")}.
           - Select 1 primary season ONLY from this list: ${ALLOWED_SEASONS.join(", ")}.
-          - Select 1 target gender/fit ONLY from this list: ${ALLOWED_GENDERS.join(", ")}.
+          - Select 1 target gender ONLY from this list: ${ALLOWED_GENDERS.join(", ")}.
           - Select 1 to 4 primary colors ONLY from this list: ${ALLOWED_COLORS.join(", ")}.`,
         },
         {
