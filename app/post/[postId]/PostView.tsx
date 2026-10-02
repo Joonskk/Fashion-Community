@@ -6,15 +6,16 @@ import { useUser } from "@/app/context/UserContext";
 import { X, ArrowUp } from "lucide-react";
 import Image from "next/image";
 import PostMenu from "./PostMenu";
+import SimilarPosts from "@/app/components/SimilarPosts";
 
 type Post = {
     _id: string;
     userEmail: string;
-    images: ImageInfo[],
-    description: string,
-    likes: string[],
-    likesCount: number,
-    createdAt: string,
+    images: ImageInfo[];
+    description: string;
+    likes: string[];
+    likesCount: number;
+    createdAt: string;
 }
 
 type ImageInfo = {
@@ -75,7 +76,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
     const [copied, setCopied] = useState<boolean>(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-
     const [commentId, setCommentId] = useState<string | undefined>("");
     const [showCommentMenu, setShowCommentMenu] = useState<{[key : string] : boolean}>({});
     const [showPostMenu, setShowPostMenu] = useState<boolean>(false);
@@ -83,13 +83,13 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const moveToUserPage = () => {  // 게시물 작성자의 프로필 페이지로 이동
+    const moveToUserPage = () => {
         if (user?._id) {
             router.push(`/user/${user._id}`);
         }
     }
 
-    const moveToCommentUserPage = (userId: string) => {   // 댓글 작성자의 프로필 페이지로 이동
+    const moveToCommentUserPage = (userId: string) => {
         if (userId) {
             router.push(`/user/${userId}`);
         }
@@ -111,7 +111,7 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
 
         const likedAfterAction = !liked;
         setLiked(likedAfterAction);
-        setLikesCount(likedAfterAction ? likesCount + 1 : likesCount -1);
+        setLikesCount(likedAfterAction ? likesCount + 1 : likesCount - 1);
 
         try{
             const res = await fetch('/api/post/toggle-likes',{
@@ -157,23 +157,22 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
         } catch(err) {
             console.error("Failed to toggle bookmarks: ", err)
         }
-
     }
 
     const copyURL = async () => {
         try {
-        await navigator.clipboard.writeText(window.location.href);
-        setCopied(true);
+            await navigator.clipboard.writeText(window.location.href);
+            setCopied(true);
 
-        if (timerRef.current) {
-            clearTimeout(timerRef.current);
-        }
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
 
-        timerRef.current = setTimeout(() => {
-            setCopied(false);
-        }, 2000);
+            timerRef.current = setTimeout(() => {
+                setCopied(false);
+            }, 2000);
         } catch (err) {
-        console.error("URL 복사 실패", err);
+            console.error("URL 복사 실패", err);
         }
     }
 
@@ -181,14 +180,9 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
         const textarea = textareaRef.current;
         if (textarea) {
             textarea.style.height = "auto";
-    
-            // 최소 높이 고정 (초기 높이와 동일하게)
-            const minHeight = "36px"; // 적당한 높이 (기본 1줄)
+            const minHeight = "36px";
             textarea.style.height = minHeight;
-    
-            // 내용이 많아지면 늘어나게
             textarea.style.height = `${textarea.scrollHeight}px`;
-
             setComment(textarea.value);
         }
     };
@@ -255,7 +249,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
             });
 
             const result = await res.json();
-            console.log("✅ DB 저장 성공:", result);
 
             if(res.ok) {
                 if(textarea) textarea.value = "";
@@ -301,7 +294,7 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
         if (diffDays < 7) return `${diffDays} days`;
     
         const year = past.getFullYear();
-        const month = String(past.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+        const month = String(past.getMonth() + 1).padStart(2, '0');
         const day = String(past.getDate()).padStart(2, '0');
 
         return `${year}.${month}.${day}`;
@@ -317,7 +310,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
     }
 
     const deleteComment = async (commentId : string | undefined) => {
-        // console.log("commentId: ", commentId);
         try {
             const res = await fetch(`/api/post/comments/${commentId}`,{
                 method: "DELETE",
@@ -329,7 +321,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
 
             if (res.ok) {
                 setCommentsList((prev) => prev.filter(c => c._id !== commentId));
-                console.log('댓글 삭제 성공');
             }
         } catch(err) {
             console.error('댓글 삭제 중 오류 발생:', err);
@@ -350,7 +341,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
             textarea.style.height = "auto";
             textarea.style.height = `${textarea.scrollHeight}px`;
         }
-
     }
 
     const handleFollow = async () => {
@@ -377,7 +367,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
         }
     }
 
-    // Fetch initial user interaction status (Bookmark, Comments, Follow)
     useEffect(() => {
         if (!email) return;
 
@@ -430,11 +419,12 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
     return (
         <div className="flex flex-col w-full relative mb-[60px]">
             <button 
-            onClick={() => router.back()}
-            className="relative cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
+                onClick={() => router.back()}
+                className="relative cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center"
+            >
                 <Image src="/icons/BackArrow.png" fill alt="Back Arrow" />
             </button>
-            <div> {/* Post div */}
+            <div>
                 {/* Author Info */}
                 <div className="relative w-full h-[60px] flex items-center">
                     <Image src={user?.profileImage?.url || "/profile-default.png"} 
@@ -443,8 +433,8 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                         alt="User Profile Image" 
                         className="rounded-full m-[10px] w-[36px] h-[36px] cursor-pointer object-cover" 
                         onClick={moveToUserPage} 
-                    /> {/* user profile picture */}
-                    <div> {/* 유저 아이디, 키, 몸무게 */}
+                    />
+                    <div>
                         <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
                             {user?.name || "unknown user"}
                         </div>
@@ -471,12 +461,14 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                                         ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} 
                                         font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
                             onClick={handleFollow}
-                        > {/* 팔로우 버튼 */}
+                        >
                             {isFollowed ? "팔로잉" :"팔로우"}
                         </button>
                     }
                 </div>
-                <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center"> {/* 사진 */}
+
+                {/* Images */}
+                <div className="relative w-full aspect-[3/4] mx-auto flex items-center justify-center">
                     {images[currentIndex] ? (
                     <Image
                         src={images[currentIndex].url}
@@ -506,7 +498,9 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                     </>
                     )}
                 </div>
-                <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
+
+                {/* Engagement Bar */}
+                <div className="w-full h-[50px] flex items-center">
                     <div className="relative w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
                         <Image src={`/icons/heart-${liked ? "clicked" : "unclicked"}.png`} fill alt="Heart Icon" />
                     </div>
@@ -520,19 +514,27 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                         <Image src={`/icons/bookmark-${bookmarked ? "clicked" : "unclicked"}.png`} fill alt="Bookmark Icon" />
                     </div>
                 </div>
+
                 <div className="ml-[20px] font-bold text-[15px]">
                     {likesCount} likes
                 </div>
-                <div className="ml-[20px] mb-[40px]"> {/* 설명 */}
+
+                {/* Post Caption */}
+                <div className="ml-[20px]">
                     <div className="font-bold inline-block mr-[10px]">{user?.name}</div>
                     <div className="inline">{post?.description}</div>
                     <div className="text-gray-400">{createdAt && getTimeAgo(createdAt)}</div>
                 </div>
             </div>
 
+            {/* Recommendations Grid */}
+            <div className="px-4 pb-10">
+                <SimilarPosts currentPostId={postId} />
+            </div>
+
             <PostMenu showPostMenu={showPostMenu} setShowPostMenu={setShowPostMenu} copyURL={copyURL} />
 
-            {/* 댓글 */}
+            {/* Comments Overlay Drawer */}
             <div className="fixed inset-0 z-50 flex justify-center items-end pointer-events-none">
                 <div
                     className={`absolute inset-0 bg-black transition-opacity duration-300 ${
@@ -543,7 +545,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                         toggleCommentMenu(commentId);
                     }}
                 />
-                {/* 댓글창 */}
                 <div
                     className={`relative bg-white rounded-t-xl w-full max-w-[750px] h-[70%] p-[20px] transform transition-transform duration-300 ${
                     showComments ? "translate-y-0" : "translate-y-full"
@@ -553,7 +554,7 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                         <span className="mr-1">댓글</span>
                         <span className="text-[16px] align-middle leading-none">({commentsList.length})</span>
                     </div>
-                    {/* Comments list */}
+
                     <div className="flex-1 overflow-y-scroll h-[calc(100%-100px)] space-y-3 mb-4 w-[98%] mx-auto">
                     {
                         commentsList.map((comment, index) => (
@@ -612,9 +613,8 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                             </div>
                         ))
                     }
-                </div>
+                    </div>
 
-                    {/* New comment input */}
                     <form
                     onSubmit={isEditingComment ? handleEditSubmit : handleSubmit}
                     className="w-[calc(100%-40px)] absolute bottom-[14px]"
@@ -646,14 +646,12 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                             </div>
                             )
                             }
-                            
                         </div>
                     </form>
-
                 </div>
             </div>
             
-            {/* URL Copy Quote */}
+            {/* Link Copied Notification */}
             <div className={`fixed left-1/2 -translate-x-1/2 bottom-[80px] w-[90%] max-w-[700px] h-[50px] flex justify-center items-center bg-black/80 text-white text-sm px-2 py-1 rounded transition-all duration-300 ${
                 copied
                     ? "opacity-100 translate-y-0"
@@ -662,7 +660,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
             >
                 Link Copied.
             </div>
-
         </div>
     );
 }
