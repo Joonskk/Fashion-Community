@@ -1,22 +1,65 @@
-import { useState } from 'react';
+'use client'
+
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext'
 import Link from 'next/link';
 import Image from 'next/image';
+import HashtagSelector from '@/app/components/HashtagSelector';
 
 type ImageInfo = {
     public_id: string;
     url: string;
 };
 
-const PostDescription = ({ images } : {images : File[]}) => {
+export default function PostDescription({ images } : {images : File[]}){
     
     const router = useRouter();
     const { email, userData } = useUser();
     
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [description, setDescription] = useState<string>("");
+    const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+    const [imageInfos, setImageInfos] = useState<ImageInfo[]>([]);
+    const [isUploadingImages, setIsUploadingImages] = useState<boolean>(true);
     const [isPosting, setIsPosting] = useState<boolean>(false);
+
+    useEffect(() => {
+        async function uploadImagesToCloudinary() {
+            setIsUploadingImages(true);
+            try {
+                const uploaded: ImageInfo[] = [];
+                for (const file of images) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', 'wearly_images');
+                    formData.append('folder', 'wearly_posts');
+
+                    const res = await fetch('https://api.cloudinary.com/v1_1/wearly/image/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    const data = await res.json();
+                    if (data.secure_url) {
+                        uploaded.push({
+                            url: data.secure_url,
+                            public_id: data.public_id,
+                        });
+                    }
+                }
+                setImageInfos(uploaded);
+            } catch (err) {
+                console.error('❌ Cloudinary upload error:', err);
+            } finally {
+                setIsUploadingImages(false);
+            }
+        }
+
+        if (images.length > 0) {
+            uploadImagesToCloudinary();
+        }
+    }, [images])
 
     const prevImage = () => {
         setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -28,42 +71,16 @@ const PostDescription = ({ images } : {images : File[]}) => {
 
     const handleSubmit = async (e : React.FormEvent) => {
         e.preventDefault();
+        
+        if (imageInfos.length === 0) {
+            alert('Images are still uploading. Please wait a moment.');
+            return;
+        }
+        
         setIsPosting(true);
 
-        try {
-            // 1. Posting images to Cloudinary
-            const imageInfos: ImageInfo[] = [];
-            for (const file of images){
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("upload_preset", "wearly_images");
-                formData.append("folder", "wearly_posts");
-                const res = await fetch("https://api.cloudinary.com/v1_1/wearly/image/upload", {
-                    method: "POST",
-                    body: formData,
-                })
-                console.log("Uploaded to Cloudinary: ", res);
-
-                const data = await res.json();
-                imageInfos.push({
-                    url: data.secure_url,
-                    public_id: data.public_id,
-                });
-            }
-
-            // 2. Run AI API to generate tags (styles, items, season)
-            const aiResponse = await fetch('/api/ai/generate-tags', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    images: imageInfos.map((img) => img.url),
-                }),
-            });
-            
-            const aiData = await aiResponse.json();
-            const { styles, items, season } = aiData;
-            
-            // 3. Posting to MongoDB
+        try {    
+            // Posting to MongoDB
             const response = await fetch('/api/post/create-post',{
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
@@ -73,9 +90,9 @@ const PostDescription = ({ images } : {images : File[]}) => {
                     sex: userData?.sex,
                     images: imageInfos,
                     description,
-                    styles,
-                    items,
-                    season,
+                    styles: selectedStyles,
+                    items: [],
+                    season: '',
                     likes: [],
                     likesCount: 0,
                 }),
@@ -96,8 +113,10 @@ const PostDescription = ({ images } : {images : File[]}) => {
         }
     }
 
+    const currentImageUrl = imageInfos[0]?.url || null;
+
     return (
-        <div className="flex flex-col w-full relative">
+        <div className="flex flex-col w-full relative pb-25">
             <div>
                 <button 
                 onClick={() => router.push("/mypage")}
@@ -112,20 +131,33 @@ const PostDescription = ({ images } : {images : File[]}) => {
                     alt={`Preview ${currentIndex}`}
                     className="object-cover rounded-lg shadow-lg"
                 />
+                {images.length > 1 && (
+                <>
                 <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
                     ◀
                 </button>
                 <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
                     ▶
                 </button>
+                </>
+                )}
             </div>
             <div className="my-[20px] w-full">
                 <textarea 
                 placeholder="Add Description..."
                 className="w-full h-[150px] p-[15px] resize-none"
+                value={description}
                 onChange={(e)=>setDescription(e.target.value)}
                 />
             </div>
+
+            {/* Hashtag Selection & AI Recommendation Component */}
+            <HashtagSelector
+                imageUrl={currentImageUrl}
+                selectedTags={selectedStyles}
+                onChange={setSelectedStyles}
+            />
+
             <form onSubmit={handleSubmit} className="flex justify-center mx-auto" >
                 <div className="flex text-center w-[70px] h-[30px] mr-[10px]">
                 {isPosting ? (
@@ -143,7 +175,7 @@ const PostDescription = ({ images } : {images : File[]}) => {
                 </div>
                 <button
                 type="submit"
-                disabled={isPosting}
+                disabled={isPosting || isUploadingImages}
                 className={`w-[70px] h-[30px] border rounded-md flex items-center justify-center
                     ${isPosting ? 'bg-gray-200 text-white cursor-not-allowed' : 'bg-black text-white hover:bg-opacity-80 cursor-pointer'}
                 `}
@@ -154,5 +186,3 @@ const PostDescription = ({ images } : {images : File[]}) => {
         </div>
     )
 }
-
-export default PostDescription;
