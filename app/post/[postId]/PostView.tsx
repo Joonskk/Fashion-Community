@@ -1,14 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
-import { useRef } from "react";
 import { X, ArrowUp } from "lucide-react";
 import Image from "next/image";
 import PostMenu from "./PostMenu";
-import Post from "./page";
 
 type Post = {
     _id: string;
@@ -47,50 +44,55 @@ type Comment = {
     createdAt: string;
 }
 
-const PostView = () => {
+interface PostViewProps {
+    initialPost: Post;
+    initialAuthor: User | null;
+}
+
+export default function PostView({initialPost, initialAuthor} : PostViewProps) {
 
     const router = useRouter();
-
     const params = useParams();
-    const postId = params?.postId as string;
+    const postId = (params?.postId as string) || initialPost._id;
 
     const { userData, email, refetchUserData } = useUser();
 
-    const [sessionUserName, setSessionUserName] = useState<string>("");
-    const [sessionUserProfileImage, setSessionUserProfileImage] = useState<string>("");
+    const [post, setPost] = useState<Post>(initialPost);
+    const [user, setUser] = useState<User | null>(initialAuthor);
+    const [images, setImages] = useState<ImageInfo[]>(initialPost.images || []);
+    const [likesCount, setLikesCount] = useState<number>(initialPost.likesCount || 0);
+    const [createdAt, setCreatedAt] = useState<string>(initialPost.createdAt || "");
 
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-    const [post, setPost] = useState<Post | null>(null);
-    const [user, setUser] = useState<User | null>(null);
-    const [images, setImages] = useState<ImageInfo[]>([]);
-    const [likesCount, setLikesCount] = useState<number>(0);
-    const [createdAt, setCreatedAt] = useState<string>("");
-
-    const [liked, setLiked] = useState<boolean>(false);
+    const [liked, setLiked] = useState<boolean>(
+        email ? initialPost.likes?.includes(email) : false
+    );
     const [showComments, setShowComments] = useState<boolean>(false);
     const [comment, setComment] = useState<string>("");
     const [commentsList, setCommentsList] = useState<Comment[]>([]);
     const [isEditingComment, setIsEditingComment] = useState<boolean>(false);
     const [bookmarked, setBookmarked] = useState<boolean>(false);
     const [isFollowed, setIsFollowed] = useState<boolean>(false);
-    const [copied, setCopied] = useState(false);
+    const [copied, setCopied] = useState<boolean>(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
 
     const [commentId, setCommentId] = useState<string | undefined>("");
     const [showCommentMenu, setShowCommentMenu] = useState<{[key : string] : boolean}>({});
     const [showPostMenu, setShowPostMenu] = useState<boolean>(false);
+    const [currentIndex, setCurrentIndex] = useState<number>(0);
 
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const moveToUserPage = () => {  // 게시물 작성자의 프로필 페이지로 이동
-        router.push(`/user/${user?._id}`);
+        if (user?._id) {
+            router.push(`/user/${user._id}`);
+        }
     }
 
     const moveToCommentUserPage = (userId: string) => {   // 댓글 작성자의 프로필 페이지로 이동
-        router.push(`/user/${userId}`);
-        console.log(userId)
+        if (userId) {
+            router.push(`/user/${userId}`);
+        }
     }
 
     const prevImage = () => {
@@ -98,7 +100,7 @@ const PostView = () => {
     };
 
     const nextImage = () => {
-        setCurrentIndex((prev) => (prev === images?.length - 1 ? images?.length - 1 : prev + 1));
+        setCurrentIndex((prev) => (prev === images.length - 1 ? images.length - 1 : prev + 1));
     };
 
     const toggleLike = async () => {
@@ -215,33 +217,27 @@ const PostView = () => {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     postId,
-                    userId: userData?._id,
+                    userId: userData._id,
                     userEmail: email,
-                    profileImage: sessionUserProfileImage,
-                    userName: sessionUserName,
+                    profileImage: userData.profileImage?.url || "/profile-default.png",
+                    userName: userData.name,
                     text: comment,
                 })
             })
 
             const result = await res.json();
-            console.log("✅ DB 저장 성공:", result);
 
             if (result.success) {
-                console.log(result);
                 if(textarea) textarea.value = "";
-            
+                setComment("");
                 setCommentsList(prev => [...prev, result.comment]);
                 setShowComments(true);
                 router.refresh();
-            } else{
-                console.log("실패")
             }
             
         } catch(err) {
             console.error("❌ 오류 발생:", err);
             alert("업로드 중 오류가 발생했습니다.");
-        } finally {
-            router.refresh();
         }
     }
 
@@ -263,13 +259,14 @@ const PostView = () => {
 
             if(res.ok) {
                 if(textarea) textarea.value = "";
+                setComment("");
                 const editedCommentWithInfo : Comment = {
                     _id: commentId,
                     postId,
-                    userId: userData?._id,
+                    userId: userData._id,
                     userEmail: email,
                     userName: userData.name,
-                    profileImage: sessionUserProfileImage,
+                    profileImage: userData.profileImage?.url || "/profile-default.png",
                     text: comment,
                     createdAt: "now",
                 };
@@ -277,20 +274,17 @@ const PostView = () => {
                 setCommentsList(prev => prev.map(comment => comment._id === editedCommentWithInfo._id ? editedCommentWithInfo : comment));
                 setShowComments(true);
                 router.refresh();
-            } else{
-                console.log("실패")
             }
 
         } catch(err) {
             console.error('댓글 수정 중 오류 발생:', err);
         } finally {
             setIsEditingComment(false);
-            router.refresh();
         }
     }
 
     const getTimeAgo = (dateStr: string) => {
-        if(dateStr === "now") return "방금 전";
+        if(dateStr === "now") return "now";
 
         const now = new Date();
         const past = new Date(dateStr);
@@ -300,10 +294,11 @@ const PostView = () => {
         const diffHrs = Math.floor(diffMin / 60);
         const diffDays = Math.floor(diffHrs / 24);
     
-        if (diffSec < 60) return `${diffSec}초 전`;
-        if (diffMin < 60) return `${diffMin}분 전`;
-        if (diffHrs < 24) return `${diffHrs}시간 전`;
-        if (diffDays < 7) return `${diffDays}일 전`;
+        if (diffSec < 60) return `${diffSec}s`;
+        if (diffMin < 60) return `${diffMin}m`;
+        if (diffHrs < 24) return `${diffHrs}h`;
+        if (diffDays < 2) return `${diffDays} day`;
+        if (diffDays < 7) return `${diffDays} days`;
     
         const year = past.getFullYear();
         const month = String(past.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
@@ -351,6 +346,7 @@ const PostView = () => {
         if(textarea){
             textarea.focus();
             textarea.value = originalText;
+            setComment(originalText);
             textarea.style.height = "auto";
             textarea.style.height = `${textarea.scrollHeight}px`;
         }
@@ -363,19 +359,17 @@ const PostView = () => {
             return;
         }
 
-        console.log("handleFollow executed")
         try {
             const res = await fetch('/api/follow', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     sessionUserEmail: email,
-                    postAuthorEmail: post?.userEmail,
+                    postAuthorEmail: post.userEmail,
                 })
             })
 
             const data = await res.json();
-            console.log("✅ DB 저장 성공:", data);
             setIsFollowed(data.isFollowing);
             refetchUserData();
         } catch(err) {
@@ -383,129 +377,55 @@ const PostView = () => {
         }
     }
 
-    useEffect(() => { // 첫 렌더링 시
-        const fetchPost = async () => {
-            try {
-                const response = await fetch('/api/posts');
-                if(response.ok) {
-                    const data = await response.json();
-                    const foundPost: Post = data.posts.find((post: Post) => post._id === postId);
-                    setPost(foundPost);
-                } else {
-                    console.error('DB 조회 실패');
-                }
-            } catch (error) {
-                console.error('API 호출 오류:', error);
-            }
-        }
-
-        fetchPost();
-    }, [postId])
-
-    // Target Fetch 1: Current Session User
+    // Fetch initial user interaction status (Bookmark, Comments, Follow)
     useEffect(() => {
-        if(!email) return;
+        if (!email) return;
 
-        const fetchSessionUser = async () => {
-            try {
-                const response = await fetch('/api/user/me');
-                if(response.ok) {
-                    const data = await response.json();
-                    if(data.user) {
-                        setSessionUserName(data.user.name);
-                        setSessionUserProfileImage(data.user.profileImage?.url || "/profile-default.png");
-                    }
-                } else {
-                    console.error('Session user DB 조회 실패');
-                }
-            } catch (error) {
-                console.error('API 호출 오류:', error);
-            }
-        }
-
-        fetchSessionUser();
-    }, [email])
-
-    // Target Fetch 2: Post Author User
-    useEffect(() => {
-        const fetchUser = async () => {
-            if (!post?.userEmail) return;
-        
-            try {
-                // Use clean template string without extra encoding wrappers
-                const response = await fetch(`/api/user/${encodeURIComponent(post.userEmail.trim())}`);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.user) {
-                        setUser(data.user);
-                    }
-                } else {
-                    console.error('Author DB 조회 실패:', response.status);
-                }
-            } catch (err) {
-                console.error('API 호출 오류:', err);
-            }
-        };        
+        setLiked(post.likes?.includes(email) ?? false);
 
         const fetchBookmark = async () => {
             try {
                 const response = await fetch(`/api/post/toggle-bookmarks?postId=${postId}&userEmail=${email}`);
                 const data = await response.json();
                 setBookmarked(data.bookmarked);
-            } catch(err) {
-                console.error('API 호출 오류:', err);
+            } catch (err) {
+                console.error("Bookmark fetch error:", err);
             }
-        }
-
-        if (post) {
-            fetchUser();
-            setImages(post.images);
-            setLikesCount(post.likesCount || 0);
-            setLiked(post.likes?.includes(email) ?? false);
-            setCreatedAt(post.createdAt);
-            fetchBookmark();
-        }
-    }, [post, email, postId])
-
-    useEffect(() => { // 댓글 불러오기
-        const fetchComment = async () => {
-            try {
-                const res = await fetch('/api/post/comments');
-                if(res.ok) {
-                    const data = await res.json();
-                    const foundComments: Comment[] = data.comments.filter((comment: Comment) => comment.postId === postId);
-                    if(foundComments){
-                        setCommentsList(foundComments);
-                    } else{
-                        console.error('DB 조회 실패');
-                    }
-                }
-            } catch(err) {
-                console.error('API 호출 오류:', err);
-            }
-        }
-
-        fetchComment();
-    }, [email, postId])
-
-    useEffect(() => { // 팔로우 여부
-        if (!email || !post?.userEmail) return;
+        };
 
         const fetchFollow = async () => {
+            if (!post.userEmail) return;
             try {
-                const res = await fetch(`/api/follow?sessionUserEmail=${email}&postAuthorEmail=${post?.userEmail}`);
-                if(res.ok) {
+                const res = await fetch(`/api/follow?sessionUserEmail=${email}&postAuthorEmail=${post.userEmail}`);
+                if (res.ok) {
                     const data = await res.json();
                     setIsFollowed(data.isFollowing);
                 }
-            } catch(err) {
-                console.error('API 호출 오류:', err);
+            } catch (err) {
+                console.error("Follow fetch error:", err);
             }
-        }
-        
+        };
+
+        fetchBookmark();
         fetchFollow();
-    }, [post, email, postId])
+    }, [email, postId, post.userEmail, post.likes]);
+
+    useEffect(() => {
+        const fetchComments = async () => {
+            try {
+                const res = await fetch("/api/post/comments");
+                if (res.ok) {
+                    const data = await res.json();
+                    const foundComments: Comment[] = data.comments.filter((c: Comment) => c.postId === postId);
+                    setCommentsList(foundComments);
+                }
+            } catch (err) {
+                console.error("Comments fetch error:", err);
+            }
+        };
+
+        fetchComments();
+    }, [postId]);
 
     return (
         <div className="flex flex-col w-full relative mb-[60px]">
@@ -514,12 +434,19 @@ const PostView = () => {
             className="relative cursor-pointer mt-[20px] mb-[10px] ml-[20px] w-[30px] h-[30px] flex justify-center items-center">
                 <Image src="/icons/BackArrow.png" fill alt="Back Arrow" />
             </button>
-            <div className=""> {/* 게시물 div */}
-                <div className="relative w-full h-[60px] flex items-center"> {/* 유저 정보 */}
-                    <Image src={user?.profileImage.url || "/profile-default.png"} width={36} height={36} alt="User Profile Image" className="rounded-full m-[10px] w-[36px] h-[36px] cursor-pointer object-cover" onClick={moveToUserPage} /> {/* 유저 프로필 사진 */}
+            <div> {/* Post div */}
+                {/* Author Info */}
+                <div className="relative w-full h-[60px] flex items-center">
+                    <Image src={user?.profileImage?.url || "/profile-default.png"} 
+                        width={36} 
+                        height={36} 
+                        alt="User Profile Image" 
+                        className="rounded-full m-[10px] w-[36px] h-[36px] cursor-pointer object-cover" 
+                        onClick={moveToUserPage} 
+                    /> {/* user profile picture */}
                     <div> {/* 유저 아이디, 키, 몸무게 */}
                         <div className="font-bold text-[16px] h-[22px] cursor-pointer" onClick={moveToUserPage}>
-                            {user?.name}
+                            {user?.name || "unknown user"}
                         </div>
                         <div className="text-[13px] h-[20px]">
                             {user?.height}cm · {user?.weight}kg
@@ -529,13 +456,21 @@ const PostView = () => {
                         user?.email === email ?
                         <div className="flex absolute right-4">
                             <div className="flex justify-center items-center cursor-pointer opacity-60 hover:opacity-100 transition-all duration-150">
-                                <Image src="/icons/Option.png" width={25} height={25} alt="Option Icon" onClick={()=>setShowPostMenu(!showPostMenu)} />
+                                <Image 
+                                    src="/icons/Option.png" 
+                                    width={25} 
+                                    height={25} 
+                                    alt="Option Icon" 
+                                    onClick={()=>setShowPostMenu(!showPostMenu)} 
+                                />
                             </div>
                         </div>
                         :
                         <button 
-                        className={`ml-auto mr-[10px] cursor-pointer ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
-                        onClick={handleFollow}
+                            className={`ml-auto mr-[10px] cursor-pointer 
+                                        ${isFollowed ? "bg-white text-black border-[1px]" : "bg-black text-white"} 
+                                        font-bold text-[13px] px-[10px] py-[7px] rounded-lg`}
+                            onClick={handleFollow}
                         > {/* 팔로우 버튼 */}
                             {isFollowed ? "팔로잉" :"팔로우"}
                         </button>
@@ -552,14 +487,24 @@ const PostView = () => {
                         className="w-full h-full object-cover"
                     />
                     ) : (
-                        <div>이미지가 없습니다</div>
+                        <div>No Image</div>
                     )}
-                    <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
-                        ◀
-                    </button>
-                    <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow">
-                        ▶
-                    </button>
+                    {images.length > 1 && (
+                    <>
+                        <button 
+                            onClick={prevImage} 
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow"
+                        >
+                            ◀
+                        </button>
+                        <button 
+                            onClick={nextImage} 
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white opacity-20 hover:opacity-80 text-black font-bold px-1 py-1 rounded-full shadow"
+                        >
+                            ▶
+                        </button>
+                    </>
+                    )}
                 </div>
                 <div className="w-full h-[50px] flex items-center"> {/* 좋아요, 댓글, 북마크 */}
                     <div className="relative w-[25px] h-[25px] ml-[20px] cursor-pointer" onClick={toggleLike} >
@@ -612,9 +557,16 @@ const PostView = () => {
                     <div className="flex-1 overflow-y-scroll h-[calc(100%-100px)] space-y-3 mb-4 w-[98%] mx-auto">
                     {
                         commentsList.map((comment, index) => (
-                            <div key={index} className="text-sm text-gray-700 w-full mb-[20px]">
+                            <div key={comment._id || index} className="text-sm text-gray-700 w-full mb-[20px]">
                                 <div className="flex">
-                                    <Image src={comment.profileImage || "/profile-default.png"} width={35} height={35} alt="User Profile Image" className="rounded-full w-[35px] h-[35px] cursor-pointer object-cover mr-[10px]" onClick={() => moveToCommentUserPage(comment.userId)} />
+                                    <Image 
+                                        src={comment.profileImage || "/profile-default.png"} 
+                                        width={35} 
+                                        height={35} 
+                                        alt="User Profile Image" 
+                                        className="rounded-full w-[35px] h-[35px] cursor-pointer object-cover mr-[10px]" 
+                                        onClick={() => moveToCommentUserPage(comment.userId)} 
+                                    />
                                     <div className="flex-1">
                                         <div className="flex">
                                             <span className="font-bold">{comment.userName}</span>
@@ -622,21 +574,21 @@ const PostView = () => {
                                                 {getTimeAgo(comment.createdAt)}
                                             </div>
                                         </div>
-                                        <div className="">
+                                        <div>
                                             {comment.text}
                                         </div>
                                     </div>
                                     <div className="w-[40px] relative">
                                         { comment.userEmail === email &&
                                         <Image
-                                        src={"/icons/commentMenu.png"}
-                                        width={15} height={15}
-                                        alt="Comment Menu Icon"
-                                        className={`cursor-pointer hover:opacity-100 ${showCommentMenu[comment._id ?? ""] ? "opacity-100" : "opacity-50"}`} 
-                                        onClick={() => {
-                                            toggleCommentMenu(comment._id)
-                                            setCommentId(comment._id)
-                                        }}
+                                            src={"/icons/commentMenu.png"}
+                                            width={15} height={15}
+                                            alt="Comment Menu Icon"
+                                            className={`cursor-pointer hover:opacity-100 ${showCommentMenu[comment._id ?? ""] ? "opacity-100" : "opacity-50"}`} 
+                                            onClick={() => {
+                                                toggleCommentMenu(comment._id)
+                                                setCommentId(comment._id)
+                                            }}
                                         />
                                         }
                                         { showCommentMenu[comment._id ?? ""] &&
@@ -645,13 +597,13 @@ const PostView = () => {
                                             className="cursor-pointer w-full h-full hover:bg-gray-200 duration-200"
                                             onClick={()=>{clickEdit(comment._id, comment.text)}}
                                             >
-                                                수정
+                                                Edit
                                             </button>
                                             <button
                                             className="cursor-pointer w-full h-full hover:bg-gray-200 duration-200"
                                             onClick={()=>{deleteComment(comment._id)}}
                                             >
-                                                삭제
+                                                Delete
                                             </button>
                                         </div>
                                         }
@@ -708,11 +660,9 @@ const PostView = () => {
                     : "opacity-0 translate-y-4 pointer-events-none"
                 }`}
             >
-                링크를 복사했습니다.
+                Link Copied.
             </div>
 
         </div>
     );
 }
-
-export default PostView;
