@@ -1,44 +1,121 @@
+// -----------------------------------------------------------------------------
+// Styles (20 tags)
+// -----------------------------------------------------------------------------
 export const ALLOWED_STYLES = [
-  "streetwear",
   "minimalist",
+  "streetwear",
+  "casual",
   "vintage",
   "gorpcore",
-  "casual",
   "y2k",
-  "workwear",
   "preppy",
   "chic",
   "sporty",
   "grunge",
-  "boho",
-  "old-money",
   "athleisure",
+  "workwear",
+  "boho",
   "business-casual",
+  "academia",
   "techwear",
+  "coquette",
   "retro",
-  "cyberpunk",
-  "dapper",
-  "goth"
+  "normcore",
+  "old-money",
 ] as const;
 
-export type StyleTag = typeof ALLOWED_STYLES[number];
+export type StyleTag = (typeof ALLOWED_STYLES)[number];
 
-const SYNONYM_MAP: Record<string, StyleTag> = {
-  "street": "streetwear",
-  "streetstyle": "streetwear",
-  "minimal": "minimalist",
-  "clean": "minimalist",
-  "thrifted": "vintage",
-  "activewear": "athleisure",
-  "formal": "business-casual",
-  "y2kfashion": "y2k",
-};
+// -----------------------------------------------------------------------------
+// Items (20 tags)
+// -----------------------------------------------------------------------------
+export const ALLOWED_ITEMS = [
+  "t-shirt",
+  "shirt",
+  "hoodie",
+  "sweatshirt",
+  "sweater",
+  "jacket",
+  "coat",
+  "blazer",
+  "jeans",
+  "trousers",
+  "sweatpants",
+  "shorts",
+  "skirt",
+  "dress",
+  "sneakers",
+  "boots",
+  "loafers",
+  "cap",
+  "beanie",
+  "bag",
+] as const;
 
-export const MAX_HASHTAGS_PER_POST = 3;
+export type ItemCategory = (typeof ALLOWED_ITEMS)[number];
 
-export function normalizeTag(tag: string): StyleTag | null {
-  const clean = tag.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  if (ALLOWED_STYLES.includes(clean as StyleTag)) return clean as StyleTag;
-  if (SYNONYM_MAP[clean]) return SYNONYM_MAP[clean];
-  return null;
+// -----------------------------------------------------------------------------
+// Seasons (5 tags)
+// -----------------------------------------------------------------------------
+export const ALLOWED_SEASONS = [
+  "spring",
+  "summer",
+  "fall",
+  "winter",
+  "all-season",
+] as const;
+
+export type SeasonTag = (typeof ALLOWED_SEASONS)[number];
+
+// -----------------------------------------------------------------------------
+// Genders / Fits (3 tags)
+// -----------------------------------------------------------------------------
+export const ALLOWED_GENDERS = [
+  "unisex",
+  "menswear",
+  "womenswear",
+] as const;
+
+export type GenderCategory = (typeof ALLOWED_GENDERS)[number];
+
+// -----------------------------------------------------------------------------
+// Colors (20 tags)
+// -----------------------------------------------------------------------------
+export const ALLOWED_COLORS = [
+  "black",
+  "white",
+  "off-white",
+  "gray",
+  "charcoal",
+  "beige",
+  "khaki",
+  "brown",
+  "navy",
+  "light-blue",
+  "denim-blue",
+  "olive-green",
+  "sage-green",
+  "burgundy",
+  "red",
+  "pink",
+  "cream",
+  "camel",
+  "yellow",
+  "multicolor",
+] as const;
+
+export type ColorTag = (typeof ALLOWED_COLORS)[number];
+
+// -----------------------------------------------------------------------------
+// AI Analysis Output Interface
+// -----------------------------------------------------------------------------
+export interface FashionAnalysisResult {
+  styles: StyleTag[];
+  items: ItemCategory[];
+  season: SeasonTag;
+  gender: GenderCategory;
+  colors: ColorTag[];
 }
+
+// Maximum hashtag tags allowed per post selection
+export const MAX_HASHTAGS_PER_POST = 3;

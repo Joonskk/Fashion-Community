@@ -28,11 +28,10 @@ export default function HashtagSelector({imageUrl, selectedTags, onChange}: Hash
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ imageUrl }),
             });
-            const data = await res.json();
-            
-            // Ensure AI tags are normalized and capped at 3
-            if (data.tags) {
-                setAiTags(data.tags.slice(0, 3));
+            const result = await res.json();
+
+            if (result.success && result.data?.styles) {
+                setAiTags(result.data.styles.slice(0, 3));
             }
         } catch (err) {
             console.error("Failed to fetch AI tags:", err);
