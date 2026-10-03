@@ -1,35 +1,43 @@
 ## 📌 Project Overview
-Wearly is a full-stack social media platform tailored for fashion enthusiasts to share outfits, interact with posts, and explore style trends. It incorporates secure authentication, robust database schema design, and optimized cloud media management.
+A full-stack social media platform for fashion enthusiasts to share outfits, discover style trends, and experience AI-powered visual recommendations.
 
 ## ✨ Key Features
-Secure Authentication: Integrated Google OAuth for seamless login experiences.
+🤖 AI Vision Automatic Tagging: Integrates OpenAI Vision API to analyze uploaded outfit photos instantly upon creation, automatically categorizing structured metadata (styles, garments, season, gender, and color palettes).
 
-Route Protection & Authorization: Implemented smart guards that redirect unauthenticated users to the login page when attempting restricted actions (e.g., liking posts, commenting, accessing the My Page).
+🔍 Smart Outfit Search Engine: Features dynamic keyword and tag-based filtering, allowing users to search posts by specific aesthetic styles, items, or seasonal categories.
 
-AI-Powered Hashtag Recommendation: Integrated the OpenAI GPT-4 Turbo API into the backend architecture to automatically analyze uploaded outfit images/content and generate relevant, trending hashtags upon post creation.
 
-Interactive Social Engagement: Supports core social features including post creation, liking, bookmarking, and commenting.
+🎯 Content-Based Similarity Engine: Implemented a similarity algorithm (SimilarPosts) querying overlapping visual tags to dynamically render relevant outfit recommendations on post views.
 
-Optimized Cloud Media Pipeline: Integrated Cloudinary for image storage. Designed a robust backend API to handle immediate asset synchronization (automatic addition and deletion on Cloudinary upon post creation/deletion), prioritizing storage efficiency and media performance.
+🏷️ Automated Hashtag Generation: Utilizes GPT-4 Turbo to generate context-aware, trending hashtags from visual input and post captions.
+
+💬 Interactive Social Features: Complete social ecosystem supporting post carousels, likes, bookmarks, user follow networks, and nested comments with edit/delete permissions.
+
+🔒 Auth & Route Guarding: Secure authentication via NextAuth.js / Google OAuth paired with smart route protection for restricted user actions.
+
+⚡ Optimized Cloud Pipeline: Integrated Cloudinary API with automated sync workflows for instant image upload and database-storage garbage collection on post deletion.
 
 ## 🗄️ Database Schema (MongoDB)
-Designed a scalable schema structure containing 4 primary collections:
+Designed a scalable document model across 4 primary collections:
 
-User: Manages user profiles and authentication data.
 
-Post: Stores outfit images, captions, and references to authors.
+User: Profiles, physical attributes (height/weight), social graph (followers/following), and auth metadata.
 
-Comments: Tracks user comments and discussion threads on posts.
+Post: Image assets, captions, and structured AI tags (styles, items, season, gender, colors, hashtags).
 
-Bookmark: Handles saved posts for individual users.
+Comments: Threaded user discussions linked to specific post instances.
+
+Bookmark: Relational tracking for user-saved posts.
 
 ## 🛠️ Tech Stack
-Frontend / Backend: Next.js Fullstack
+Framework: Next.js Fullstack (App Router, React 19, TypeScript)
 
-Database: MongoDB
+AI & ML: OpenAI API (GPT-5.4-luna & Text Generation)
+
+Database: MongoDB / Atlas
 
 Authentication: Google Auth / NextAuth.js
 
-AI Integration: OpenAI GPT-4 Turbo API
+Media Pipeline: Cloudinary API
 
-Media Storage: Cloudinary API
+Styling & UI: Tailwind CSS, Lucide Icons
