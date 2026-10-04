@@ -112,7 +112,7 @@ export default function SearchPage() {
             value={query}
             onChange={(e) => handleFilterChange(setQuery, e.target.value)}
             placeholder="Search by author, item (e.g. jacket), color (e.g. black), or description..."
-            className="w-full px-4 py-3 pl-11 rounded-xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition"
+            className="w-full px-4 py-3 pl-11 rounded-xl border border-gray-200 dark:border-zinc-300 bg-white dark:bg-zinc-200/50 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition"
           />
           <svg
             className="w-5 h-5 absolute left-4 top-3.5 text-gray-400"
@@ -131,7 +131,7 @@ export default function SearchPage() {
       </div>
 
       {/* 2. Multi-Filter Controls Toolbar */}
-      <div className="space-y-4 mb-8 bg-gray-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-gray-200 dark:border-zinc-800">
+      <div className="space-y-4 mb-8 bg-gray-50 dark:bg-zinc-200/50 p-4 rounded-xl border border-gray-200 dark:border-zinc-300">
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
             Filters
@@ -149,7 +149,7 @@ export default function SearchPage() {
           <select
             value={selectedSeason}
             onChange={(e) => handleFilterChange(setSelectedSeason, e.target.value)}
-            className="p-2.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+            className="p-2.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-300 bg-white dark:bg-zinc-200"
           >
             <option value="">All Seasons</option>
             {ALLOWED_SEASONS.map((s) => (
@@ -162,9 +162,9 @@ export default function SearchPage() {
           <select
             value={selectedGender}
             onChange={(e) => handleFilterChange(setSelectedGender, e.target.value)}
-            className="p-2.5 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800"
+            className="p-2.5 text-sm rounded-lg border border-zinc-300 bg-zinc-200"
           >
-            <option value="">All Fits</option>
+            <option value="">All Genderes</option>
             {ALLOWED_GENDERS.map((g) => (
               <option key={g} value={g}>
                 {g.toUpperCase()}
@@ -174,8 +174,8 @@ export default function SearchPage() {
 
           {/* Style Tag Chips */}
           <div className="col-span-2 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            <span className="text-xs text-gray-400 whitespace-nowrap">Styles:</span>
-            {ALLOWED_STYLES.slice(0, 8).map((style) => (
+            <span className="text-xs text-gray-500 whitespace-nowrap">Styles:</span>
+            {ALLOWED_STYLES.slice(0, 20).map((style) => (
               <button
                 key={style}
                 onClick={() =>
@@ -183,8 +183,8 @@ export default function SearchPage() {
                 }
                 className={`px-3 py-1 rounded-full text-xs font-medium border transition whitespace-nowrap ${
                   selectedStyles.includes(style)
-                    ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white"
-                    : "border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:border-gray-400"
+                    ? "bg-zinc-200 border-zinc-300 text-black"
+                    : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
                 }`}
               >
                 #{style}
@@ -195,7 +195,7 @@ export default function SearchPage() {
 
         {/* Quick Item Chips */}
         <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-gray-200 dark:border-zinc-800">
-          <span className="text-xs text-gray-400 mr-1">Items:</span>
+          <span className="text-xs text-gray-500 mr-1">Items:</span>
           {ALLOWED_ITEMS.map((item) => (
             <button
               key={item}
@@ -204,9 +204,9 @@ export default function SearchPage() {
               }
               className={`px-2.5 py-0.5 rounded-md text-xs transition capitalize ${
                 selectedItems.includes(item)
-                  ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-black font-semibold"
-                  : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
-              }`}
+                    ? "bg-zinc-200 border-zinc-300 text-black"
+                    : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
+                }`}
             >
               {item}
             </button>
@@ -215,7 +215,7 @@ export default function SearchPage() {
 
         {/* Quick Color Chips */}
         <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-gray-200 dark:border-zinc-800">
-          <span className="text-xs text-gray-400 mr-1">Colors:</span>
+          <span className="text-xs text-gray-500 mr-1">Colors:</span>
           {ALLOWED_COLORS.map((color) => (
             <button
               key={color}
@@ -224,9 +224,9 @@ export default function SearchPage() {
               }
               className={`px-2.5 py-0.5 rounded-md text-xs transition capitalize ${
                 selectedColors.includes(color)
-                  ? "bg-black text-white dark:bg-white dark:text-black font-semibold"
-                  : "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200"
-              }`}
+                    ? "bg-zinc-200 border-zinc-300 text-black"
+                    : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
+                }`}
             >
               {color}
             </button>
@@ -237,7 +237,7 @@ export default function SearchPage() {
       {/* 3. Results Counter */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-gray-500">
-          Showing <span className="font-semibold text-black dark:text-white">{totalCount}</span> outfits
+          Showing <span className="font-semibold text-black">{totalCount}</span> outfits
         </p>
       </div>
 
