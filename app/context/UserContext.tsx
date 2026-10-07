@@ -19,6 +19,7 @@ type UserContextType = {
   session: boolean;
   email: string;
   userData: UserData | null;
+  setUserData: React.Dispatch<React.SetStateAction<UserData | null>>;
   userDataLoaded: boolean;
   refetchUserData: () => Promise<void>;
 };
@@ -54,7 +55,10 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
           setUserData(data.user);
           console.log("foundUser: ", data.user);
         }
-      } else {
+      } else if (response.status === 404) {
+        // Unregistered user - expected behavior for new signups
+        setUserData(null);
+      }  else {
         console.error("DB 조회 실패");
       }
     } catch (error) {
@@ -79,6 +83,7 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
         session: status === "authenticated",
         email: session?.user?.email || "",
         userData,
+        setUserData,
         userDataLoaded,
         refetchUserData: fetchUserData,
       }}

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import clientPromise from '@/lib/mongodb'
+import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { v2 as cloudinary } from "cloudinary";
@@ -58,7 +58,8 @@ export async function POST(req: Request) {
 
   try {
     const db = (await clientPromise).db('wearly');
-    await db.collection('users').insertOne({ 
+
+    const newUser = {
       name,
       height,
       weight,
@@ -69,8 +70,15 @@ export async function POST(req: Request) {
       following,
       followersCount,
       followingCount,
+    };
+
+    const result = await db.collection('users').insertOne(newUser);
+
+    // Return the created user object directly to the client
+    return NextResponse.json({
+      message: '회원가입이 완료되었습니다.',
+      user: { _id: result.insertedId.toString(), ...newUser }
     });
-    return NextResponse.redirect(new URL('/mypage', req.url));
   } catch (error) {
     console.error('DB 저장 중 에러:', error);
     return NextResponse.json({ error: 'DB 저장 오류' }, { status: 500 });
@@ -99,7 +107,6 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: "유저를 찾을 수 없습니다." }, { status: 404 });
     }
 
-    // Delete old profile image from Cloudinary if a new profile image is uploaded
     if (profileImage && user.profileImage?.public_id) {
       await cloudinary.uploader.destroy(user.profileImage.public_id);
     }
@@ -112,13 +119,11 @@ export async function PATCH(req: Request) {
 
     if (profileImage) updateFields.profileImage = profileImage;
 
-    // Update user document
     const result = await db.collection('users').updateOne(
       { email },
       { $set: updateFields }
     );
 
-    // Sync updated name and profile image to existing comments
     const commentUpdateFields: CommentUpdateFields = {
       userName: name,
     };
