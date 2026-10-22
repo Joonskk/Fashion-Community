@@ -14,7 +14,7 @@ import {
   MAX_HASHTAGS_PER_POST,
   StyleTag,
 } from "@/lib/constants";
-import { extractHashtags } from "../../post/create-post/route";
+import { extractHashtags } from "@/lib/hashtags";
 
 export async function POST(req: Request) {
   try {
