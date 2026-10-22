@@ -14,14 +14,7 @@ import {
     MAX_HASHTAGS_PER_POST,
     FashionAnalysisResult,
 } from "@/lib/constants";
-
-// Helper function to extract hashtags from raw description text
-export function extractHashtags(text: string): string[] {
-    if (!text) return [];
-    const matches = text.match(/#[\w\u00C0-\u024F]+/g);
-    if (!matches) return [];
-    return matches.map((tag) => tag.slice(1).toLowerCase());
-  }
+import { extractHashtags } from "@/lib/hashtags";
 
 export async function POST(req: Request) {
   try {
