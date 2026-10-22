@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import OpenAI from "openai";
 import {
+    AI_TAGGING_MODEL,
     ALLOWED_STYLES,
     ALLOWED_ITEMS,
     ALLOWED_SEASONS,
@@ -55,7 +56,7 @@ export async function POST(req: Request) {
         try {
             const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
             const aiResponse = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: AI_TAGGING_MODEL,
             messages: [
                 {
                 role: "system",

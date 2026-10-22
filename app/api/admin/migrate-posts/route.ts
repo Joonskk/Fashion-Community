@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import OpenAI from "openai";
 import {
+  AI_TAGGING_MODEL,
   ALLOWED_STYLES,
   ALLOWED_ITEMS,
   ALLOWED_SEASONS,
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
       try {
         // 2. Run OpenAI Vision Analysis
         const aiResponse = await openai.chat.completions.create({
-          model: "gpt-5.6-luna",
+          model: AI_TAGGING_MODEL,
           messages: [
             {
               role: "system",

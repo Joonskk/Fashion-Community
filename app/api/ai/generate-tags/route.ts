@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import {
+  AI_TAGGING_MODEL,
   ALLOWED_STYLES,
   ALLOWED_ITEMS,
   ALLOWED_SEASONS,
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
 
     // 1. OpenAI Vision Structured Extraction
     const response = await openai.chat.completions.create({
-      model: "gpt-5.6-luna", // Upgraded to gpt-4o for maximum accuracy
+      model: AI_TAGGING_MODEL,
       messages: [
         {
           role: "system",
