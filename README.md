@@ -9,7 +9,7 @@ A full-stack social media platform for fashion enthusiasts to share outfits, dis
 
 🎯 Content-Based Similarity Engine: Implemented a similarity algorithm (SimilarPosts) querying overlapping visual tags to dynamically render relevant outfit recommendations on post views.
 
-🏷️ Automated Hashtag Generation: Utilizes GPT-4 Turbo to generate context-aware, trending hashtags from visual input and post captions.
+🏷️ Automated Hashtag Generation: Utilizes GPT-5.6-luna to generate context-aware, trending hashtags from visual input and post captions.
 
 💬 Interactive Social Features: Complete social ecosystem supporting post carousels, likes, bookmarks, user follow networks, and nested comments with edit/delete permissions.
 
@@ -32,7 +32,7 @@ Bookmark: Relational tracking for user-saved posts.
 ## 🛠️ Tech Stack
 Framework: Next.js Fullstack (App Router, React 19, TypeScript)
 
-AI & ML: OpenAI API (GPT-5.4-luna & Text Generation)
+AI & ML: OpenAI API (GPT-5.6-luna & Text Generation)
 
 Database: MongoDB / Atlas
 
