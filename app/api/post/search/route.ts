@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { Filter } from "mongodb";
+import { escapeRegex } from "@/lib/escapeRegex";
 
 export async function GET(req: Request) {
   try {
@@ -25,7 +26,7 @@ export async function GET(req: Request) {
 
     // 1. Broad Text / Keyword Search across text fields and arrays
     if (q) {
-      const searchRegex = { $regex: q, $options: "i" };
+      const searchRegex = { $regex: escapeRegex(q), $options: "i" };
       queryFilter.$or = [
         { description: searchRegex },
         { authorName: searchRegex },
