@@ -1,12 +1,18 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { getSessionEmail } from "@/lib/session";
 
 export async function POST(req: Request){
 
     const body = await req.json();
 
-    const { postId, userEmail } = body;
+    const { postId } = body;
+    const sessionEmail = await getSessionEmail();
+
+    if (!sessionEmail) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     if (!ObjectId.isValid(postId)) {
         return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
@@ -18,10 +24,10 @@ export async function POST(req: Request){
         const post = await db.collection('posts').findOne({ _id });
         if (!post) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
 
-        const alreadyLiked  = post.likes.includes(userEmail);
+        const alreadyLiked  = post.likes.includes(sessionEmail);
         const updatedLikes = alreadyLiked
-            ? post.likes.filter((email: string) => email !== userEmail)
-            : [...post.likes, userEmail];
+            ? post.likes.filter((email: string) => email !== sessionEmail)
+            : [...post.likes, sessionEmail];
 
         await db.collection('posts').updateOne(
             { _id },

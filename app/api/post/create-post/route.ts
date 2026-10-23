@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getSessionEmail } from "@/lib/session";
 import OpenAI from "openai";
 import {
     AI_TAGGING_MODEL,
@@ -18,10 +17,8 @@ import { extractHashtags } from "@/lib/hashtags";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
     const body = await req.json();
     const {
-        email,
         authorName,
         sex,
         images,
@@ -35,8 +32,8 @@ export async function POST(req: Request) {
         likesCount = 0,
     } = body;
 
-    const userEmail = session?.user?.email || email;
-    if (!userEmail) {
+    const sessionEmail = await getSessionEmail();
+    if (!sessionEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -130,7 +127,7 @@ export async function POST(req: Request) {
     const db = client.db("wearly");
 
     const newPost = {
-        userEmail,
+        userEmail: sessionEmail,
         authorName,
         sex,
         images,

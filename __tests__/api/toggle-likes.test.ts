@@ -1,3 +1,9 @@
+// A fake for getServerSession. Each test decides who is "logged in".
+jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));
+
+import { getServerSession } from "next-auth"; // this import is now the fake
+const mockSession = getServerSession as jest.Mock;
+
 import { ObjectId } from "mongodb";
 import type { Db } from "mongodb";
 import { startTestDb } from "@/test-utils/db";
@@ -24,11 +30,13 @@ beforeEach(async () => {
     await db.collection("posts").insertOne({ _id: postId, likes: [], likesCount: 0 });
 });
 
-function like(email: string, id: string = postId.toString()) {
+function like(email: string | null, id: string = postId.toString()) {
+    mockSession.mockResolvedValue(email ? { user: { email } } : null);
+
     return POST(new Request("http://localhost/api/post/toggle-likes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId: id, userEmail: email }),
+        body: JSON.stringify({ postId: id }),
     }));
 }
 
@@ -94,5 +102,31 @@ describe("POST /api/post/toggle-likes", () => {
         const saved = await db.collection("posts").findOne({ _id: postId });
         expect(saved?.likes).toEqual([]);
         expect(saved?.likesCount).toBe(0);
+    });
+
+    test("logged out returns 401", async () => {
+        const res = await like(null);
+    
+        expect(res.status).toBe(401);
+    
+        const saved = await db.collection("posts").findOne({ _id: postId });
+        expect(saved?.likes).toEqual([]);
+        expect(saved?.likesCount).toBe(0);
+    });
+
+    test("ignores userEmail in the body and uses the session", async () => {
+        mockSession.mockResolvedValue({ user: { email: "a@test.com" } });
+
+        const res = await POST(new Request("http://localhost/api/post/toggle-likes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ postId: postId.toString(), userEmail: "victim@test.com" }),
+        }));
+    
+        expect(res.status).toBe(200);
+    
+        const saved = await db.collection("posts").findOne({ _id: postId });
+        expect(saved?.likes).toEqual(["a@test.com"]);
+        expect(saved?.likesCount).toBe(1);
     });
 });

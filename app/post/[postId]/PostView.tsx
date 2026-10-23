@@ -119,7 +119,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     postId,
-                    userEmail: email,
                 }),
             })
 
