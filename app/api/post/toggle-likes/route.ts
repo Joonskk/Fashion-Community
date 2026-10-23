@@ -8,6 +8,9 @@ export async function POST(req: Request){
 
     const { postId, userEmail } = body;
 
+    if (!ObjectId.isValid(postId)) {
+        return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
     const _id = new ObjectId(postId as string);
 
     try {
