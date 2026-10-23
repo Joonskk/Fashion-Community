@@ -85,7 +85,6 @@ export default function PostDescription({ images } : {images : File[]}){
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email,
                     authorName: userData?.name,
                     sex: userData?.sex,
                     images: imageInfos,
