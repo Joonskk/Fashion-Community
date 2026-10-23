@@ -1,12 +1,18 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import { getSessionEmail } from "@/lib/session";
 
 export async function POST(req: Request){
 
     const body = await req.json();
 
-    const { postId, userEmail } = body;
+    const { postId } = body;
+    const userEmail = await getSessionEmail();
+
+    if (!userEmail) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     if (!ObjectId.isValid(postId)) {
         return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
