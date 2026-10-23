@@ -52,9 +52,21 @@ describe("POST /api/post/create-post", () => {
 
         const res = await POST(makeRequest({
             images: ["https://example.com/a.jpg"],          // valid image, so the 401 can't come from that
-          }));
+        }));
         expect(res.status).toBe(401);
         expect(mockCreate).not.toHaveBeenCalled();          // stopped before spending on OpenAI
+    })
+
+    test("returns 401 when logged out even if the body has an email  ", async () => {
+        mockSession.mockResolvedValue(null);                // nobody logged in
+
+        const res = await POST(makeRequest({
+            images: ["https://example.com/a.jpg"],          // valid image, so the 401 can't come from that
+            email: "victim@test.com",
+        }));
+        expect(res.status).toBe(401);
+        expect(mockCreate).not.toHaveBeenCalled();          // stopped before spending on OpenAI
+        expect(await db.collection("posts").countDocuments()).toBe(0);  // nothing saved
     })
 
     test("returns 400 when no images are sent, without calling OpenAI", async () => {
