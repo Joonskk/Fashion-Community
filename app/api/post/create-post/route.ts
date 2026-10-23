@@ -32,8 +32,8 @@ export async function POST(req: Request) {
         likesCount = 0,
     } = body;
 
-    const userEmail = await getSessionEmail();
-    if (!userEmail) {
+    const sessionEmail = await getSessionEmail();
+    if (!sessionEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
     const db = client.db("wearly");
 
     const newPost = {
-        userEmail,
+        userEmail: sessionEmail,
         authorName,
         sex,
         images,
