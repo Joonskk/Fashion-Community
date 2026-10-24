@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { ObjectId } from 'mongodb';
 import type { Document, Filter } from 'mongodb'
 
@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     const email = req.headers.get('user-email');
     if (!email) return NextResponse.json({ error: 'No email' }, { status: 400 });
 
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db('wearly');
 
     const { searchParams } = new URL(req.url);

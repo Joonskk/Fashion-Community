@@ -2,7 +2,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import StyleCard from "@/app/components/StyleCard";
 
 interface ImageInfo {
@@ -36,7 +36,7 @@ export default async function LikesPage({ searchParams }: LikesPageProps) {
     }
 
     // 2. Connect to MongoDB
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db("wearly");
 
     // 3. Build query for posts liked by the user

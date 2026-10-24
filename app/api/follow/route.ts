@@ -1,4 +1,4 @@
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest){
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest){
     }
 
     try {
-        const db = (await clientPromise).db('wearly');
+        const db = (await getClient()).db('wearly');
 
         const sessionUser = await db.collection("users").findOne({ email: sessionUserEmail });
         const authorUser = await db.collection("users").findOne({ email: postAuthorEmail });
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest){
       }
 
     try {
-        const client = await clientPromise;
+        const client = await getClient();
         const db = client.db('wearly');
         
         const user = await db.collection('users').findOne({ // 현재 세션 유저

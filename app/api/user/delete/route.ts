@@ -1,10 +1,10 @@
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { getServerSession } from 'next-auth';
 import { authOptions } from "@/lib/auth";
 
 export async function DELETE(){
     try {
-        const client = await clientPromise;
+        const client = await getClient();
         const db = client.db('wearly');
         
         // 현재 로그인한 유저 가져오기

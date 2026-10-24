@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // Adjust path if your authOptions is in auth.ts
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const client = await clientPromise;
+  const client = await getClient();
   const db = client.db("wearly");
 
   // Query directly for the authenticated user only

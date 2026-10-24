@@ -5,29 +5,34 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-const uri: string = process.env.MONGODB_URI!;
-const options = {};
+let clientPromise: Promise<MongoClient> | undefined;
 
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+export function getClient(): Promise<MongoClient> {
+  // Already connected (or connecting)? Reuse it.
+  if (clientPromise) return clientPromise;
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MongoDB URI to .env.local');
-}
-
-if (process.env.NODE_ENV === 'development') {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+  // The check now runs on the first request, not at import time.
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('Please add your MongoDB URI to .env.local');
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+
+  if (process.env.NODE_ENV === 'development') {
+    // Dev hot-reload re-runs this file, so cache on `global` to avoid
+    // opening a new connection on every save.
+    if (!global._mongoClientPromise) {
+      global._mongoClientPromise = new MongoClient(uri).connect();
+    }
+    clientPromise = global._mongoClientPromise;
+  } else {
+    clientPromise = new MongoClient(uri).connect();
+  }
+
+  return clientPromise;
 }
 
 export async function initIndexes(): Promise<void> {
-  const mongoClient = await clientPromise;
+  const mongoClient = await getClient();
   const db = mongoClient.db();
 
   // Posts: Feed queries filtering by user and sorting by date
@@ -54,5 +59,3 @@ export async function initIndexes(): Promise<void> {
     { unique: true }
   );
 }
-
-export default clientPromise;

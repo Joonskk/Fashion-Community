@@ -1,11 +1,11 @@
 // 홈 화면용 게시물 받아오기 API
 
 import { NextRequest, NextResponse } from 'next/server'
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import type { Sort, Document } from 'mongodb';
 
 export async function GET(req:NextRequest) {
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db('wearly');
 
     const { searchParams } = new URL(req.url);

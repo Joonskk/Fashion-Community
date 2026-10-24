@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { getClient } from "@/lib/mongodb";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { v2 as cloudinary } from "cloudinary";
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const db = (await clientPromise).db('wearly');
+    const db = (await getClient()).db('wearly');
 
     const newUser = {
       name,
@@ -100,7 +100,7 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    const db = (await clientPromise).db('wearly');
+    const db = (await getClient()).db('wearly');
 
     const user = await db.collection("users").findOne({ email });
     if (!user) {

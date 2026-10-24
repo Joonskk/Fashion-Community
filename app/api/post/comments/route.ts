@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 type Comment = {
@@ -19,7 +19,7 @@ export async function POST(req: Request){
     const {postId, userId, userEmail, profileImage, userName, text } = body;
 
     try {
-        const db = (await clientPromise).db('wearly');
+        const db = (await getClient()).db('wearly');
         const newComment : Comment = {
             postId,
             userId,
@@ -42,7 +42,7 @@ export async function POST(req: Request){
 }
 
 export async function GET() {
-    const db = (await clientPromise).db('wearly');
+    const db = (await getClient()).db('wearly');
 
     const comments = await db.collection('comments').find({}, {
         projection: { _id: 1, postId: 1, userId: 1, userEmail: 1, userName: 1, profileImage: 1, text: 1, createdAt: 1 }
