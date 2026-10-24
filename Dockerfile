@@ -1,5 +1,18 @@
 # Stage 1: install dependencies
 FROM node:22-alpine AS deps
-WORKDIR app/
+WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+
+# Stage 2: build the app
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# NEXT_PUBLIC_* values are baked into the browser JS at build time,
+# so they must exist during `npm run build`, not just at runtime.
+ARG NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+ARG NEXT_PUBLIC_CLOUDINARY_API_KEY
+
+RUN npm run build
