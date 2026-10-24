@@ -1,0 +1,22 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db   # keep the database files in a named volume
+
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}
+        NEXT_PUBLIC_CLOUDINARY_API_KEY: ${NEXT_PUBLIC_CLOUDINARY_API_KEY}
+    ports:
+      - "3000:3000"
+    env_file: .env.local
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/wearly   # overrides the Atlas URI from .env.local
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:
