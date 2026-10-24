@@ -23,6 +23,7 @@ A full-stack fashion community app where people share outfits, search by style, 
 | Media | Cloudinary |
 | UI | Tailwind CSS, Lucide icons |
 | Testing | Jest, mongodb-memory-server |
+| Containers | Docker (multi-stage build), Docker Compose |
 
 ## Data model (MongoDB)
 
@@ -56,6 +57,39 @@ OPENAI_API_KEY=
 ```
 
 Then run `npm run dev` and open http://localhost:3000.
+
+## Run with Docker
+
+Requirements: Docker Desktop and the same `.env.local` as above. No Node.js install is needed.
+
+```bash
+docker compose --env-file .env.local up --build
+```
+
+Then open http://localhost:3000.
+
+- Compose starts two containers: the app and a local MongoDB (`mongo:7`). The app's `MONGODB_URI` is overridden to point at the local database, so it starts empty and never touches Atlas.
+- `--env-file .env.local` passes the two `NEXT_PUBLIC_CLOUDINARY_*` values to the build, because Next.js bakes `NEXT_PUBLIC_*` variables into the browser bundle at build time. All other secrets are read from `.env.local` when the container starts and are never stored in the image (`.dockerignore` excludes `.env*`).
+- Stop with `Ctrl+C`, then `docker compose down`. Local data is kept in the `mongo-data` volume; `docker compose down -v` deletes it.
+
+To run only the app image against your own database (for example Atlas):
+
+```bash
+docker build -t wearly \
+  --build-arg NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=<value> \
+  --build-arg NEXT_PUBLIC_CLOUDINARY_API_KEY=<value> .
+docker run --rm --env-file .env.local -p 3000:3000 wearly
+```
+
+How the image is built (`Dockerfile`):
+
+| Stage | What it does |
+| --- | --- |
+| `deps` | Installs dependencies with `npm ci`. Only `package*.json` is copied first, so this layer is cached until dependencies change. |
+| `builder` | Copies the source and runs `npm run build` with Next.js `output: "standalone"`. |
+| `runner` | Copies only the standalone server, `.next/static` and `public`, and runs `node server.js` as the non-root `node` user. |
+
+The final image is 346 MB on disk (86.9 MB compressed), compared with 1.34 GB for the build stage, which is roughly what a single-stage image would ship.
 
 ## Testing
 
