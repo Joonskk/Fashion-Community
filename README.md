@@ -71,8 +71,9 @@ __tests__/
   api/
     similar.test.ts       # similar-outfit matching, invalid id → 400
     search.test.ts        # filters, AND across filters, case-insensitive q, pagination, regex escaping
-    create-post.test.ts   # 401 / 400 guards, AI success, AI failure fallback, style merging
-    toggle-likes.test.ts  # like, unlike, multiple users, 404, invalid id → 400
+    create-post.test.ts   # 401 (even with an email in the body), 400, AI success, AI failure fallback, style merging
+    toggle-likes.test.ts  # like, unlike, multiple users, 404, invalid id → 400, 401 logged out
+    delete-post.test.ts   # 401 logged out, 403 not the author, owner delete removes images
   lib/
     hashtags.test.ts      # caption hashtag extraction
     escapeRegex.test.ts   # special characters are escaped
@@ -84,15 +85,6 @@ The tests found two bugs that are now fixed: a search for `(` crashed the search
 
 ## Known issues and roadmap
 
-Known issues (found by the tests, tracked for upcoming work):
+Known issues (tracked for upcoming work):
 - When AI tagging fails, the post is saved with fallback values (`all-season`, `unisex`) that aren't in the allowed lists, so search filters can't find it. Planned fix: run tagging as a background job with a status field and retries.
-- Some routes take the user's email from the request body and don't require a session. Planned fix: take identity only from the session.
-
-Roadmap:
-- [x] Jest API tests
-- [ ] Docker
-- [ ] GitHub Actions CI
-- [ ] AI tagging as a background job with retries
-- [ ] Cursor pagination and MongoDB indexes
-- [ ] Vector search for similar outfits, measured against tag matching
-- [ ] Load test with k6
+- Likes, post creation and post deletion now take the user only from the session (#6). Bookmarks, comments and follow still trust an email from the request; tracked in #7.
