@@ -1,5 +1,5 @@
 // app/(main)/home/recommend/page.tsx
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import StyleCard from "@/app/components/StyleCard";
 
 // 1. Types for post objects
@@ -28,7 +28,7 @@ export default async function RecommendPage({ searchParams }: RecommendPageProps
     const { sex } = await searchParams;
 
     // Connect to MongoDB using your existing native driver
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db('wearly');
 
     // Build query exact same way as your API route

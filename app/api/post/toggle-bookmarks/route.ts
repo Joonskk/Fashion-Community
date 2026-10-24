@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 
 export async function POST(req: Request){
 
@@ -7,7 +7,7 @@ export async function POST(req: Request){
     const { postId, userEmail } = body;
 
     try {
-        const db = (await clientPromise).db('wearly');
+        const db = (await getClient()).db('wearly');
         const bookmarks = db.collection('bookmarks');
 
         const existing = await bookmarks.findOne({postId, userEmail});
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     const userEmail = searchParams.get("userEmail");
 
     try {
-        const db = (await clientPromise).db('wearly');
+        const db = (await getClient()).db('wearly');
         const bookmarks = db.collection('bookmarks');
 
         const isBookmarked = await bookmarks.findOne({ postId, userEmail });

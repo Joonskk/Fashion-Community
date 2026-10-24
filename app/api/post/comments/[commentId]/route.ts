@@ -1,4 +1,4 @@
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 
@@ -19,7 +19,7 @@ export async function DELETE(req: NextRequest, {params} : RouteParams) {
       );
     }
 
-    const db = (await clientPromise).db("wearly");
+    const db = (await getClient()).db("wearly");
     const result = await db.collection("comments").deleteOne({
       _id: new ObjectId(commentId),
     });
@@ -55,7 +55,7 @@ export async function PATCH(req: NextRequest, {params} : RouteParams) {
       );
     }
 
-    const db = (await clientPromise).db("wearly");
+    const db = (await getClient()).db("wearly");
     const result = await db.collection("comments").updateOne(
       { _id: new ObjectId(commentId) },
       { $set: { text } }

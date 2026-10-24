@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { getSessionEmail } from "@/lib/session";
 import OpenAI from "openai";
 import {
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
     const finalStyles = uniqueStyles.slice(0, MAX_HASHTAGS_PER_POST);
 
     // 6. Insert into MongoDB collection
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db("wearly");
 
     const newPost = {

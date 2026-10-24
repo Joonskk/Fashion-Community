@@ -1,6 +1,6 @@
 // app/api/post/search/route.ts
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { Filter } from "mongodb";
 import { escapeRegex } from "@/lib/escapeRegex";
 
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
       queryFilter.gender = gender;
     }
 
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db("wearly");
 
     const [posts, total] = await Promise.all([

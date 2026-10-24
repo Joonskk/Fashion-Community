@@ -7,11 +7,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
-        pathname: "/**", // 모든 경로 허용
+        pathname: "/**",
       }
     ]
   },
-  // 다른 설정들...
+  output: "standalone",
 };
 
 export default nextConfig;

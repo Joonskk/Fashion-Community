@@ -1,6 +1,6 @@
 // app/api/post/[id]/similar/route.ts
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -12,7 +12,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
         }
 
-        const client = await clientPromise;
+        const client = await getClient();
         const db = client.db("wearly");
 
         // 2. Fetch current post

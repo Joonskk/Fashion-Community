@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import UserPageClient from "./UserPage";
 
@@ -11,7 +11,7 @@ async function getUserPageData(userId: string) {
   try {
     if (!ObjectId.isValid(userId)) return null;
 
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db("wearly");
 
     // 1. Fetch target user by ObjectId

@@ -1,4 +1,4 @@
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getSessionEmail } from "@/lib/session";
@@ -20,7 +20,7 @@ export async function POST(req: Request){
     const _id = new ObjectId(postId as string);
 
     try {
-        const db = (await clientPromise).db('wearly');
+        const db = (await getClient()).db('wearly');
         const post = await db.collection('posts').findOne({ _id });
         if (!post) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
 

@@ -1,0 +1,20 @@
+# 1. dependencies: npm ci reinstalls these inside the image
+/node_modules
+
+# 2. build output: npm run build recreates this
+/build
+/.next/
+/out/
+
+# 3. secrets: NEVER put these in an image
+.env*
+
+# 4. not needed to run the app
+.git
+__tests__
+test-utils
+coverage
+repomix-output.xml
+.vercel
+.DS_Store
+npm-debug.log*

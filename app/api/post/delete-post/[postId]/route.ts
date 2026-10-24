@@ -1,4 +1,4 @@
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
@@ -20,7 +20,7 @@ export async function DELETE(req: NextRequest, context: any) {
     }
 
     try {
-        const db = (await clientPromise).db('wearly');
+        const db = (await getClient()).db('wearly');
 
         // Cloudinary에서 사진 삭제
         const post = await db.collection("posts").findOne({ _id: new ObjectId(postId) });

@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import StyleCard from "@/app/components/StyleCard";
 
@@ -36,7 +36,7 @@ export default async function BookmarkPage({ searchParams }: BookmarkPageProps) 
     }
 
     // 2. Connect to MongoDB
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db("wearly");
 
     // 3. Query the 'bookmarks' collection using the user's email

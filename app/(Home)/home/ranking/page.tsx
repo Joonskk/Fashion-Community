@@ -1,5 +1,5 @@
 // app/(main)/home/ranking/page.tsx
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import StyleCard from "@/app/components/StyleCard";
 
 interface ImageInfo {
@@ -24,7 +24,7 @@ interface RankingPageProps {
 export default async function RankingPage({ searchParams }: RankingPageProps) {
   const { sex } = await searchParams;
 
-  const client = await clientPromise;
+  const client = await getClient();
   const db = client.db('wearly');
 
   const query: Record<string, unknown> = {};

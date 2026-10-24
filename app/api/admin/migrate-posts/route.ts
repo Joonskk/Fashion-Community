@@ -1,7 +1,7 @@
 // This is a code to update existed data. (After adding styles, items, seasons, genders, and colors)
 
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import OpenAI from "openai";
 import {
   AI_TAGGING_MODEL,
@@ -18,7 +18,7 @@ import { extractHashtags } from "@/lib/hashtags";
 
 export async function POST(req: Request) {
   try {
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db("wearly");
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 

@@ -1,6 +1,6 @@
 // app/api/user/[email]/route.ts
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 
 export async function GET(
   req: Request,
@@ -18,7 +18,7 @@ export async function GET(
     const email = decodeURIComponent(rawEmail).trim();
 
     // 2. Connect to MongoDB
-    const client = await clientPromise;
+    const client = await getClient();
     const db = client.db("wearly");
 
     // 3. Query the user collection using case-insensitive exact regex match

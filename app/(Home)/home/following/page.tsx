@@ -1,7 +1,7 @@
 // app/(main)/home/following/page.tsx
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth"; // Path to your NextAuth config options
-import clientPromise from "@/lib/mongodb";
+import { getClient } from "@/lib/mongodb";
 import StyleCard from "@/app/components/StyleCard";
 import { redirect } from "next/navigation";
 
@@ -36,7 +36,7 @@ export default async function FollowingPage({ searchParams }: FollowingPageProps
   }
 
   // 2. Connect to MongoDB using native driver
-  const client = await clientPromise;
+  const client = await getClient();
   const db = client.db("wearly");
 
   // 3. Fetch current user's following list directly from DB
