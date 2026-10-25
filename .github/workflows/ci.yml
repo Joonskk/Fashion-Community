@@ -1,13 +1,24 @@
 name: CI
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches: [feat/ci]
+    branches: [main, feat/ci]
+
+permissions:
+  contents: read
 
 jobs:
-  hello:
+  check:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello from a runner"
-      - run: node -v
-      - run: ls
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
