@@ -1,0 +1,13 @@
+name: CI
+
+on:
+  push:
+    branches: [feat/ci]
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello from a runner"
+      - run: node -v
+      - run: ls
