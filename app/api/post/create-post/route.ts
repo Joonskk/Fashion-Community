@@ -2,13 +2,10 @@ import { NextResponse } from "next/server";
 import { getClient } from "@/lib/mongodb";
 import { getSessionEmail } from "@/lib/session";
 import {
-    ALLOWED_STYLES,
-    StyleTag,
-    MAX_HASHTAGS_PER_POST,
     FashionAnalysisResult,
 } from "@/lib/constants";
-import { extractHashtags } from "@/lib/hashtags";
 import { tagImage } from "@/lib/tagging";
+import { mergeStyles } from "@/lib/styles";
 
 export async function POST(req: Request) {
   try {
@@ -52,24 +49,7 @@ export async function POST(req: Request) {
         }
     }
 
-    // 1. Extract hashtags written in description (if any)
-    const captionHashtags = extractHashtags(description);
-
-    // 2. Combine caption tags with selected button styles
-    const combinedRawStyles = [...styles, ...captionHashtags, ...(aiAnalysis.styles || []),];
-
-    // 3. Clean raw tags and validate against ALLOWED_STYLES taxonomy
-    const validStyles = combinedRawStyles
-      .map((tag: string) => tag.toLowerCase().trim())
-      .filter((tag: string): tag is StyleTag =>
-        (ALLOWED_STYLES as readonly string[]).includes(tag)
-      );
-
-    // 4. Deduplicate tags
-    const uniqueStyles = Array.from(new Set(validStyles));
-
-    // 5. Enforce strict cap (Max 3 tags per post)
-    const finalStyles = uniqueStyles.slice(0, MAX_HASHTAGS_PER_POST);
+    const finalStyles = mergeStyles(styles, description, aiAnalysis.styles || []);
 
     // 6. Insert into MongoDB collection
     const client = await getClient();
