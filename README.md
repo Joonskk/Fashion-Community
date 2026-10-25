@@ -1,5 +1,7 @@
 # Wearly
 
+[![CI](https://github.com/Joonskk/Fashion-Community/actions/workflows/ci.yml/badge.svg)](https://github.com/Joonskk/Fashion-Community/actions/workflows/ci.yml)
+
 A full-stack fashion community app where people share outfits, search by style, and get similar-outfit recommendations. Uploaded outfit photos are tagged automatically by an OpenAI vision model.
 
 ## Features
@@ -24,6 +26,7 @@ A full-stack fashion community app where people share outfits, search by style, 
 | UI | Tailwind CSS, Lucide icons |
 | Testing | Jest, mongodb-memory-server |
 | Containers | Docker (multi-stage build), Docker Compose |
+| CI | GitHub Actions |
 
 ## Data model (MongoDB)
 
@@ -116,6 +119,25 @@ test-utils/
 ```
 
 The tests found two bugs that are now fixed: a search for `(` crashed the search route with a 500 because the query went straight into `$regex`, and an invalid post id crashed the like route.
+
+## Continuous integration
+
+Every pull request into `main`, and every push to `main`, runs `.github/workflows/ci.yml` on GitHub Actions. It has two jobs that run in parallel:
+
+| Job | What it runs | Time |
+| --- | --- | --- |
+| `check` | `npm ci` → `npx tsc --noEmit` → `npm run lint` → `npm test` | ~33 s (npm cache) |
+| `docker` | `docker build`, to make sure the image still builds | ~1 min |
+
+Neither job needs secrets: the tests use an in-memory MongoDB, and the build no longer connects to a database.
+
+A ruleset on `main` requires a pull request and both checks to pass before merging, with no bypass. To confirm it works, a test was broken on purpose in #10: `check` failed and merging was blocked.
+
+To run the same checks locally before pushing:
+
+```bash
+npx tsc --noEmit && npm run lint && npm test
+```
 
 ## Known issues and roadmap
 
