@@ -58,11 +58,11 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
 
     const { userData, email, refetchUserData } = useUser();
 
-    const [post, setPost] = useState<Post>(initialPost);
-    const [user, setUser] = useState<User | null>(initialAuthor);
-    const [images, setImages] = useState<ImageInfo[]>(initialPost.images || []);
+    const [post] = useState<Post>(initialPost);
+    const [user] = useState<User | null>(initialAuthor);
+    const [images] = useState<ImageInfo[]>(initialPost.images || []);
     const [likesCount, setLikesCount] = useState<number>(initialPost.likesCount || 0);
-    const [createdAt, setCreatedAt] = useState<string>(initialPost.createdAt || "");
+    const [createdAt] = useState<string>(initialPost.createdAt || "");
 
     const [liked, setLiked] = useState<boolean>(
         email ? initialPost.likes?.includes(email) : false
