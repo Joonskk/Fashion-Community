@@ -1,11 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getClient } from "@/lib/mongodb";
 import { getSessionEmail } from "@/lib/session";
-import {
-    FashionAnalysisResult,
-} from "@/lib/constants";
-import { tagImage } from "@/lib/tagging";
 import { mergeStyles } from "@/lib/styles";
+import { runTaggingJob } from "@/lib/taggingJob";
 
 export async function POST(req: Request) {
   try {
@@ -16,10 +13,6 @@ export async function POST(req: Request) {
         images,
         description = "",
         styles = [],
-        items = [],
-        season = "all-season",
-        gender = "unisex",
-        colors = [],
         likes = [],
         likesCount = 0,
     } = body;
@@ -36,22 +29,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const primaryImageUrl = typeof images[0] === "string" ? images[0] : images[0]?.url;
+    const finalStyles = mergeStyles(styles, description, []);
 
-    // --- Automatic AI Vision Analysis ---
-    let aiAnalysis: Partial<FashionAnalysisResult> = {};
-
-    if (primaryImageUrl) {
-        try {
-            aiAnalysis = await tagImage(primaryImageUrl);
-        } catch (aiErr) {
-            console.error("AI Analysis failed during post creation:", aiErr);
-        }
-    }
-
-    const finalStyles = mergeStyles(styles, description, aiAnalysis.styles || []);
-
-    // 6. Insert into MongoDB collection
     const client = await getClient();
     const db = client.db("wearly");
 
@@ -62,17 +41,23 @@ export async function POST(req: Request) {
         images,
         description,
         styles: finalStyles,
-        items: aiAnalysis.items?.length ? aiAnalysis.items : items,
-        season: aiAnalysis.season || season,
-        gender: aiAnalysis.gender || gender,
-        colors: aiAnalysis.colors?.length ? aiAnalysis.colors : colors,
+        items: [],
+        season: null,
+        gender: null,
+        colors: [],
         likes,
         likesCount,
         createdAt: new Date(),
+        aiStatus: "pending",
+        aiAttempts: 0,
+        aiNextAttemptAt: new Date(),
+        aiLockedAt: null,
+        aiError: null,
     };
   
     const result = await db.collection("posts").insertOne(newPost);
   
+    after(() => runTaggingJob(db, result.insertedId));
 
     return NextResponse.json({ success: true, postId: result.insertedId, post: newPost });
   } catch (err) {
