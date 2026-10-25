@@ -38,7 +38,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         if (colors.length > 0) matchConditions.push({ colors: { $in: colors } });
         if (season) matchConditions.push({ season });
 
-        let query: any = { _id: { $ne: currentId } };
+        const query: any = { _id: { $ne: currentId } };
 
         if (matchConditions.length > 0) {
         query.$or = matchConditions;

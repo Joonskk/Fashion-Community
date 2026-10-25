@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import type { Db } from "mongodb";
 import { startTestDb } from "@/test-utils/db";
-import { start } from "repl";
 
 // First run downloads a MongoDB binary, so allow more than Jest's 5s default.
 jest.setTimeout(60_000);

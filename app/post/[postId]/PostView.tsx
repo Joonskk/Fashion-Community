@@ -247,8 +247,6 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                 body: JSON.stringify({ text: comment }),
             });
 
-            const result = await res.json();
-
             if(res.ok) {
                 if(textarea) textarea.value = "";
                 setComment("");

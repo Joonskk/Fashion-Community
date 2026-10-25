@@ -15,7 +15,7 @@ type ImageInfo = {
 export default function PostDescription({ images } : {images : File[]}){
     
     const router = useRouter();
-    const { email, userData } = useUser();
+    const { userData } = useUser();
     
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [description, setDescription] = useState<string>("");

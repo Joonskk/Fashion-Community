@@ -16,7 +16,7 @@ import {
 } from "@/lib/constants";
 import { extractHashtags } from "@/lib/hashtags";
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const client = await getClient();
     const db = client.db("wearly");
