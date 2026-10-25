@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { useSession } from "next-auth/react";
 
 export type UserData = {
@@ -39,7 +39,7 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [userDataLoaded, setUserDataLoaded] = useState(false);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!session?.user?.email) {
       setUserDataLoaded(true);
       return;
@@ -66,7 +66,7 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setUserDataLoaded(true);
     }
-  };
+  }, [session?.user?.email]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -75,7 +75,7 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
       setUserData(null);
       setUserDataLoaded(true);
     }
-  }, [session?.user?.email, status]);
+  }, [fetchUserData, status]);
 
   return (
     <UserContext.Provider
