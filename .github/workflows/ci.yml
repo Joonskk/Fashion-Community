@@ -1,17 +1,17 @@
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
 name: CI
 
 on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, feat/ci]
+    branches: [main]
 
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
