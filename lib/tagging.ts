@@ -54,6 +54,8 @@ export async function tagImage(imageUrl: string): Promise<FashionAnalysisResult>
     },
     });
 
-    const parsed = JSON.parse(aiResponse.choices[0].message.content || "{}");
-    return parsed;
+    const content = aiResponse.choices[0].message.content;
+    if (!content) throw new Error("OpenAI returned an empty response.");
+
+    return JSON.parse(content);
 }
