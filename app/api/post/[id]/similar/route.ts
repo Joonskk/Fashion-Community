@@ -1,7 +1,7 @@
 // app/api/post/[id]/similar/route.ts
 import { NextResponse } from "next/server";
 import { getClient } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Filter, type Document } from "mongodb";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -31,14 +31,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         const season = currentPost.season;
 
         // 3. Query posts matching shared attributes (excluding current post)
-        const matchConditions: any[] = [];
+        const matchConditions: Filter<Document>[] = [];
 
         if (items.length > 0) matchConditions.push({ items: { $in: items } });
         if (styles.length > 0) matchConditions.push({ styles: { $in: styles } });
         if (colors.length > 0) matchConditions.push({ colors: { $in: colors } });
         if (season) matchConditions.push({ season });
 
-        let query: any = { _id: { $ne: currentId } };
+        const query: Filter<Document> = { _id: { $ne: currentId } };
 
         if (matchConditions.length > 0) {
         query.$or = matchConditions;

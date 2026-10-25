@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import type { Db } from "mongodb";
 import { startTestDb } from "@/test-utils/db";
-import { start } from "repl";
 
 // First run downloads a MongoDB binary, so allow more than Jest's 5s default.
 jest.setTimeout(60_000);
@@ -42,7 +41,7 @@ describe("GET /api/post/[id]/similar", () => {
             params: Promise.resolve({ id: currentId.toString() }),
         });
         const body = await res.json();
-        const ids = body.posts.map((p: any) => p._id);
+        const ids = body.posts.map((p: { _id: string }) => p._id);
         expect(ids).toContain(similarId.toString());
     });
 
@@ -51,7 +50,7 @@ describe("GET /api/post/[id]/similar", () => {
             params: Promise.resolve({ id: currentId.toString() }),
         });
         const body = await res.json();
-        const ids = body.posts.map((p: any) => p._id);
+        const ids = body.posts.map((p: { _id: string }) => p._id);
         expect(ids).not.toContain(currentId.toString());
     });
 
@@ -60,7 +59,7 @@ describe("GET /api/post/[id]/similar", () => {
             params: Promise.resolve({ id: currentId.toString() }),
         });
         const body = await res.json();
-        const ids = body.posts.map((p: any) => p._id);
+        const ids = body.posts.map((p: { _id: string }) => p._id);
         expect(ids).not.toContain(unrelatedId.toString());
     });
 })

@@ -73,7 +73,7 @@ export default function SearchPage() {
     fetchSearchResults();
   }, [fetchSearchResults]);
 
-  const handleFilterChange = (setter: Function, value: any) => {
+  const handleFilterChange = (setter: (val: string) => void, value: string) => {
     setPage(1);
     setter(value);
   };

@@ -1,0 +1,34 @@
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, feat/ci]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t wearly .

@@ -1,7 +1,7 @@
 // app/api/post/search/route.ts
 import { NextResponse } from "next/server";
 import { getClient } from "@/lib/mongodb";
-import { Filter } from "mongodb";
+import { Filter, Document } from "mongodb";
 import { escapeRegex } from "@/lib/escapeRegex";
 
 export async function GET(req: Request) {
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     const skip = (page - 1) * limit;
 
     // Construct MongoDB filter object
-    const queryFilter: Filter<any> = {};
+    const queryFilter: Filter<Document> = {};
 
     // 1. Broad Text / Keyword Search across text fields and arrays
     if (q) {

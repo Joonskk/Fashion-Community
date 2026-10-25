@@ -6,8 +6,7 @@ type RouteParams = {
     params: Promise<{ commentId: string }>;
 };
 
-// DELETE: 댓글 삭제
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// DELETE: Delete Comment
 export async function DELETE(req: NextRequest, {params} : RouteParams) {
   try {
     const { commentId } = await params;
@@ -41,8 +40,7 @@ export async function DELETE(req: NextRequest, {params} : RouteParams) {
   }
 }
 
-// PATCH: 댓글 수정
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// PATCH: Edit Comment
 export async function PATCH(req: NextRequest, {params} : RouteParams) {
   try {
     const { commentId } = await params;

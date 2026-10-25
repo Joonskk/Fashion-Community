@@ -43,7 +43,7 @@ export default function UserPage({ initialUser, initialPosts, userId,}: UserPage
     const { email, session, refetchUserData } = useUser();
 
     const [userData, setUserData] = useState<User>(initialUser);
-    const [userPosts, setUserPosts] = useState<Post[]>(initialPosts);
+    const [userPosts] = useState<Post[]>(initialPosts);
     const [isFollowed, setIsFollowed] = useState<boolean>(false);
 
     // Redirect to mypage if the viewing user is looking at their own profile

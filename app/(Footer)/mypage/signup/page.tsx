@@ -35,7 +35,7 @@ const SignUp = () => {
       let data;
       try {
         data = JSON.parse(text);
-      } catch (err) {
+      } catch {
         console.error("Non-JSON response received:", text);
         alert("서버 응답 형식이 올바르지 않습니다.");
         return;
