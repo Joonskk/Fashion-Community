@@ -6,7 +6,7 @@ describe('extractHashtags', () => {
     });
 
     test('returns an array of lowercase tags without the #', () => {
-        expect(extractHashtags('#Streetwear #Y2K')).toEqual(['streetwear', 'y2k']);
+        expect(extractHashtags('#Streetwear #Y2K')).toEqual(['wrongExpectedValue', 'y2k']);
     });
 
     test('returns an empty array for a set of words', () => {
