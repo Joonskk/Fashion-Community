@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getClient } from "@/lib/mongodb";
 import { dueOrStuckFilter, runTaggingJob } from "@/lib/taggingJob";
+export const maxDuration = 60;
 
 export async function GET(req: Request) {
     const secret = process.env.CRON_SECRET;
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
     const posts = await db.collection("posts")
         .find(dueOrStuckFilter(new Date()))      // the same two conditions as the claim
         .project({ _id: 1 })         // only the ids; the job loads the rest
-        .limit(20)
+        .limit(8)
         .toArray();
 
     // 3. Run them one at a time
