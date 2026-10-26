@@ -1,7 +1,7 @@
 import { Db, ObjectId } from "mongodb";
 import { tagImage } from "@/lib/tagging";
 import { mergeStyles } from "@/lib/styles";
-import { AI_MAX_ATTEMPTS, AI_RETRY_BASE_MS } from "@/lib/constants";
+import { AI_MAX_ATTEMPTS, AI_RETRY_BASE_MS, AI_LOCK_TIMEOUT_MS } from "@/lib/constants";
 
 export async function runTaggingJob(db: Db, postId: ObjectId) {
     const now = new Date();
@@ -10,8 +10,16 @@ export async function runTaggingJob(db: Db, postId: ObjectId) {
     const post = await db.collection("posts").findOneAndUpdate(
         {
             _id: postId,
-            aiStatus: "pending",                    // only posts waiting to be tagged
-            aiNextAttemptAt: { $lte: now },         // whose time has come ($lte = "less than or equal")
+            $or: [
+                { 
+                    aiStatus: "pending",
+                    aiNextAttemptAt: { $lte: now } 
+                },               // due
+                { 
+                    aiStatus: "processing", 
+                    aiLockedAt: { $lte: new Date(now.getTime() - AI_LOCK_TIMEOUT_MS) } 
+                }, // stuck
+            ],
         },
         { $set: { aiStatus: "processing", aiLockedAt: now } },
     );
