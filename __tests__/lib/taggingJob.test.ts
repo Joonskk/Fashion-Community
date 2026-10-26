@@ -8,7 +8,6 @@ import type { Db } from "mongodb";
 import { startTestDb } from "@/test-utils/db";
 import { runTaggingJob } from "@/lib/taggingJob";
 import { AI_MAX_ATTEMPTS, AI_RETRY_BASE_MS } from "@/lib/constants";
-import { run } from "node:test";
 
 jest.setTimeout(60_000);
 
@@ -68,7 +67,6 @@ describe("runTaggingJob", () => {
         mockTagImage.mockRejectedValue(new Error("down"));
         const id = await insertPost({ aiAttempts: AI_MAX_ATTEMPTS - 1 });
 
-        const before = Date.now();
         await runTaggingJob(db, id);
 
         const post = await db.collection("posts").findOne({ _id: id });
