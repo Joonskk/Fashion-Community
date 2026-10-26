@@ -7,6 +7,7 @@ import { X, ArrowUp } from "lucide-react";
 import Image from "next/image";
 import PostMenu from "./PostMenu";
 import SimilarPosts from "@/app/components/SimilarPosts";
+import { AiStatus } from "@/lib/constants";
 
 type Post = {
     _id: string;
@@ -16,6 +17,7 @@ type Post = {
     likes: string[];
     likesCount: number;
     createdAt: string;
+    aiStatus?: AiStatus;
 }
 
 type ImageInfo = {
@@ -521,6 +523,9 @@ export default function PostView({initialPost, initialAuthor} : PostViewProps) {
                     <div className="font-bold inline-block mr-[10px]">{user?.name}</div>
                     <div className="inline">{post?.description}</div>
                     <div className="text-gray-400">{createdAt && getTimeAgo(createdAt)}</div>
+                    {(post?.aiStatus === "pending" || post?.aiStatus === "processing") && (
+                        <div className="text-gray-400 text-[13px]">✨ AI is tagging this outfit…</div>
+                    )}
                 </div>
             </div>
 
