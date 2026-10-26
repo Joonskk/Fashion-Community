@@ -1,0 +1,5 @@
+{
+    "crons": [
+      { "path": "/api/cron/retry-tagging", "schedule": "0 0 * * *" }
+    ]
+  }
