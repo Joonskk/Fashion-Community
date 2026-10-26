@@ -7,6 +7,7 @@ A full-stack fashion community app where people share outfits, search by style, 
 ## Features
 
 - **AI vision tagging:** when a post is created, an OpenAI vision model (`gpt-5.6-luna`) reads the photo and returns structured tags: styles, items, season, gender and colors. Every tag is filtered against a fixed allowed list in `lib/constants.ts`, so the model can't invent new categories.
+- **Background tagging with retries:** create-post saves the post as `pending` and responds right away; tagging runs after the response (`after()` from `next/server`). A failed tagging is retried with exponential backoff (15, 30, 60, 120 min) and marked `failed` after 5 tries. A job claims a post with one atomic `findOneAndUpdate`, so two workers never tag the same post, and a post stuck in `processing` for 5 minutes is reclaimed. A daily Vercel Cron calls `/api/cron/retry-tagging` (protected by `CRON_SECRET`) to run due retries. Post creation went from 6.5 s to 0.24 s (median of 3, local dev).
 - **Style tags from three sources:** the styles a user picks, `#hashtags` written in the caption, and the AI's styles are merged, filtered to the allowed list, de-duplicated and capped at 3.
 - **Search:** keyword search over captions plus filters for style, item, color, season and gender, with pagination. User input is regex-escaped before it reaches MongoDB.
 - **Similar outfits:** each post page shows posts that share items, styles, colors or season with it.
@@ -57,6 +58,7 @@ NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
 NEXT_PUBLIC_CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 OPENAI_API_KEY=
+CRON_SECRET=
 ```
 
 Then run `npm run dev` and open http://localhost:3000.
@@ -108,10 +110,11 @@ __tests__/
   api/
     similar.test.ts       # similar-outfit matching, invalid id → 400
     search.test.ts        # filters, AND across filters, case-insensitive q, pagination, regex escaping
-    create-post.test.ts   # 401 (even with an email in the body), 400, AI success, AI failure fallback, style merging
+    create-post.test.ts   # 401, 400, saved as pending then tagged by the job, failure recorded for retry, style merging
     toggle-likes.test.ts  # like, unlike, multiple users, 404, invalid id → 400, 401 logged out
     delete-post.test.ts   # 401 logged out, 403 not the author, owner delete removes images
   lib/
+    taggingJob.test.ts    # success, backoff, give up after 5, not due, lock timeout, double claim
     hashtags.test.ts      # caption hashtag extraction
     escapeRegex.test.ts   # special characters are escaped
 test-utils/
@@ -142,5 +145,4 @@ npx tsc --noEmit && npm run lint && npm test
 ## Known issues and roadmap
 
 Known issues (tracked for upcoming work):
-- When AI tagging fails, the post is saved with fallback values (`all-season`, `unisex`) that aren't in the allowed lists, so search filters can't find it. Planned fix: run tagging as a background job with a status field and retries.
 - Likes, post creation and post deletion now take the user only from the session (#6). Bookmarks, comments and follow still trust an email from the request; tracked in #7.
