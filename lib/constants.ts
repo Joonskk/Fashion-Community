@@ -125,5 +125,5 @@ export const MAX_HASHTAGS_PER_POST = 3;
 
 export type AiStatus = "pending" | "processing" | "done" | "failed" ;
 export const AI_MAX_ATTEMPTS = 5;
-export const AI_RETRY_BASE_MS = 60_000;  // 1 minute
+export const AI_RETRY_BASE_MS = 15 * 60_000;  // 15 minutes
 export const AI_LOCK_TIMEOUT_MS = 5 * 60_000;

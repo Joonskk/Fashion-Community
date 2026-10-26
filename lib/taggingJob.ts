@@ -3,24 +3,29 @@ import { tagImage } from "@/lib/tagging";
 import { mergeStyles } from "@/lib/styles";
 import { AI_MAX_ATTEMPTS, AI_RETRY_BASE_MS, AI_LOCK_TIMEOUT_MS } from "@/lib/constants";
 
+export function dueOrStuckFilter(now: Date) {
+    return {
+        $or: [
+            {
+                aiStatus: "pending",
+                aiNextAttemptAt: { $lte: now }
+            }, // due
+            {
+                aiStatus: "processing",
+                aiLockedAt: {
+                    $lte: new Date(now.getTime() - AI_LOCK_TIMEOUT_MS)
+                }
+            }, // stuck
+        ],
+    }
+}
+
 export async function runTaggingJob(db: Db, postId: ObjectId) {
     const now = new Date();
 
     // 1. Claim: find the post AND mark it as taken, in ONE operation
     const post = await db.collection("posts").findOneAndUpdate(
-        {
-            _id: postId,
-            $or: [
-                { 
-                    aiStatus: "pending",
-                    aiNextAttemptAt: { $lte: now } 
-                },               // due
-                { 
-                    aiStatus: "processing", 
-                    aiLockedAt: { $lte: new Date(now.getTime() - AI_LOCK_TIMEOUT_MS) } 
-                }, // stuck
-            ],
-        },
+        { _id: postId, ...dueOrStuckFilter(now), },
         { $set: { aiStatus: "processing", aiLockedAt: now } },
     );
 
