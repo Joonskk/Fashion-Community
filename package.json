@@ -11,7 +11,6 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@google-cloud/vision": "^5.3.4",
     "cloudinary": "^2.7.0",
     "lucide-react": "^0.511.0",
     "mongodb": "^6.16.0",
