@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
 
 const URI = "mongodb://localhost:27017";
-const COUNT = 10000;
+const COUNT = 100000;
 
 const IMAGES = ["/styles/Style12.jpeg", 
                 "/styles/Style13.jpeg",
@@ -38,6 +38,8 @@ function makePost() {
 const client = new MongoClient(URI);
 await client.connect();
 const posts = client.db("wearly").collection("posts");
+
+await posts.deleteMany({ seed: true }); // start fresh: remove old fake posts, keep real ones
 
 const batch = Array.from({ length: COUNT }, makePost); // 10,000 posts in an array
 await posts.insertMany(batch);                           // one call that inserts many docs
