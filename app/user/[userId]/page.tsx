@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getClient } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import UserPageClient from "./UserPage";
+import { getFeedPage } from "@/lib/feed";
 
 interface PageProps {
   params: Promise<{ userId: string }> | { userId: string };
@@ -18,16 +19,13 @@ async function getUserPageData(userId: string) {
     const userDoc = await db.collection("users").findOne({ _id: new ObjectId(userId) });
     if (!userDoc) return null;
 
-    // 2. Fetch all posts created by this user
-    const postsDocs = await db
-      .collection("posts")
-      .find({ userEmail: userDoc.email })
-      .sort({ createdAt: -1 })
-      .toArray();
+    // 2. Page 1 of this user's posts (newest first)
+    const { posts, nextCursor } = await getFeedPage(db, "newest", { userEmail: userDoc.email }, null);
 
     return {
       user: JSON.parse(JSON.stringify(userDoc)),
-      posts: JSON.parse(JSON.stringify(postsDocs)),
+      posts: posts.map((p) => ({ _id: p._id.toString(), imageUrl: p.images[0]?.url })),
+      nextCursor,
     };
   } catch (error) {
     console.error("Error fetching user page data on server:", error);
@@ -47,6 +45,7 @@ export default async function UserPage({ params }: PageProps) {
     <UserPageClient
       initialUser={data.user}
       initialPosts={data.posts}
+      initialCursor={data.nextCursor}
       userId={resolvedParams.userId}
     />
   );
