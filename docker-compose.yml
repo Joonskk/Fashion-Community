@@ -3,6 +3,8 @@ services:
     image: mongo:7
     volumes:
       - mongo-data:/data/db   # keep the database files in a named volume
+    ports:
+      - "27017:27017"
 
   app:
     build:
