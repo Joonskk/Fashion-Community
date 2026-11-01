@@ -48,7 +48,7 @@ export default function MyPage() {
 
         const fetchMyPosts = async () => {
             try {
-                const response = await fetch('/api/posts');
+                const response = await fetch(`/api/posts?author=${encodeURIComponent(email)}`);
                 if (response.ok) {
                     const data = await response.json()
                     // console.log("post data: ", data);

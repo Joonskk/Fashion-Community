@@ -2,7 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getClient } from "@/lib/mongodb";
-import type { Sort, Document } from 'mongodb';
+import type { Document } from 'mongodb';
+import { getNewestPage, decodeCursor, type Cursor } from "@/lib/feed";
 
 export async function GET(req:NextRequest) {
     const client = await getClient();
@@ -11,20 +12,24 @@ export async function GET(req:NextRequest) {
     const { searchParams } = new URL(req.url);
     const sortParam = searchParams.get("sort"); // newest || likes || following
     const sexParam = searchParams.get("sex");
+    const authorParam = searchParams.get("author"); // My Page: one user's posts
+    const cursorParam = searchParams.get("cursor");
     const userEmail = req.headers.get("user-email");
 
-    let sortOption: Sort = { createdAt: -1}; // newest
-    if(sortParam == "likes"){
-        sortOption = { likesCount: -1 }; // likes
+    // 1. Read the bookmark. No cursor means page 1
+    let cursor: Cursor | null = null;
+    if (cursorParam) {
+        cursor = decodeCursor(cursorParam);
+        if (!cursor) {
+            return NextResponse.json({ error: "Invalid cursor" }, { status: 400 });
+        }
     }
 
-    const query : Document = {};
+    // 2. Build the filter (same rules as before)
+    const filter: Document = {};
+    if (sexParam && sexParam !== "all") filter.sex = sexParam;
+    if (authorParam) filter.userEmail = authorParam;
 
-    if (sexParam && sexParam !== "all") {
-        query.sex = sexParam;
-    }
-
-    // "팔로잉한 유저들" 필터
     if (sortParam === "following") {
         if (!userEmail) {
         return NextResponse.json({ error: "Missing user email in headers" }, { status: 400 });
@@ -35,14 +40,11 @@ export async function GET(req:NextRequest) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        const followingList = user.following || [];
-
-        query.userEmail = { $in: followingList };
+        filter.userEmail = { $in: user.following || [] };
     }
 
-    const posts = await db.collection('posts').find(query, {
-        projection: { _id: 1, userEmail: 1, sex:1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
-    }).sort(sortOption).toArray();
-  
-    return NextResponse.json({ posts })
+    // 3. One page + the bookmark for the next one
+    const { posts, nextCursor } = await getNewestPage(db, filter, cursor);
+
+    return NextResponse.json({ posts, nextCursor });
 }

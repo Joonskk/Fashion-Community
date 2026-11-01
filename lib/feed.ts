@@ -4,6 +4,9 @@ export const PAGE_SIZE = 20;
 
 export type Cursor = { createdAt: string; id: string };
 
+// Only the fields a feed card needs (no description AI fields, no embedding)
+const FEED_PROJECTION = { _id: 1, userEmail: 1, sex: 1, images: 1, likes: 1, likesCount: 1, createdAt: 1 };
+
 // Bookmark <-> short URL-safe string
 export function encodeCursor(c: Cursor): string {
     return Buffer.from(JSON.stringify(c)).toString("base64url");
@@ -34,6 +37,7 @@ export async function getNewestPage(db: Db, filter: Document, cursor: Cursor | n
 
     const docs = await db.collection("posts")
         .find(query)
+        .project(FEED_PROJECTION)
         .sort({ createdAt: -1, _id: -1 })
         .limit(PAGE_SIZE + 1) // ask for one extra
         .toArray();
