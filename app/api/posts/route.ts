@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getClient } from "@/lib/mongodb";
 import type { Document } from 'mongodb';
 import { getFeedPage, decodeCursor, type Cursor, type SortMode } from "@/lib/feed";
+import { getSessionEmail } from "@/lib/session";
 
 export async function GET(req:NextRequest) {
     const client = await getClient();
@@ -14,7 +15,6 @@ export async function GET(req:NextRequest) {
     const sexParam = searchParams.get("sex");
     const authorParam = searchParams.get("author"); // My Page: one user's posts
     const cursorParam = searchParams.get("cursor");
-    const userEmail = req.headers.get("user-email");
 
     // 1. Read the bookmark. No cursor means page 1
     let cursor: Cursor | null = null;
@@ -31,11 +31,11 @@ export async function GET(req:NextRequest) {
     if (authorParam) filter.userEmail = authorParam;
 
     if (sortParam === "following") {
-        if (!userEmail) {
-        return NextResponse.json({ error: "Missing user email in headers" }, { status: 400 });
+        const sessionEmail = await getSessionEmail();
+        if (!sessionEmail) {
+            return NextResponse.json({ error: "Login required" }, { status: 401 });
         }
-
-        const user = await db.collection("users").findOne({ email: userEmail });
+        const user = await db.collection("users").findOne({ email: sessionEmail });
         if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
