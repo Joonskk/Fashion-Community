@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getClient } from "@/lib/mongodb";
 import type { Document } from 'mongodb';
-import { getNewestPage, decodeCursor, type Cursor } from "@/lib/feed";
+import { getFeedPage, decodeCursor, type Cursor, type SortMode } from "@/lib/feed";
 
 export async function GET(req:NextRequest) {
     const client = await getClient();
@@ -44,7 +44,8 @@ export async function GET(req:NextRequest) {
     }
 
     // 3. One page + the bookmark for the next one
-    const { posts, nextCursor } = await getNewestPage(db, filter, cursor);
+    const mode: SortMode = sortParam === "likes" ? "likes" : "newest";
+    const { posts, nextCursor } = await getFeedPage(db, mode, filter, cursor);
 
     return NextResponse.json({ posts, nextCursor });
 }
