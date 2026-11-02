@@ -9,20 +9,6 @@ import LoginButton from '@/app/components/LoginButton';
 import Image from 'next/image';
 import InfiniteFeed, { type FeedCard } from "@/app/components/InfiniteFeed";
 
-type Post = {
-    _id: string;
-    userEmail: string;
-    images: ImageInfo[];
-    description: string;
-    likes: string[];
-    likesCount: number;
-}
-
-type ImageInfo = {
-    url: string;
-    public_id: string;
-}
-
 export default function MyPage() {
     const router = useRouter();
 
