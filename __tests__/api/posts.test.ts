@@ -1,6 +1,9 @@
 // Fake login: each test decides who is signed in
 jest.mock("next-auth", () => ({ getServerSession: jest.fn() }));
 import { getServerSession } from "next-auth";
+import { ObjectId } from "mongodb";
+import { encodeCursor } from "@/lib/feed";
+
 const mockSession = getServerSession as jest.Mock;
 
 import type { Db } from "mongodb";
@@ -51,4 +54,10 @@ test("following feed only shows people I follow", async () => {
 
     expect(res.status).toBe(200);
     expect(body.posts.map((p: { userEmail: string }) => p.userEmail)).toEqual(["friend@test.local"]);
+});
+
+test("cursor whose key isn't a date -> 400 on the newest feed", async () => {
+    const bad = encodeCursor({ key: "banana", id: new ObjectId().toString() });
+    const res = await getPosts(`sort=newest&cursor=${bad}`);
+    expect(res.status).toBe(400);
 });

@@ -25,6 +25,14 @@ export function decodeCursor(s: string): Cursor | null {
     }
 }
 
+// Does this bookmark's key fit the sort mode? (newest = date string, likes = number)
+export function cursorFitsMode(c: Cursor, mode: SortMode): boolean {
+    if (mode === "newest") {
+        return typeof c.key === "string" && !Number.isNaN(Date.parse(c.key));
+    }
+    return typeof c.key === "number";
+}
+
 // One page of posts, newest first, starting after `cursor`
 export async function getFeedPage(db: Db, mode: SortMode, filter: Document, cursor: Cursor | null) {
     const field = SORT_FIELD[mode]; // "createdAt" or "likesCount"

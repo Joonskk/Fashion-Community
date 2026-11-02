@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getClient } from "@/lib/mongodb";
 import type { Document } from 'mongodb';
-import { getFeedPage, decodeCursor, type Cursor, type SortMode } from "@/lib/feed";
+import { getFeedPage, decodeCursor, type Cursor, type SortMode, cursorFitsMode } from "@/lib/feed";
 import { getSessionEmail } from "@/lib/session";
 
 export async function GET(req:NextRequest) {
@@ -16,11 +16,13 @@ export async function GET(req:NextRequest) {
     const authorParam = searchParams.get("author"); // My Page: one user's posts
     const cursorParam = searchParams.get("cursor");
 
+    const mode: SortMode = sortParam === "likes" ? "likes" : "newest";
+
     // 1. Read the bookmark. No cursor means page 1
     let cursor: Cursor | null = null;
     if (cursorParam) {
         cursor = decodeCursor(cursorParam);
-        if (!cursor) {
+        if (!cursor || !cursorFitsMode(cursor, mode)) {
             return NextResponse.json({ error: "Invalid cursor" }, { status: 400 });
         }
     }
@@ -44,7 +46,6 @@ export async function GET(req:NextRequest) {
     }
 
     // 3. One page + the bookmark for the next one
-    const mode: SortMode = sortParam === "likes" ? "likes" : "newest";
     const { posts, nextCursor } = await getFeedPage(db, mode, filter, cursor);
 
     return NextResponse.json({ posts, nextCursor });
