@@ -36,7 +36,7 @@ async function walk(mode: SortMode, filter: Document = {}) {
     do {
         const page = await getFeedPage(db, mode, filter, cursor);
         ids.push(...page.posts.map((p) => p._id.toString()));
-        cursor = page.nextCursor ? decodeCursor(page.nextCursor) : null;   // BLANK 1
+        cursor = page.nextCursor ? decodeCursor(page.nextCursor) : null;
         pages++;
     } while (cursor);
     return { ids, pages };
@@ -46,7 +46,6 @@ test("newest: walks every post once, in order, across ties", async () => {
     await seed();
     const { ids, pages } = await walk("newest");
 
-    // the "truth": the whole collection sorted the same way, no paging
     const expected = (await db.collection("posts")
         .find().sort({ createdAt: -1, _id: -1 }).toArray())
         .map((p) => p._id.toString());
@@ -55,4 +54,27 @@ test("newest: walks every post once, in order, across ties", async () => {
     expect(new Set(ids).size).toBe(TOTAL);
     expect(ids).toEqual(expected);
     expect(pages).toBe(Math.ceil(TOTAL / PAGE_SIZE));
+});
+
+test("likes: walks every post once, in order, across ties", async () => {
+    await seed();
+    const { ids } = await walk("likes");
+
+    const expected = (await db.collection("posts")
+        .find().sort({ likesCount: -1, _id: -1 }).toArray())
+        .map((p) => p._id.toString());
+
+    expect(ids).toEqual(expected);
+});
+
+test("filter: every page keeps the filter", async () => {
+    await seed();
+    const filter = { sex: "female" };
+    const { ids } = await walk("newest", filter);
+
+    const expected = (await db.collection("posts")
+        .find(filter).sort({ createdAt: -1, _id: -1 }).toArray())
+        .map((p) => p._id.toString());
+
+    expect(ids).toEqual(expected);
 });
