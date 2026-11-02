@@ -9,6 +9,7 @@ A full-stack fashion community app where people share outfits, search by style, 
 - **AI vision tagging:** when a post is created, an OpenAI vision model (`gpt-5.6-luna`) reads the photo and returns structured tags: styles, items, season, gender and colors. Every tag is filtered against a fixed allowed list in `lib/constants.ts`, so the model can't invent new categories.
 - **Background tagging with retries:** create-post saves the post as `pending` and responds right away; tagging runs after the response (`after()` from `next/server`). A failed tagging is retried with exponential backoff (15, 30, 60, 120 min) and marked `failed` after 5 tries. A job claims a post with one atomic `findOneAndUpdate`, so two workers never tag the same post, and a post stuck in `processing` for 5 minutes is reclaimed. A daily Vercel Cron calls `/api/cron/retry-tagging` (protected by `CRON_SECRET`) to run due retries. Post creation went from 6.5 s to 0.24 s (median of 3, local dev).
 - **Style tags from three sources:** the styles a user picks, `#hashtags` written in the caption, and the AI's styles are merged, filtered to the allowed list, de-duplicated and capped at 3.
+- **Infinite-scroll feeds:** the home (newest), ranking (most liked), following, profile and My Page feeds load 20 posts at a time with cursor pagination and fetch the next page as you near the bottom (`IntersectionObserver`). Each feed query is backed by a compound MongoDB index, so a page reads about 20 documents no matter how many posts exist. See [Feed performance](#feed-performance).
 - **Search:** keyword search over captions plus filters for style, item, color, season and gender, with pagination. User input is regex-escaped before it reaches MongoDB.
 - **Similar outfits:** each post page shows posts that share items, styles, colors or season with it.
 - **Social:** image carousels, likes, bookmarks, follows and comments with edit and delete.
@@ -75,6 +76,7 @@ Then open http://localhost:3000.
 
 - Compose starts two containers: the app and a local MongoDB (`mongo:7`). The app's `MONGODB_URI` is overridden to point at the local database, so it starts empty and never touches Atlas.
 - `--env-file .env.local` passes the two `NEXT_PUBLIC_CLOUDINARY_*` values to the build, because Next.js bakes `NEXT_PUBLIC_*` variables into the browser bundle at build time. All other secrets are read from `.env.local` when the container starts and are never stored in the image (`.dockerignore` excludes `.env*`).
+- The local MongoDB is also published on `localhost:27017`, so scripts on your machine (see [Feed performance](#feed-performance)) can reach it.
 - Stop with `Ctrl+C`, then `docker compose down`. Local data is kept in the `mongo-data` volume; `docker compose down -v` deletes it.
 
 To run only the app image against your own database (for example Atlas):
@@ -113,15 +115,59 @@ __tests__/
     create-post.test.ts   # 401, 400, saved as pending then tagged by the job, failure recorded for retry, style merging
     toggle-likes.test.ts  # like, unlike, multiple users, 404, invalid id → 400, 401 logged out
     delete-post.test.ts   # 401 logged out, 403 not the author, owner delete removes images
+    posts.test.ts         # feed route: bad cursor → 400, following feed 401 logged out and only followed users
   lib/
     taggingJob.test.ts    # success, backoff, give up after 5, not due, lock timeout, double claim
+    feed.test.ts          # walks every page: no duplicates, no gaps, correct order across tied timestamps and like counts, filters kept
     hashtags.test.ts      # caption hashtag extraction
     escapeRegex.test.ts   # special characters are escaped
 test-utils/
   db.ts                   # shared helper: start in-memory MongoDB, return { db, stop }
 ```
 
-The tests found two bugs that are now fixed: a search for `(` crashed the search route with a 500 because the query went straight into `$regex`, and an invalid post id crashed the like route.
+The tests found three bugs that are now fixed: a search for `(` crashed the search route with a 500 because the query went straight into `$regex`, an invalid post id crashed the like route, and a feed cursor whose key didn't match the sort (for example text that isn't a date on the newest feed) returned an empty page with 200 instead of a 400.
+
+## Feed performance
+
+Every feed used to load all posts at once, with no index behind the sort, so MongoDB read and sorted the whole collection on every request. Feeds now use cursor pagination plus compound indexes.
+
+**Cursor pagination** (`lib/feed.ts`): a page is 20 posts. The response includes `nextCursor`, a base64url bookmark of the last post's sort key (`createdAt` or `likesCount`) and `_id`. The next request asks for posts after that bookmark with an `$or` on (sort key, `_id`), so posts that share a timestamp or a like count are never skipped or repeated. The query fetches 21 posts to know whether another page exists. A malformed cursor returns 400. Unlike `skip()`, the cost of a page doesn't grow with how deep you scroll.
+
+**Indexes** (`scripts/create-indexes.mjs`), designed with the equality, sort, range rule and an `_id` tie-breaker:
+
+| Index | Serves |
+| --- | --- |
+| `{ createdAt: -1, _id: -1 }` | newest feed |
+| `{ likesCount: -1, _id: -1 }` | ranking feed |
+| `{ sex: 1, createdAt: -1, _id: -1 }` | newest feed filtered by gender |
+| `{ sex: 1, likesCount: -1, _id: -1 }` | ranking feed filtered by gender |
+| `{ userEmail: 1, createdAt: -1, _id: -1 }` | profile, My Page and following feeds |
+
+**Measurements** on 100,000 seeded posts in a local `mongo:7` (Docker), median of 3 runs. These are synthetic posts, not real traffic.
+
+| Query | Docs examined | Time |
+| --- | --- | --- |
+| newest 20 | 100,000 → 20 | 33 ms → under 1 ms |
+| most liked 20 | 100,000 → 20 | 33 ms → under 1 ms |
+| female, newest 20 | 100,000 → 20 | 33 ms → under 1 ms |
+| one user's posts (2,020) | 100,000 → 2,020 | 34 ms → 2 ms |
+
+| Deep page (posts 50,001 to 50,020) | Index keys examined | Time |
+| --- | --- | --- |
+| `skip(50000)` | 50,021 | 34 ms |
+| cursor | 21 | under 1 ms |
+
+The feed API response for the first page went from 23.7 MB (every post) to 4.3 KB, and from 1.11 s to 0.018 s (`npm run dev`, local).
+
+To reproduce locally:
+
+```bash
+docker compose up -d mongo                 # local MongoDB on localhost:27017
+node scripts/seed-posts.mjs                # 100,000 fake posts, local only (the URI is hardcoded)
+MONGODB_URI="mongodb://localhost:27017/wearly" node scripts/create-indexes.mjs
+```
+
+Seeded posts are marked `seed: true` and `aiStatus: "done"` (so the tagging job never sends them to OpenAI), and re-running the seed script replaces them. `create-indexes.mjs` is safe to re-run and is also how the indexes are created on Atlas.
 
 ## Continuous integration
 
@@ -145,4 +191,4 @@ npx tsc --noEmit && npm run lint && npm test
 ## Known issues and roadmap
 
 Known issues (tracked for upcoming work):
-- Likes, post creation and post deletion now take the user only from the session (#6). Bookmarks, comments and follow still trust an email from the request; tracked in #7.
+- Likes, post creation, post deletion and the following feed now take the user only from the session (#6). Bookmarks, comments and follow still trust an email from the request; tracked in #7.

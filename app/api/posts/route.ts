@@ -2,7 +2,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getClient } from "@/lib/mongodb";
-import type { Sort, Document } from 'mongodb';
+import type { Document } from 'mongodb';
+import { getFeedPage, decodeCursor, type Cursor, type SortMode, cursorFitsMode } from "@/lib/feed";
+import { getSessionEmail } from "@/lib/session";
 
 export async function GET(req:NextRequest) {
     const client = await getClient();
@@ -11,38 +13,40 @@ export async function GET(req:NextRequest) {
     const { searchParams } = new URL(req.url);
     const sortParam = searchParams.get("sort"); // newest || likes || following
     const sexParam = searchParams.get("sex");
-    const userEmail = req.headers.get("user-email");
+    const authorParam = searchParams.get("author"); // My Page: one user's posts
+    const cursorParam = searchParams.get("cursor");
 
-    let sortOption: Sort = { createdAt: -1}; // newest
-    if(sortParam == "likes"){
-        sortOption = { likesCount: -1 }; // likes
-    }
+    const mode: SortMode = sortParam === "likes" ? "likes" : "newest";
 
-    const query : Document = {};
-
-    if (sexParam && sexParam !== "all") {
-        query.sex = sexParam;
-    }
-
-    // "팔로잉한 유저들" 필터
-    if (sortParam === "following") {
-        if (!userEmail) {
-        return NextResponse.json({ error: "Missing user email in headers" }, { status: 400 });
+    // 1. Read the bookmark. No cursor means page 1
+    let cursor: Cursor | null = null;
+    if (cursorParam) {
+        cursor = decodeCursor(cursorParam);
+        if (!cursor || !cursorFitsMode(cursor, mode)) {
+            return NextResponse.json({ error: "Invalid cursor" }, { status: 400 });
         }
+    }
 
-        const user = await db.collection("users").findOne({ email: userEmail });
+    // 2. Build the filter (same rules as before)
+    const filter: Document = {};
+    if (sexParam && sexParam !== "all") filter.sex = sexParam;
+    if (authorParam) filter.userEmail = authorParam;
+
+    if (sortParam === "following") {
+        const sessionEmail = await getSessionEmail();
+        if (!sessionEmail) {
+            return NextResponse.json({ error: "Login required" }, { status: 401 });
+        }
+        const user = await db.collection("users").findOne({ email: sessionEmail });
         if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        const followingList = user.following || [];
-
-        query.userEmail = { $in: followingList };
+        filter.userEmail = { $in: user.following || [] };
     }
 
-    const posts = await db.collection('posts').find(query, {
-        projection: { _id: 1, userEmail: 1, sex:1, images: 1, description: 1, likes: 1, likesCount: 1, createdAt: 1 }
-    }).sort(sortOption).toArray();
-  
-    return NextResponse.json({ posts })
+    // 3. One page + the bookmark for the next one
+    const { posts, nextCursor } = await getFeedPage(db, mode, filter, cursor);
+
+    return NextResponse.json({ posts, nextCursor });
 }

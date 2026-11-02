@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import LoginButton from "@/app/components/LoginButton";
-import StyleCard from "@/app/components/StyleCard";
 import Image from "next/image";
+import InfiniteFeed, { type FeedCard } from "@/app/components/InfiniteFeed";
 
 type ImageInfo = {
     public_id: string;
@@ -23,27 +23,18 @@ type User = {
     followingCount?: number;
 };
 
-type Post = {
-    _id: string;
-    userEmail: string;
-    images: ImageInfo[];
-    description: string;
-    likes?: string[];
-    likesCount?: number;
-};
-
 interface UserPageClientProps {
     initialUser: User;
-    initialPosts: Post[];
+    initialPosts: FeedCard[];
+    initialCursor: string | null;
     userId: string;
 }
 
-export default function UserPage({ initialUser, initialPosts, userId,}: UserPageClientProps) {
+export default function UserPage({ initialUser, initialPosts, initialCursor, userId,}: UserPageClientProps) {
     const router = useRouter();
     const { email, session, refetchUserData } = useUser();
 
     const [userData, setUserData] = useState<User>(initialUser);
-    const [userPosts] = useState<Post[]>(initialPosts);
     const [isFollowed, setIsFollowed] = useState<boolean>(false);
 
     // Redirect to mypage if the viewing user is looking at their own profile
@@ -180,13 +171,12 @@ export default function UserPage({ initialUser, initialPosts, userId,}: UserPage
             </div>
 
             <div className="mb-[60px]">
-            <div className="flex flex-wrap">
-                {userPosts.map((post) => (
-                <div key={post._id} className="w-1/2 md:w-1/3">
-                    <StyleCard postImageURL={post.images[0]?.url} postID={post._id} />
-                </div>
-                ))}
-            </div>
+            <InfiniteFeed
+                key={userId}
+                initialPosts={initialPosts}
+                initialCursor={initialCursor}
+                query={`author=${encodeURIComponent(initialUser.email)}`}
+            />
             </div>
         </div>
         </div>
