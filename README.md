@@ -4,6 +4,8 @@
 
 A full-stack fashion community app where people share outfits, search by style, and get similar-outfit recommendations. Uploaded outfit photos are tagged automatically by an OpenAI vision model.
 
+**Live demo:** https://fashion-community-two.vercel.app · **Case study:** [making AI tagging fast and reliable](https://my-portfolio-website-ten-coral.vercel.app/)
+
 ## Features
 
 - **AI vision tagging:** when a post is created, an OpenAI vision model (`gpt-5.6-luna`) reads the photo and returns structured tags: styles, items, season, gender and colors. Every tag is filtered against a fixed allowed list in `lib/constants.ts`, so the model can't invent new categories.
