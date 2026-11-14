@@ -4,7 +4,7 @@
 
 A full-stack fashion community app where people share outfits, search by style, and get similar-outfit recommendations. Uploaded outfit photos are tagged automatically by an OpenAI vision model.
 
-**Live demo:** https://fashion-community-two.vercel.app · **Case study:** [making AI tagging fast and reliable](https://my-portfolio-website-ten-coral.vercel.app/)
+**Live demo:** https://wearlyhq.vercel.app · **Case study:** [making AI tagging fast and reliable](https://my-portfolio-website-ten-coral.vercel.app/)
 
 ## Features
 
