@@ -13,7 +13,7 @@ A full-stack fashion community app where people share outfits, search by style, 
 - **Style tags from three sources:** the styles a user picks, `#hashtags` written in the caption, and the AI's styles are merged, filtered to the allowed list, de-duplicated and capped at 3.
 - **Infinite-scroll feeds:** the home (newest), ranking (most liked), following, profile and My Page feeds load 20 posts at a time with cursor pagination and fetch the next page as you near the bottom (`IntersectionObserver`). Each feed query is backed by a compound MongoDB index, so a page reads about 20 documents no matter how many posts exist. See [Feed performance](#feed-performance).
 - **Search:** keyword search over captions plus filters for style, item, color, season and gender, with pagination. User input is regex-escaped before it reaches MongoDB.
-- **Similar outfits:** each post page shows posts that share items, styles, colors or season with it.
+- **Similar outfits:** each post page shows the 6 posts with the most tags in common with it. A post scores one point per shared item, style and color, plus one for the same season, and newer posts win ties.
 - **Social:** image carousels, likes, bookmarks, follows and comments with edit and delete.
 - **Auth:** Google sign-in with NextAuth.js.
 - **Images:** uploads go to Cloudinary, and a post's images are removed from Cloudinary when the post is deleted.
@@ -31,6 +31,43 @@ A full-stack fashion community app where people share outfits, search by style, 
 | Testing | Jest, mongodb-memory-server |
 | Containers | Docker (multi-stage build), Docker Compose |
 | CI | GitHub Actions |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  B[Browser] -->|pages + API calls| V[Next.js on Vercel<br/>SSR pages + API routes]
+  B -->|sign in| G[Google OAuth<br/>via NextAuth]
+  B -->|image upload| C[Cloudinary]
+  V --> M[(MongoDB Atlas)]
+  V -. "after() the response" .-> J[Tagging job]
+  Cron[Vercel Cron<br/>daily] -->|"/api/cron/retry-tagging"| J
+  J -->|photo URL| O[OpenAI vision model]
+  J -->|tags, status| M
+```
+
+1. **Creating a post:** the browser uploads the photo to Cloudinary, then calls `create-post`. The route saves the post as `pending` and responds right away.
+2. **Tagging:** after the response, the tagging job claims the post, sends the photo to OpenAI, filters the tags against the allowed list and saves them. A failure schedules a retry, and the daily cron picks up anything that is due or stuck.
+3. **Reading:** feeds, search and similar posts are API routes that query MongoDB with indexes and return only the fields the page needs.
+
+## Design decisions
+
+| Decision | Chose | Over | Why |
+| --- | --- | --- | --- |
+| Background work | The post document as the queue (`aiStatus`, atomic claim, backoff, cron sweep) | A real queue (BullMQ, SQS) | Vercel has no long-running worker, and a queue would add Redis or another paid service. One job type at low volume fits in MongoDB. I'd switch for many job types, high volume or priorities. |
+| Feed pagination | Cursor on (sort key, `_id`) | `skip()` | Cost stays flat however deep you scroll, and the `_id` tie-breaker stops posts from being skipped or repeated when timestamps or like counts tie. |
+| AI output | Structured JSON plus an allowed-list filter | Trusting the model's text | Search filters only work on known values, so the model must never invent a category. |
+| Identity | User taken from the NextAuth session | Email sent by the client | Anyone can change a request body. Trusting it let one user act as another. |
+| Similar posts | Ranking by number of shared tags | Embeddings with vector search | With about 20 real posts, an embedding model's quality can't be measured, so tag overlap is the honest choice at this size. |
+| Rendering | Server-side rendering | Client-side fetching | The first screen arrives with data, cutting average page load from 3.5 s to 0.6 s. |
+
+### Known limits
+
+- Bookmarks, comments and follow still trust an email from the request (#7).
+- No rate limit or spending cap on OpenAI calls.
+- No caching layer; none has been measured as needed yet.
+- Google is the only sign-in option.
+- The performance numbers come from 100,000 seeded posts on a local machine, not real traffic.
 
 ## Data model (MongoDB)
 
@@ -112,7 +149,7 @@ The API tests call the Next.js route handlers directly, as plain async functions
 ```
 __tests__/
   api/
-    similar.test.ts       # similar-outfit matching, invalid id → 400
+    similar.test.ts       # similar-outfit matching, ranking by shared tags, invalid id → 400
     search.test.ts        # filters, AND across filters, case-insensitive q, pagination, regex escaping
     create-post.test.ts   # 401, 400, saved as pending then tagged by the job, failure recorded for retry, style merging
     toggle-likes.test.ts  # like, unlike, multiple users, 404, invalid id → 400, 401 logged out
@@ -190,7 +227,6 @@ To run the same checks locally before pushing:
 npx tsc --noEmit && npm run lint && npm test
 ```
 
-## Known issues and roadmap
+## Known issues
 
-Known issues (tracked for upcoming work):
-- Likes, post creation, post deletion and the following feed now take the user only from the session (#6). Bookmarks, comments and follow still trust an email from the request; tracked in #7.
+- Likes, post creation, post deletion and the following feed take the user only from the session (#6). Bookmarks, comments and follow still trust an email from the request; tracked in #7.
