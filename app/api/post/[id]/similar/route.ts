@@ -9,7 +9,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         const { id } = await params;
 
         if (!ObjectId.isValid(id)) {
-        return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+            return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
         }
 
         const client = await getClient();
@@ -17,11 +17,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
         // 2. Fetch current post
         const currentPost = await db
-        .collection("posts")
-        .findOne({ _id: new ObjectId(id) });
+            .collection("posts")
+            .findOne({ _id: new ObjectId(id) });
 
         if (!currentPost) {
-        return NextResponse.json({ error: "Post not found" }, { status: 404 });
+            return NextResponse.json({ error: "Post not found" }, { status: 404 });
         }
 
         const currentId = new ObjectId(id);
@@ -41,26 +41,39 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         const query: Filter<Document> = { _id: { $ne: currentId } };
 
         if (matchConditions.length > 0) {
-        query.$or = matchConditions;
+            query.$or = matchConditions;
         }
 
         // 4. Fetch similar posts
         const similarPosts = await db
-        .collection("posts")
-        .find(query)
-        .sort({ createdAt: -1 })
-        .limit(6)
-        .toArray();
+            .collection("posts").aggregate([
+                { $match: query },                       // same filter as now
+                {
+                    $addFields: {
+                        score: {
+                            $add: [
+                                { $size: { $setIntersection: [{ $ifNull: ["$items", []] }, items] } },
+                                { $size: { $setIntersection: [{ $ifNull: ["$styles", []] }, styles] } },
+                                { $size: { $setIntersection: [{ $ifNull: ["$colors", []] }, colors] } },
+                                season ? { $cond: [{ $eq: ["$season", season] }, 1, 0] } : 0,
+                            ]
+                        },
+                    }
+                },
+                { $sort: { score: -1, createdAt: -1 } },
+                { $limit: 6 },
+                { $project: { _id: 1, images: 1, description: 1, authorName: 1 } },
+            ]).toArray();
 
         return NextResponse.json({
-        success: true,
-        posts: similarPosts,
+            success: true,
+            posts: similarPosts,
         });
     } catch (err) {
         console.error("Error fetching similar posts:", err);
         return NextResponse.json(
-        { error: "Failed to fetch similar posts" },
-        { status: 500 }
+            { error: "Failed to fetch similar posts" },
+            { status: 500 }
         );
     }
 }

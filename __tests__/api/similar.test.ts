@@ -13,15 +13,23 @@ const currentId = new ObjectId();
 const similarId = new ObjectId();
 const unrelatedId = new ObjectId();
 
+const rankQueryId = new ObjectId();
+const manySharedOldId = new ObjectId();
+const oneSharedNewId = new ObjectId();
+
 beforeAll(async () => {
     ({ db, stop } = await startTestDb());
 
     ({ GET } = await import("@/app/api/post/[id]/similar/route"));
-    
+
     await db.collection('posts').insertMany([
         { _id: currentId, styles: ["streetwear"], items: ["jeans", "sneakers"], colors: ["white", "black", "red"], season: "summer", createdAt: new Date() },
         { _id: similarId, styles: ["streetwear"], items: ["shirt", "cap", "bag"], colors: ["navy", "cream"], season: "winter", createdAt: new Date() },
         { _id: unrelatedId, styles: ["casual", "chic"], items: ["shirt", "shorts"], colors: ["off-white", "gray"], season: "spring", createdAt: new Date() },
+
+        { _id: rankQueryId, styles: ["sporty", "casual"], items: ["hoodie", "sneakers"], colors: ["olive-green"], season: "fall", createdAt: new Date() },
+        { _id: manySharedOldId, styles: ["sporty", "casual"], items: ["hoodie", "sneakers"], colors: ["beige"], season: "spring", createdAt: new Date("2025-01-01") },
+        { _id: oneSharedNewId, styles: ["preppy"], items: ["shirt"], colors: ["olive-green"], season: "winter", createdAt: new Date() },
     ]);
 });
 
@@ -61,5 +69,15 @@ describe("GET /api/post/[id]/similar", () => {
         const body = await res.json();
         const ids = body.posts.map((p: { _id: string }) => p._id);
         expect(ids).not.toContain(unrelatedId.toString());
+    });
+
+    test("ranks by shared tags, not by date", async () => {
+        const res = await GET(new Request("http://localhost"), {
+            params: Promise.resolve({ id: rankQueryId.toString() }),
+        });
+        const body = await res.json();
+        const ids = body.posts.map((p: { _id: string }) => p._id);
+        expect(ids).toContain(manySharedOldId.toString());
+        expect(ids.indexOf(manySharedOldId.toString())).toBeLessThan(ids.indexOf(oneSharedNewId.toString()));
     });
 })
